@@ -1,0 +1,164 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the binary package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: binary\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-27 19:00+0000\n"
+"PO-Revision-Date: 2025-12-22 21:00+0000\n"
+"Last-Translator: Asier Saratsua Garmendia <asier.sarasua@gmail.com>\n"
+"Language-Team: Basque <https://hosted.weblate.org/projects/binary/binary-app/"
+"eu/>\n"
+"Language: eu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.15.1\n"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:2
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:6 src/window.py:51
+msgid "Binary"
+msgstr "Bitarra"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:5
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:7
+msgid "Convert numbers between bases"
+msgstr "Bihurtu zenbakiak oinarri batetik beste batera"
+
+#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/io.github.fizzyizzy05.binary.desktop.in:10
+msgid "binary;decimal;hexadecimal;base;convert;"
+msgstr "bitarra;hamartarra;hamaseitarra;oinarria;bihurtu;"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:16 src/window.blp:180
+msgid "New Window"
+msgstr "Leiho berria"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:9
+msgid ""
+"A small and simple app used to convert between different hexadecimal and "
+"binary numbers"
+msgstr ""
+"Zenbaki bitarrak eta hamaseitarrak bihurtzen dituen aplikazio txiki eta "
+"sinplea"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:18
+msgid "Binary window converting 101010 in binary to 42 in decimal"
+msgstr ""
+"Bitarra aplikazioaren leihoa 101010 zenbaki bitarra 42 hamartar bihurtzen"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:22
+msgid "Binary window converting 1201 in decimal to 4B1 in hexadecimal"
+msgstr ""
+"Bitarra aplikazioaren leihoa 1201 zenbaki hamartarra 4B1 hamaseitar bihurtzen"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:26
+msgid "Binary window converting 17 in octal to F in hexadecimal"
+msgstr ""
+"Bitarra aplikazioaren leihoa 17 zenbaki zortzitarra F hamaseitar bihurtzen"
+
+#: src/shortcuts-dialog.blp:6
+msgctxt "shortcut window"
+msgid "General"
+msgstr "Orokorra"
+
+#: src/shortcuts-dialog.blp:9
+msgctxt "shortcut window"
+msgid "New Window"
+msgstr "Leiho berria"
+
+#: src/shortcuts-dialog.blp:14
+msgctxt "shortcut window"
+msgid "Close Window"
+msgstr "Itxi leihoa"
+
+#: src/shortcuts-dialog.blp:19
+msgctxt "shortcut window"
+msgid "Show Shortcuts"
+msgstr "Erakutsi lasterbideak"
+
+#: src/shortcuts-dialog.blp:24
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr "Irten"
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/main.py:80
+msgid "translator-credits"
+msgstr "Asier Saratsua"
+
+#. Translators: this string is used to describe how many bits there are.
+#: src/window.py:48
+msgid "bits"
+msgstr "bit"
+
+#: src/window.py:52
+msgid "Octal"
+msgstr "Zortzitarra"
+
+#: src/window.py:53
+msgid "Decimal"
+msgstr "Hamartarra"
+
+#: src/window.py:54
+msgid "Hexadecimal"
+msgstr "Hamaseitarra"
+
+#: src/window.py:55
+msgid "Other"
+msgstr "Bestelakoa"
+
+#: src/window.py:124 src/window.py:128 src/window.py:130 src/window.py:168
+#: src/window.py:172 src/window.py:174
+msgid "Invalid input"
+msgstr "Sarrera baliogabea"
+
+#: src/window.py:212
+#, python-format
+msgid "%(in_count)d bit"
+msgid_plural "%(in_count)d bits"
+msgstr[0] "Bit %(in_count)d"
+msgstr[1] "%(in_count)d bit"
+
+#: src/window.py:221
+#, python-format
+msgid "%(out_count)d bit"
+msgid_plural "%(out_count)d bits"
+msgstr[0] "Bit %(out_count)d"
+msgstr[1] "%(out_count)d bit"
+
+#: src/window.blp:21
+msgid "Main Menu"
+msgstr "Menu nagusia"
+
+#: src/window.blp:45
+msgid "Input Base"
+msgstr "Sarrerako oinarria"
+
+#: src/window.blp:75 src/window.blp:136
+msgid "Enter numbers"
+msgstr "Sartu zenbakiak"
+
+#: src/window.blp:80 src/window.blp:141
+msgid "Enter numbers…"
+msgstr "Sartu zenbakiak…"
+
+#: src/window.blp:106
+msgid "Output Base"
+msgstr "Irteerako oinarria"
+
+#: src/window.blp:186
+msgid "_Keyboard Shortcuts"
+msgstr "_Laster-teklak"
+
+#: src/window.blp:191
+msgid "_About Binary"
+msgstr "Bitarra aplikazioari _buruz"
+
+#: src/preferences.blp:5
+msgid "Preferences"
+msgstr "Hobespenak"

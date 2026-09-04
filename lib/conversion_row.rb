@@ -3,6 +3,7 @@
 require 'adwaita'
 
 require_relative 'converter'
+require_relative 'i18n'
 
 # One half of the window: a base selector, a bit-count popover and the entry
 # holding the number. The input and output halves are identical, so the window
@@ -13,8 +14,22 @@ class ConversionRow
   BASES = [2, 8, 10, 16].freeze
   OTHER = 4
 
-  def initialize(tooltip:, on_base_change:, on_text_change:)
+  # Built on demand rather than frozen into a constant, because the text domain
+  # is not bound until the application starts. "Binary" is asked for out of a
+  # domain no catalogue defines, exactly as upstream does, so it stays English.
+  BASE_NAMES = lambda do
+    [
+      d_('Number base', 'Binary'),
+      _('Octal'),
+      _('Decimal'),
+      _('Hexadecimal'),
+      _('Other'),
+    ]
+  end
+
+  def initialize(tooltip:, bit_plural:, on_base_change:, on_text_change:)
     @tooltip = tooltip
+    @bit_plural = bit_plural
     @on_base_change = on_base_change
     @on_text_change = on_text_change
   end
@@ -91,16 +106,8 @@ class ConversionRow
   def digit_count = entry.text.gsub(/[^0-9]/, '').length
 
   def refresh_bits
-    bit_button.label = self.class.bits_label(digit_count)
+    bit_button.label = n_(*@bit_plural, digit_count)
     bits_label.label = Converter.bit_count(entry.text)
-  end
-
-  def self.bits_label(count)
-    if count == 1
-      "#{count} bit"
-    else
-      "#{count} bits"
-    end
   end
 
   # The bit counter is only meaningful for base 2, and the spin button only
@@ -118,7 +125,7 @@ class ConversionRow
 
   def dropdown
     @dropdown ||= Gtk::DropDown.new.tap do |dd|
-      dd.model = Gtk::StringList.new(['Binary', 'Octal', 'Decimal', 'Hexadecimal', 'Other'])
+      dd.model = Gtk::StringList.new(BASE_NAMES.call)
       dd.tooltip_text = @tooltip
       dd.add_css_class('flat-dropdown')
     end
@@ -142,16 +149,33 @@ class ConversionRow
     end
   end
 
+  # Built from XML rather than by hand: the accessible label is the one piece
+  # of upstream's entry the bindings cannot set directly, because
+  # Gtk::Accessible#update_property raises NotImplementedError marshalling its
+  # array argument. GtkBuilder applies it for us.
   def entry
-    @entry ||= Gtk::Entry.new.tap do |e|
-      e.placeholder_text = 'Enter numbers'
-      e.enable_undo = false
-      # ponytail: upstream sets an explicit accessible label here. The Ruby
-      # bindings raise NotImplementedError marshalling the array argument of
-      # Gtk::Accessible#update_property, so the accessible name falls back to
-      # the placeholder — the same words. Set the label properly once the
-      # binding lands.
-    end
+    @entry ||= Gtk::Builder.new(string: self.class.entry_ui).get_object('entry')
+  end
+
+  def self.entry_ui
+    <<~XML
+      <?xml version="1.0" encoding="UTF-8"?>
+      <interface>
+        <object class="GtkEntry" id="entry">
+          <property name="placeholder-text">#{escape(_('Enter numbers'))}</property>
+          <property name="enable-undo">false</property>
+          <accessibility>
+            <property name="label">#{escape(_('Enter numbers…'))}</property>
+          </accessibility>
+        </object>
+      </interface>
+    XML
+  end
+
+  # Translations arrive from the catalogues, so they go through XML escaping
+  # before being interpolated into the builder document.
+  def self.escape(text)
+    text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
   end
 
   def bits_label

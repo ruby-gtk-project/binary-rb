@@ -1,0 +1,324 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the binary package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: binary\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-27 19:00+0000\n"
+"PO-Revision-Date: 2024-10-20 21:23+0000\n"
+"Last-Translator: Whoever4976 <wolffjonas47@gmail.com>\n"
+"Language-Team: German <https://hosted.weblate.org/projects/binary/binary-app/"
+"de/>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.8-rc\n"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:2
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:6 src/window.py:51
+msgid "Binary"
+msgstr "Binary"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:5
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:7
+msgid "Convert numbers between bases"
+msgstr "Zahlen zwischen unterschiedlichen Basen konvertieren"
+
+#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/io.github.fizzyizzy05.binary.desktop.in:10
+msgid "binary;decimal;hexadecimal;base;convert;"
+msgstr "binär;dezimal;hexadezimal;basis;konvertieren;"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:16 src/window.blp:180
+msgid "New Window"
+msgstr "Neues Fenster"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:9
+msgid ""
+"A small and simple app used to convert between different hexadecimal and "
+"binary numbers"
+msgstr ""
+"Eine kleine und simple Anwendung zur Konvertierung zwischen Binären, "
+"Dezimalen und Hexadezimalen Zahlen"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:18
+msgid "Binary window converting 101010 in binary to 42 in decimal"
+msgstr "Konvertieren von 101010 in Binär nach 42 in Dezimal"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:22
+msgid "Binary window converting 1201 in decimal to 4B1 in hexadecimal"
+msgstr "Konvertieren von 1201 in Dezimal nach 4B1 in Hexadezimal"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:26
+msgid "Binary window converting 17 in octal to F in hexadecimal"
+msgstr "Konvertieren von 17 in Oktal nach F in hexadezimal"
+
+#: src/shortcuts-dialog.blp:6
+msgctxt "shortcut window"
+msgid "General"
+msgstr "Allgemein"
+
+#: src/shortcuts-dialog.blp:9
+msgctxt "shortcut window"
+msgid "New Window"
+msgstr "Neues Fenster"
+
+#: src/shortcuts-dialog.blp:14
+msgctxt "shortcut window"
+msgid "Close Window"
+msgstr "Fenster schließen"
+
+#: src/shortcuts-dialog.blp:19
+msgctxt "shortcut window"
+msgid "Show Shortcuts"
+msgstr "Tastenkürzel anzeigen"
+
+#: src/shortcuts-dialog.blp:24
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr "Schließen"
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/main.py:80
+msgid "translator-credits"
+msgstr "Konstantin Tutsch <mail@konstantintutsch.com>"
+
+#. Translators: this string is used to describe how many bits there are.
+#: src/window.py:48
+msgid "bits"
+msgstr "Bits"
+
+#: src/window.py:52
+msgid "Octal"
+msgstr "Oktal"
+
+#: src/window.py:53
+msgid "Decimal"
+msgstr "Dezimal"
+
+#: src/window.py:54
+msgid "Hexadecimal"
+msgstr "Hexadezimal"
+
+#: src/window.py:55
+msgid "Other"
+msgstr "Weitere"
+
+#: src/window.py:124 src/window.py:128 src/window.py:130 src/window.py:168
+#: src/window.py:172 src/window.py:174
+msgid "Invalid input"
+msgstr "Ungültige Eingabe"
+
+#: src/window.py:212
+#, python-format
+msgid "%(in_count)d bit"
+msgid_plural "%(in_count)d bits"
+msgstr[0] "%(in_count)d Bit"
+msgstr[1] "%(in_count)d Bits"
+
+#: src/window.py:221
+#, python-format
+msgid "%(out_count)d bit"
+msgid_plural "%(out_count)d bits"
+msgstr[0] "%(out_count)d Bit"
+msgstr[1] "%(out_count)d Bits"
+
+#: src/window.blp:21
+msgid "Main Menu"
+msgstr "Hauptmenü"
+
+#: src/window.blp:45
+msgid "Input Base"
+msgstr "Basis Eingabe"
+
+#: src/window.blp:75 src/window.blp:136
+msgid "Enter numbers"
+msgstr "Zahl eingeben"
+
+#: src/window.blp:80 src/window.blp:141
+msgid "Enter numbers…"
+msgstr "Zahl eingeben…"
+
+#: src/window.blp:106
+msgid "Output Base"
+msgstr "Basis Ausgabe"
+
+#: src/window.blp:186
+msgid "_Keyboard Shortcuts"
+msgstr "_Tastenkürzel"
+
+#: src/window.blp:191
+msgid "_About Binary"
+msgstr "_Über Binary"
+
+#: src/preferences.blp:5
+msgid "Preferences"
+msgstr "Einstellungen"
+
+#, fuzzy
+#~ msgid "Binary 0.3.1 is a new small release with a few improvements:"
+#~ msgstr ""
+#~ "Binary 0.2.1 enthält ein kleines Update für die Basis Konverter Anwendung "
+#~ "mit folgenden Verbesserungen"
+
+#, fuzzy
+#~ msgid "Binary 0.3 is a new release with the following improvements:"
+#~ msgstr ""
+#~ "Binary 0.2.1 enthält ein kleines Update für die Basis Konverter Anwendung "
+#~ "mit folgenden Verbesserungen"
+
+#~ msgid ""
+#~ "Binary 0.2.1 is a small update to the base converter app, with the "
+#~ "following improvements"
+#~ msgstr ""
+#~ "Binary 0.2.1 enthält ein kleines Update für die Basis Konverter Anwendung "
+#~ "mit folgenden Verbesserungen"
+
+#~ msgid "Dark/light mode switch in a new preferences window"
+#~ msgstr "Schalter im neuen Einstellungsfenster für Dunkles/Helles Thema"
+
+#~ msgid "Turkish translations"
+#~ msgstr "Türkische Übersetzung"
+
+#~ msgid "Accessibility improvements"
+#~ msgstr "Verbesserung der Barrierefreiheit"
+
+#~ msgid ""
+#~ "Binary 0.2 is the latest update to the base converter app. This update "
+#~ "introduces hexadecimal (or base 16) as a number base, allowing for "
+#~ "conversions to and from hexadecimal numbers. The app also now has a green "
+#~ "accent colour, making it feel more fun and distinctive. And invalid "
+#~ "digits are now removed from the input box, making the app smoother and "
+#~ "easier to use."
+#~ msgstr ""
+#~ "Binary 0.2 ist das neueste Update zur Verbesserung der App. Das Update "
+#~ "fügt die Umwandlung von und zu Hexadezimalzahlen (Basis 16) hinzu. "
+#~ "Außerdem hat die App jetzt einen Grünen Farbakzent, welcher die App "
+#~ "hervorhebt. Auch unpassende Zeichen werden nun automatisch aus der "
+#~ "Eingabe entfernt."
+
+#~ msgid ""
+#~ "Additionally, the following bug fixes and smaller improvements have been "
+#~ "made:"
+#~ msgstr "Zusätzlich gibt es folgende Bugfixes und kleine Verbesserungen:"
+
+#~ msgid ""
+#~ "The output is now selectable, allowing for copy and paste instead of "
+#~ "needing to manually type out the result."
+#~ msgstr ""
+#~ "Die Ausgabe ist jetzt auswählbar. Es funktionieren jetzt auch Einfügen "
+#~ "und Kopieren anstatt manuell abtippen zu müssen."
+
+#~ msgid ""
+#~ "Decimal input now has data validation, and will display a toast when "
+#~ "using an invalid digit."
+#~ msgstr ""
+#~ "Die Dezimaleingabe hat nun Datenverifizierung und wird einen Toast bei "
+#~ "ungültigen Zeichen anzeigen."
+
+#~ msgid ""
+#~ "Wrong digit toasts will no longer duplicate, and will simply stay up when "
+#~ "an invalid base is used."
+#~ msgstr ""
+#~ "Toast für ungültige Zeichen wird nur noch einmal, statt pro falschem "
+#~ "Zeichen, angezeigt."
+
+#~ msgid ""
+#~ "The bit counter has been updated to be cleaner and easier to understand."
+#~ msgstr "Der Bit-Zähler wurde für bessere Lesbarkeit angepasst."
+
+#~ msgid ""
+#~ "When entering an invalid digit, it no longer removes it to prevent GTK "
+#~ "Warnings. This functionality will likely be revisited down the line"
+#~ msgstr ""
+#~ "Ungültige Zeichen werden nicht mehr entfernt, um GTK Warnungen zu "
+#~ "verhindern. Diese Funktionalität wird wahrscheinlich später wieder "
+#~ "implementiert werden"
+
+#~ msgid "Removed preferences button as it was empty and did nothing"
+#~ msgstr "Einstellungsmenüpunkt entfernt, da es keine Einstellungen gibt"
+
+#~ msgid ""
+#~ "The bit counter doesn't start with \"0 bits\" anymore, and should have "
+#~ "consistent functionality."
+#~ msgstr ""
+#~ "Der Bit-Zähler startet nicht mehr mit “0 Bits” und sollte ab jetzt "
+#~ "konsistente Ausgaben liefern."
+
+#~ msgid "Added links to the project in the about window"
+#~ msgstr "Links über das Projekt zum “Über Binary”-Dialog hinzugefügt"
+
+#~ msgid ""
+#~ "The \"Legal\" section in the about window now states the GPL v3 license "
+#~ "of the app"
+#~ msgstr ""
+#~ "Die “Rechtshinweise”-Sektion im “Über Binary”-Dialog zeigt nun die "
+#~ "GPL-3.0 Lizens der Anwendung an"
+
+#~ msgid "Code cleanup"
+#~ msgstr "Quellcode aufgeräumt"
+
+#~ msgid "Version bump"
+#~ msgstr "Version erhöht"
+
+#~ msgid "Swap button for base switcher"
+#~ msgstr "Knopf zum Wechseln von Ein- und Ausgabe hinzugefügt"
+
+#~ msgid "Removed the binary calculator label"
+#~ msgstr "Binärrechner-Label entfernt"
+
+#~ msgid ""
+#~ "First proper release of Binary. Has basic support for converting between "
+#~ "binary and hexadecmial values."
+#~ msgstr ""
+#~ "Erster Release von Binary. Grundlegende Unterstützung für die "
+#~ "Konvertierung zwischen Binär- und Hexadezimalzahlen."
+
+#~ msgid "Number base converter"
+#~ msgstr "Zahlenbasen Konverter"
+
+#~ msgctxt "shortcut window"
+#~ msgid "Preferences"
+#~ msgstr "Einstellungen"
+
+#~ msgid "Decimal only accepts the digits 0-9"
+#~ msgstr "Dezimalzahlen enthalten nur die Zeichen 0-9"
+
+#~ msgid "Binary only accepts the digits 0 and 1"
+#~ msgstr "Binärzahlen enthalten nur die Zeichen 0 und 1"
+
+#~ msgid "Hexadecimal only accepts the digits 0-9 and A-F"
+#~ msgstr "Hexadezimalzahlen enthalten nur die Zeichen 0-9 und A-F"
+
+#, fuzzy
+#~ msgid "Octal only accepts the digits 0-7"
+#~ msgstr "Dezimalzahlen enthalten nur die Zeichen 0-9"
+
+#~ msgid "Bin"
+#~ msgstr "Bin"
+
+#~ msgid "Dec"
+#~ msgstr "Dez"
+
+#~ msgid "Hex"
+#~ msgstr "Hex"
+
+#~ msgid "_Preferences"
+#~ msgstr "_Einstellungen"
+
+#~ msgid "Colour scheme"
+#~ msgstr "Farbschema"
+
+#~ msgid "Follow System"
+#~ msgstr "Systemeinstellungen"
+
+#~ msgid "Light Theme"
+#~ msgstr "Hell"
+
+#~ msgid "Dark Theme"
+#~ msgstr "Dunkel"

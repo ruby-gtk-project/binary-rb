@@ -1,0 +1,157 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the binary package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: binary\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-27 19:00+0000\n"
+"PO-Revision-Date: 2024-11-04 08:00+0000\n"
+"Last-Translator: Himmel <Himmel@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Japanese <https://hosted.weblate.org/projects/binary/binary-"
+"app/ja/>\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.8.2\n"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:2
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:6 src/window.py:51
+msgid "Binary"
+msgstr "Binary"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:5
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:7
+msgid "Convert numbers between bases"
+msgstr "基数間の数値を変換する"
+
+#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/io.github.fizzyizzy05.binary.desktop.in:10
+msgid "binary;decimal;hexadecimal;base;convert;"
+msgstr "binary;decimal;hexadecimal;base;convert;"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:16 src/window.blp:180
+msgid "New Window"
+msgstr "新しいウィンドウ"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:9
+msgid ""
+"A small and simple app used to convert between different hexadecimal and "
+"binary numbers"
+msgstr "異なる16進数と2進数の変換に使用される小さくてシンプルなアプリ"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:18
+msgid "Binary window converting 101010 in binary to 42 in decimal"
+msgstr "2進数の101010を10進数の42に変換するバイナリウィンドウ"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:22
+msgid "Binary window converting 1201 in decimal to 4B1 in hexadecimal"
+msgstr "10進数の1201を16進数の4B1に変換するバイナリウィンドウ"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:26
+msgid "Binary window converting 17 in octal to F in hexadecimal"
+msgstr "8進数の17を16進数のFに変換するバイナリウィンドウ"
+
+#: src/shortcuts-dialog.blp:6
+msgctxt "shortcut window"
+msgid "General"
+msgstr "一般"
+
+#: src/shortcuts-dialog.blp:9
+msgctxt "shortcut window"
+msgid "New Window"
+msgstr "新しいウィンドウ"
+
+#: src/shortcuts-dialog.blp:14
+msgctxt "shortcut window"
+msgid "Close Window"
+msgstr "ウィンドウを閉じる"
+
+#: src/shortcuts-dialog.blp:19
+msgctxt "shortcut window"
+msgid "Show Shortcuts"
+msgstr "ショートカットを表示"
+
+#: src/shortcuts-dialog.blp:24
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr "終了"
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/main.py:80
+msgid "translator-credits"
+msgstr "Himmel"
+
+#. Translators: this string is used to describe how many bits there are.
+#: src/window.py:48
+msgid "bits"
+msgstr "ビット"
+
+#: src/window.py:52
+msgid "Octal"
+msgstr "8進数"
+
+#: src/window.py:53
+msgid "Decimal"
+msgstr "10進数"
+
+#: src/window.py:54
+msgid "Hexadecimal"
+msgstr "16進数"
+
+#: src/window.py:55
+msgid "Other"
+msgstr "その他"
+
+#: src/window.py:124 src/window.py:128 src/window.py:130 src/window.py:168
+#: src/window.py:172 src/window.py:174
+msgid "Invalid input"
+msgstr "無効な入力です"
+
+#: src/window.py:212
+#, python-format
+msgid "%(in_count)d bit"
+msgid_plural "%(in_count)d bits"
+msgstr[0] "%(in_count)d ビット"
+
+#: src/window.py:221
+#, python-format
+msgid "%(out_count)d bit"
+msgid_plural "%(out_count)d bits"
+msgstr[0] "%(out_count)d ビット"
+
+#: src/window.blp:21
+msgid "Main Menu"
+msgstr "メインメニュー"
+
+#: src/window.blp:45
+msgid "Input Base"
+msgstr "入力ベース"
+
+#: src/window.blp:75 src/window.blp:136
+msgid "Enter numbers"
+msgstr "数字の入力"
+
+#: src/window.blp:80 src/window.blp:141
+msgid "Enter numbers…"
+msgstr "数字を入力…"
+
+#: src/window.blp:106
+msgid "Output Base"
+msgstr "出力ベース"
+
+#: src/window.blp:186
+msgid "_Keyboard Shortcuts"
+msgstr "_キーボードショートカット"
+
+#: src/window.blp:191
+msgid "_About Binary"
+msgstr "_Binary について"
+
+#: src/preferences.blp:5
+msgid "Preferences"
+msgstr "設定"

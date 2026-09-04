@@ -1,48 +1,29 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'fileutils'
+require 'adwaita'
 
-# The two dropdown selections, remembered between runs.
+# The app's GSettings, under upstream's schema and key names, so an installed
+# copy of this port and an installed copy of upstream read and write the same
+# stored preferences.
 #
-# Upstream uses a GSettings schema, which has to be compiled and installed into
-# a schema directory before the app will even start. A JSON file in the config
-# directory buys the same behaviour with nothing to install.
+# The schema has to exist before Gio::Settings will hand one out at all —
+# `rake schemas` compiles it into data/schemas, and bin/binary puts that
+# directory on GSETTINGS_SCHEMA_DIR when running from a checkout.
 class Settings
-  DEFAULTS = { 'input_base' => 0, 'output_base' => 2 }.freeze
+  SCHEMA_ID = 'io.github.fizzyizzy05.binary'
 
-  def initialize(path: self.class.default_path)
-    @path = path
+  def initialize(schema_id: SCHEMA_ID)
+    @schema_id = schema_id
   end
 
   def [](key)
-    values.fetch(key, DEFAULTS[key])
+    settings.get_int(key)
   end
 
+  # GSettings writes through immediately; there is nothing to flush.
   def []=(key, value)
-    values[key] = value
+    settings.set_int(key, value)
   end
 
-  def save
-    FileUtils.mkdir_p(File.dirname(@path))
-    File.write(@path, JSON.pretty_generate(values))
-  end
-
-  def values
-    @values ||= load_values
-  end
-
-  def load_values
-    JSON.parse(File.read(@path))
-  rescue Errno::ENOENT, JSON::ParserError
-    DEFAULTS.dup
-  end
-
-  def self.default_path
-    File.join(
-      ENV.fetch('XDG_CONFIG_HOME', File.join(Dir.home, '.config')),
-      'binary-rb',
-      'settings.json',
-    )
-  end
+  def settings = @settings ||= Gio::Settings.new(@schema_id)
 end

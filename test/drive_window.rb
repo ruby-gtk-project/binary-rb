@@ -3,10 +3,7 @@
 # Drives the real window: types into the entries, switches bases, opens the
 # menu dialogs, and writes screenshots to tmp/shots for eyeballing.
 
-require 'tmpdir'
-
-ENV['XDG_CONFIG_HOME'] = Dir.mktmpdir
-
+require_relative 'environment'
 require_relative '../lib/main'
 require_relative 'gtk_driver'
 
@@ -26,6 +23,14 @@ BinaryApp.new.then do |app|
       d.check('bit counter shows for binary input') { window(app).input_row.bit_button.visible? }
       d.check('bit counter hidden for decimal output') { !window(app).output_row.bit_button.visible? }
       d.check('base spin hidden until Other') { !window(app).input_row.spin.visible? }
+      d.check('entries carry an accessible label') do
+        [window(app).input_row.entry, window(app).output_row.entry].all? do |entry|
+          Gtk.test_accessible_has_property(entry, Gtk::AccessibleProperty::LABEL)
+        end
+      end
+      d.check('the dropdown lists all five bases') do
+        window(app).input_row.dropdown.model.n_items == 5
+      end
       d.shot('01-empty')
     end
 
@@ -125,8 +130,8 @@ BinaryApp.new.then do |app|
 
     d.step('closing saves the chosen bases') do
       window(app).on_close
-      d.check('input base persisted') { Settings.new['input_base'] == 4 }
-      d.check('output base persisted') { Settings.new['output_base'] == 2 }
+      d.check('input base persisted') { Settings.new['input-base'] == 4 }
+      d.check('output base persisted') { Settings.new['output-base'] == 2 }
     end
 
     d.step('the about dialog opens') do
@@ -177,6 +182,27 @@ BinaryApp.new.then do |app|
     d.step('there are two windows') do
       d.check('two toplevels') { app.app.windows.length == 2 }
       d.shot('12-second-window')
+    end
+
+    # `binary --new-window` reaches the running instance through the
+    # command-line signal rather than through activate.
+    d.step('the --new-window flag opens another') do
+      app.handle_command_line(['binary', '--new-window'])
+    end
+
+    d.step('there are three windows') do
+      d.check('three toplevels') { app.app.windows.length == 3 }
+    end
+
+    # A bare invocation routes through app.activate, and the driver starts its
+    # step loop on that signal — calling it here would run every step a second
+    # time. What activate does is present_window, so that is what is driven.
+    d.step('a bare invocation just presents what is there') do
+      app.present_window
+    end
+
+    d.step('still three windows') do
+      d.check('no fourth window') { app.app.windows.length == 3 }
     end
 
     d.step('about opens on the second window too') do

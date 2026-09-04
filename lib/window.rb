@@ -4,6 +4,7 @@ require 'adwaita'
 
 require_relative 'conversion_row'
 require_relative 'converter'
+require_relative 'i18n'
 
 # The Binary window: two conversion rows that write into each other.
 #
@@ -89,9 +90,8 @@ class BinaryWindow
   end
 
   def on_close
-    @settings['input_base'] = input_row.dropdown.selected
-    @settings['output_base'] = output_row.dropdown.selected
-    @settings.save
+    @settings['input-base'] = input_row.dropdown.selected
+    @settings['output-base'] = output_row.dropdown.selected
   end
 
   # --- conversion -------------------------------------------------------
@@ -109,7 +109,7 @@ class BinaryWindow
     case answer
     when 'char'
       input_row.error = true
-      input_row.tooltip = 'Invalid input'
+      input_row.tooltip = _('Invalid input')
       output_row.tooltip = nil
       settle(bits: false)
     when 'char_dual'
@@ -147,7 +147,7 @@ class BinaryWindow
     case answer
     when 'char'
       output_row.error = true
-      output_row.tooltip = 'Invalid input'
+      output_row.tooltip = _('Invalid input')
       input_row.error = false
       input_row.tooltip = nil
       settle(bits: false)
@@ -169,8 +169,8 @@ class BinaryWindow
   def flag_both(in_str, echo_to)
     input_row.error = true
     output_row.error = true
-    input_row.tooltip = 'Invalid input'
-    output_row.tooltip = 'Invalid input'
+    input_row.tooltip = _('Invalid input')
+    output_row.tooltip = _('Invalid input')
     echo_to.text = in_str
   end
 
@@ -217,8 +217,8 @@ class BinaryWindow
   end
 
   def restore_bases
-    input_row.dropdown.selected = @settings['input_base']
-    output_row.dropdown.selected = @settings['output_base']
+    input_row.dropdown.selected = @settings['input-base']
+    output_row.dropdown.selected = @settings['output-base']
     refresh_chrome
     blank
     @editable = true
@@ -247,7 +247,7 @@ class BinaryWindow
     @menu_button ||= Gtk::MenuButton.new.tap do |btn|
       btn.primary = true
       btn.icon_name = 'open-menu-symbolic'
-      btn.tooltip_text = 'Main Menu'
+      btn.tooltip_text = _('Main Menu')
     end
   end
 
@@ -260,14 +260,14 @@ class BinaryWindow
 
   def window_section
     @window_section ||= Gio::Menu.new.tap do |section|
-      section.append('New Window', 'app.new-window')
+      section.append(_('New Window'), 'app.new-window')
     end
   end
 
   def app_section
     @app_section ||= Gio::Menu.new.tap do |section|
-      section.append('_Keyboard Shortcuts', 'app.shortcuts')
-      section.append('_About Binary', 'app.about')
+      section.append(_('_Keyboard Shortcuts'), 'app.shortcuts')
+      section.append(_('_About Binary'), 'app.about')
     end
   end
 
@@ -309,7 +309,8 @@ class BinaryWindow
 
   def input_row
     @input_row ||= ConversionRow.new(
-      tooltip:        'Input Base',
+      tooltip:        _('Input Base'),
+      bit_plural:     ['%(in_count)d bit', '%(in_count)d bits'],
       on_base_change: method(:change_input_base),
       on_text_change: method(:input_handler),
     )
@@ -317,7 +318,8 @@ class BinaryWindow
 
   def output_row
     @output_row ||= ConversionRow.new(
-      tooltip:        'Output Base',
+      tooltip:        _('Output Base'),
+      bit_plural:     ['%(out_count)d bit', '%(out_count)d bits'],
       on_base_change: method(:change_output_base),
       on_text_change: method(:output_handler),
     )

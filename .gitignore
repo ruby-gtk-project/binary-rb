@@ -1,5 +1,6 @@
 /.direnv/
 /vendor/bundle/
 /result
-Gemfile.lock
 /tmp/
+/locale/
+/data/schemas/gschemas.compiled

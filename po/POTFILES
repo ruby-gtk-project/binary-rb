@@ -1,0 +1,6 @@
+data/io.github.fizzyizzy05.binary.desktop.in
+data/io.github.fizzyizzy05.binary.metainfo.xml.in
+data/schemas/io.github.fizzyizzy05.binary.gschema.xml
+lib/main.rb
+lib/window.rb
+lib/conversion_row.rb

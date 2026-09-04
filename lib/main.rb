@@ -2,6 +2,7 @@
 
 require 'adwaita'
 
+require_relative 'i18n'
 require_relative 'settings'
 require_relative 'window'
 
@@ -12,6 +13,11 @@ class BinaryApp
   APP_ID = 'io.github.fizzyizzy05.binary'
   VERSION = '5.4'
 
+  # The description AdwAboutDialog.new_from_appdata would have read out of the
+  # metainfo file, wrapped exactly as the catalogues have it.
+  SUMMARY = 'A small and simple app used to convert between different ' \
+            'hexadecimal and binary numbers'
+
   ACTIONS = {
     'quit'         => ['<primary>q'],
     'about'        => [],
@@ -21,6 +27,8 @@ class BinaryApp
     'shortcuts'    => ['<primary>question'],
   }.freeze
 
+  # Translated out of the "shortcut window" context, as upstream's
+  # shortcuts-dialog.blp asks for them.
   SHORTCUTS = [
     ['New Window', 'app.new-window'],
     ['Close Window', 'app.close-window'],
@@ -28,9 +36,19 @@ class BinaryApp
     ['Quit', 'app.quit'],
   ].freeze
 
+  SHORTCUT_CONTEXT = 'shortcut window'
+
+  # Message catalogues live beside the source when running from a checkout and
+  # in the system locale directory once installed.
+  LOCALE_DIRECTORIES = [
+    File.expand_path('../locale', __dir__),
+    '/usr/share/locale',
+  ].freeze
+
   def initialize(settings: Settings.new)
     @settings = settings
     @windows = []
+    I18n.bind(LOCALE_DIRECTORIES.find { |dir| File.directory?(dir) })
   end
 
   def build
@@ -129,9 +147,10 @@ class BinaryApp
 
   def about_dialog
     @about_dialog ||= Adwaita::AboutDialog.new.tap do |about|
-      about.application_name = 'Binary'
+      about.application_name = _('Binary')
       about.application_icon = APP_ID
       about.version = VERSION
+      about.comments = _(SUMMARY)
       about.developer_name = 'Isabelle Jackson'
       about.developers = ['Isabelle Jackson https://fizzyizzy05.dev']
       about.designers = ['Gregor Niehl https://gitlab.gnome.org/gregorni']
@@ -139,6 +158,8 @@ class BinaryApp
       about.license_type = Gtk::License::GPL_3_0
       about.website = 'https://apps.gnome.org/Binary/'
       about.issue_url = 'https://github.com/fizzyizzy05/binary/issues'
+      # Translators put their own names here; the catalogues carry them.
+      about.translator_credits = _('translator-credits')
     end
   end
 
@@ -146,6 +167,7 @@ class BinaryApp
   # desktop shell can open it, and there is nothing in it yet.
   def preferences_dialog
     @preferences_dialog ||= Adwaita::PreferencesDialog.new.tap do |dialog|
+      dialog.title = _('Preferences')
       dialog.add(Adwaita::PreferencesPage.new)
     end
   end
@@ -158,10 +180,10 @@ class BinaryApp
 
   def general_shortcuts
     @general_shortcuts ||= Adwaita::ShortcutsSection.new.tap do |section|
-      section.title = 'General'
+      section.title = c_(SHORTCUT_CONTEXT, 'General')
 
       SHORTCUTS.each do |title, action|
-        section.add(shortcut_item(title, action))
+        section.add(shortcut_item(c_(SHORTCUT_CONTEXT, title), action))
       end
     end
   end

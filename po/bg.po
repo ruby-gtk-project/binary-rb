@@ -1,0 +1,171 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the binary package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# twlvnn kraftwerk <kraft_werk@tutanota.com>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: binary\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-27 19:00+0000\n"
+"PO-Revision-Date: 2025-12-07 00:00+0000\n"
+"Last-Translator: Kiril Panayotov <eccyboo@protonmail.com>\n"
+"Language-Team: Bulgarian <https://hosted.weblate.org/projects/binary/binary-"
+"app/bg/>\n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.15-dev\n"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:2
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:6 src/window.py:51
+msgid "Binary"
+msgstr "Двоично"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:5
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:7
+msgid "Convert numbers between bases"
+msgstr "Преобразувайте числа между бази"
+
+#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/io.github.fizzyizzy05.binary.desktop.in:10
+msgid "binary;decimal;hexadecimal;base;convert;"
+msgstr "двоична;десетична;шестнайсетична;бройна система;преобразуване;"
+
+#: data/io.github.fizzyizzy05.binary.desktop.in:16 src/window.blp:180
+msgid "New Window"
+msgstr "Нов Прозорец"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:9
+msgid ""
+"A small and simple app used to convert between different hexadecimal and "
+"binary numbers"
+msgstr ""
+"Малко и просто приложение, което се използва за преобразуване между различни "
+"шестнадесетични и двоични числа"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:18
+msgid "Binary window converting 101010 in binary to 42 in decimal"
+msgstr ""
+"Прозорец на „Двоично“, където се преобразува 101010 в двоична бройна система "
+"до 42 в десетична"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:22
+msgid "Binary window converting 1201 in decimal to 4B1 in hexadecimal"
+msgstr ""
+"Прозорец на „Двоично“, където се преобразува 1201 в десетична бройна система "
+"в 4B1 в шестнадесетична"
+
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:26
+msgid "Binary window converting 17 in octal to F in hexadecimal"
+msgstr ""
+"Прозорец на „Двоично“, където се преобразува 17 в осмична бройна система в F "
+"в шестнадесетична"
+
+#: src/shortcuts-dialog.blp:6
+msgctxt "shortcut window"
+msgid "General"
+msgstr "Начало"
+
+#: src/shortcuts-dialog.blp:9
+msgctxt "shortcut window"
+msgid "New Window"
+msgstr "Нов Прозорец"
+
+#: src/shortcuts-dialog.blp:14
+msgctxt "shortcut window"
+msgid "Close Window"
+msgstr "Затвори Прозореца"
+
+#: src/shortcuts-dialog.blp:19
+msgctxt "shortcut window"
+msgid "Show Shortcuts"
+msgstr "Клавишни Комбинации"
+
+#: src/shortcuts-dialog.blp:24
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr "Затвори"
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/main.py:80
+msgid "translator-credits"
+msgstr "twlvnn kraftwerk <kraft_werk@tutanota.com>"
+
+#. Translators: this string is used to describe how many bits there are.
+#: src/window.py:48
+msgid "bits"
+msgstr "бита"
+
+#: src/window.py:52
+msgid "Octal"
+msgstr "Осмична"
+
+#: src/window.py:53
+msgid "Decimal"
+msgstr "Десетична"
+
+#: src/window.py:54
+msgid "Hexadecimal"
+msgstr "Шестнайсетична"
+
+#: src/window.py:55
+msgid "Other"
+msgstr "Други"
+
+#: src/window.py:124 src/window.py:128 src/window.py:130 src/window.py:168
+#: src/window.py:172 src/window.py:174
+msgid "Invalid input"
+msgstr "Неправилни данни"
+
+#: src/window.py:212
+#, python-format
+msgid "%(in_count)d bit"
+msgid_plural "%(in_count)d bits"
+msgstr[0] "%(in_count)d бит"
+msgstr[1] "%(in_count)d бита"
+
+#: src/window.py:221
+#, python-format
+msgid "%(out_count)d bit"
+msgid_plural "%(out_count)d bits"
+msgstr[0] "%(out_count)d бит"
+msgstr[1] "%(out_count)d бита"
+
+#: src/window.blp:21
+msgid "Main Menu"
+msgstr "Основно меню"
+
+#: src/window.blp:45
+msgid "Input Base"
+msgstr "Входна бройна система"
+
+#: src/window.blp:75 src/window.blp:136
+msgid "Enter numbers"
+msgstr "Въведете числата"
+
+#: src/window.blp:80 src/window.blp:141
+msgid "Enter numbers…"
+msgstr "Въведете числа…"
+
+#: src/window.blp:106
+msgid "Output Base"
+msgstr "Изходна бройна система"
+
+#: src/window.blp:186
+msgid "_Keyboard Shortcuts"
+msgstr "_Клавишни комбинации"
+
+#: src/window.blp:191
+msgid "_About Binary"
+msgstr "_Относно „Двоично“"
+
+#: src/preferences.blp:5
+msgid "Preferences"
+msgstr "Настройки"
+
+#~ msgid "Enter a number to see its bits"
+#~ msgstr "Въведете число, за да видите неговите битове"

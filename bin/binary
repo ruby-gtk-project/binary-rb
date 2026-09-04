@@ -1,6 +1,18 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require_relative "../lib/main"
+# Running from a checkout, the compiled schema and message catalogues sit in
+# the source tree rather than in the system directories. Both have to be found
+# before GLib caches its schema source, so this happens before anything is
+# required. An installed copy has neither directory and falls through to the
+# system ones.
+root = File.expand_path('..', __dir__)
+
+if File.exist?(File.join(root, 'data/schemas/gschemas.compiled'))
+  ENV['GSETTINGS_SCHEMA_DIR'] =
+    [File.join(root, 'data/schemas'), ENV['GSETTINGS_SCHEMA_DIR']].compact.join(':')
+end
+
+require_relative '../lib/main'
 
 BinaryApp.new.build.run
