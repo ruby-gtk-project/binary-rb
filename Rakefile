@@ -49,4 +49,3 @@ task :lint do
 end
 
 task test: %i[translations schemas]
-task default: %i[test lint]
