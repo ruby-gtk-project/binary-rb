@@ -1,266 +1,287 @@
-# Component parity — binary
+# Component parity — binary-rb
 
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `eff4fa3` |
-| Units | 5 (window, preferences, shortcuts, application, conversion library) |
-| Units with parity | **2 / 5** (the window, the conversion library) |
-| Round | 3 |
+| Port | `ruby` @ `ff54bec` |
+| Round | 5 |
+| Components compared | 17 |
+| Runtime gate | `test/drive_window.rb` **202 of 202**, `DRIVE OK`; `test/drive_translated.rb` **8 of 8**; `test/high_contrast_check.rb` **6 of 6** — all re-run this round through `nix develop --command xvfb-run -a` |
+| **Open gaps** | **9** (3 new this round, 6 carried) |
+| Verdict | **not clean** |
 
-**What was run this round, and it all ran.** Inside `nix develop`, with an
-`Xvfb :9x` display and `RUBYLIB` built from the flake's gems derivation:
-
-- `rake test` — **24 runs, 62 assertions, 0 failures, 0 errors, 0 skips**
-- `ruby -Ilib -Itest test/drive_window.rb` — **54 of 54 checks passed**
-- `ruby -Ilib -Itest test/drive_translated.rb` — **8 of 8 checks passed**
-- `rake translations` (32 `.mo`), `rake schemas`, `rake pot` — all three run
-- Screenshots written to `tmp/shots/` (23 files)
-
-Two caveats on *how* they ran, both of which are gaps in their own right:
-
-1. The flake's wrapped `rake`/`bundle`/`rubocop` still cannot start —
-   `Bundler::Dsl#gemspec: There are no gemspecs at
-   /nix/store/…-gemfile-and-lockfile`, because the flake's `bundlerEnv` is
-   built from the **root** `Gemfile` (kettle-jem's development bundle, which
-   has a `gemspec` directive) rather than from `nix/Gemfile`. `FINDINGS.md`
-   section 10 describes the symptom; the cause is in `flake.nix`.
-2. **`xvfb-run`/`Xvfb` is not in the devShell.** Every file in `test/` reaches
-   `require 'adwaita'`, which initialises GTK, so even `test_converter.rb`,
-   `test_i18n.rb` and `test_settings.rb` — pure logic, no widgets — cannot run
-   without a display. The display used here came from `nix shell nixpkgs#xvfb`,
-   not from the project. A suite the project cannot run is a suite the project
-   does not have.
+Everything in `.reports/component-identification.md`'s census exists in the
+port. The gaps below are behavioural: places where the widget is there and
+does something other than what upstream's does, and places where the component
+exists in the tree but cannot be reached by anyone who installs the port.
 
 ---
 
-## Unit: the window — `src/window.blp` + `src/window.py` → `lib/window.rb` + `lib/conversion_row.rb`
+## 1. NEW — base-prefixed input is a user-visible error the port invents
 
-`lib/conversion_row.rb` counts are doubled: the class is instantiated twice.
+**Upstream converts `0b11`, `0o17` and `0x1F`. The port rejects all three.**
 
-| Widget | Up × | Port × | CSS | Signals | Text | Verdict |
-|---|---:|---:|---|---|:-:|---|
-| `Adw.ApplicationWindow` | 1 | 1 | — | ✓ `close-request` | — | parity |
-| `Adw.ToolbarView` | 1 | 1 | — | — | — | parity |
-| `Adw.HeaderBar` | 1 | 1 | — | — | — | parity |
-| `Gtk.WindowHandle` | 1 | 1 | — | — | — | parity |
-| `Adw.Clamp` | 1 | 1 | — | — | — | parity |
-| `Gtk.Box` | 6 | **8** | ✓ `typing-label` | — | — | extra ×2, explained below |
-| `Gtk.CenterBox` | 2 | 2 | — | — | — | parity |
-| `Gtk.DropDown` | 2 | 2 | ✓ `flat-dropdown` | ✓ `notify` → `notify::selected` | ✓ `Input Base`, `Output Base` | parity |
-| `Gtk.SpinButton` | 2 | 2 | — | ✓ `changed` | — | parity |
-| `Gtk.Entry` | 2 | 2 | ✓ `error`, `monospace` | ✓ `changed` | ✓ `Enter numbers`, `Enter numbers…` | parity |
-| `Gtk.MenuButton` | 3 | 3 | ✓ `bitLbl`, `flat` | — | ✓ `Main Menu` | parity |
-| `Gtk.Popover` | 2 | 2 | — | — | — | parity |
-| `Gtk.Image` | 1 | 1 | — | — | — | parity |
-| `Gtk.Label` | 2 | 2 | — | — | — | parity |
-| `Gio.Menu` items | 3 | 3 | — | — | ✓ `New Window`, `_Keyboard Shortcuts`, `_About Binary` | parity |
+`src/lib/get_answer.py:66` validates each dot-separated part with
+`int(x, in_base)`. Python's `int()` accepts the prefix that matches the base it
+is given:
 
-**The two extra boxes are explained, not waved through.** `ConversionRow#container`
-(`lib/conversion_row.rb:130`) is a `Gtk::Box.new(:vertical, 6)` wrapping each
-half's `CenterBox` + `Entry`. Upstream puts all five of those children directly
-in the content box (`src/window.blp:36-158`). Spacing renders the same (6
-between the content box's three children and 6 inside each container), so this
-is a factored repeat and not a visual divergence. It is recorded because an
-unexplained extra is usually a widget standing in for one that was not
-understood.
+```
+$ python3 -c "print(int('0b11',2), int('0o17',8), int('0x1f',16))"
+3 15 31
+```
 
-**Styling.** `lib/main.rb` `STYLE` is byte-identical to `src/style.css`;
-`HIGH_CONTRAST_STYLE` is byte-identical to `src/style-hc.css`. Both verified by
-extracting the heredocs and `diff`. The high-contrast sheet is installed at
-`PRIORITY_APPLICATION + 1` and added/removed on
-`Adwaita::StyleManager notify::high-contrast`, which is the keying
-`AdwApplication` does from the resource path. `flat`, `error` and `monospace`
-are platform classes and need no rule in either sheet.
+So upstream, with the input base on Binary, converts `0b11` to `3`; on
+Hexadecimal it converts `0x1F` to `31`; and when the two bases are equal it
+takes the early `if in_base == out_base: return input` branch and echoes
+`0b11` back with **no error styling at all**.
 
-**Behaviour, driven.** `test/drive_window.rb` exercises the live widget tree
-and all 54 checks pass: typing binary → decimal, decimal → binary, the
-invalid-input error class and tooltip on both entries, lower-case input
-upper-casing itself, decimal → hex, the "Other" base spin button, base 36, the
-bit-count popover sum, the bit buttons going insensitive on empty input, the
-base selection surviving a close, and the second window. Screenshots
-`tmp/shots/01`–`08`, `12`.
+The port gates on a regex instead (`lib/converter.rb:52`,
+`Converter.valid?`), which allows only digits legal in the base plus single
+underscores. Measured this round:
 
-`notify` → `notify::selected` is the port narrowing the connection to the
-property upstream's handler acted on, which is strictly better. Verified
-against upstream's own consequence: upstream's bare `notify` fires during
-`set_model` in `__init__`, so `editable` is already `True` before the user can
-type — `lib/window.rb#restore_bases` matches that end state and
-`test/drive_window.rb` pins it by typing into the *output* entry on a fresh
-window.
-
-**Verdict: parity.**
-
----
-
-## Unit: preferences — `src/preferences.blp` + `src/preferences.py` → `lib/main.rb#preferences_dialog`
-
-| Widget | Up × | Port × | CSS | Signals | Text | Verdict |
-|---|---:|---:|---|---|:-:|---|
-| `Adw.PreferencesWindow` | 1 | 0 | — | — | ✓ `Preferences` | substitution → `Adwaita::PreferencesDialog`, recorded |
-| `Adw.PreferencesPage` | 1 | 1 | — | — | — | parity |
-
-Geometry: `src/preferences.blp:7-9` gives default 400×306 and height-request
-200. `AdwDialog` has no default size, so `lib/main.rb:278-280` sets
-`content_width`/`content_height` and a size request. `FINDINGS.md` section 6.
-The substitution itself is the documented
-`AdwPreferencesWindow` → `AdwPreferencesDialog` deprecation, and is a
-correspondence.
-
-**gap 1 — the dialog is shared between activations, and upstream's is not.**
-`lib/main.rb:276` is `@preferences_dialog ||=`. `src/main.py:82-85` constructs
-a new `PrefsWindow()` on **every** activation of `app.preferences` and
-`set_transient_for`s it to whatever window is active. The port presents one
-instance forever, re-parenting it to a different window each time. This is
-exactly the divergence commit `eff4fa3` fixed for the About dialog — the
-comment at `lib/main.rb:245-247` says "no dialog instance is ever shared
-between two windows" and then the next method but one shares one. Nothing
-drives it: `test/drive_window.rb` step 33 asserts the per-activation behaviour
-for About and there is no equivalent step for preferences.
-
-**gap 2 — `#shortcuts_dialog` is memoized the same way** (`lib/main.rb:286`),
-for the same reason, with the same consequence. Upstream has no behaviour to
-compare against here only because upstream never loads the dialog at all
-(see the next unit), which makes this the port's own invention sharing its own
-instance.
-
-**Verdict: 2 gaps.**
-
----
-
-## Unit: shortcuts — `src/shortcuts-dialog.blp` → `lib/main.rb#shortcuts_dialog`
-
-| Widget | Up × | Port × | CSS | Signals | Text | Verdict |
-|---|---:|---:|---|---|:-:|---|
-| `Adw.ShortcutsDialog` | 1 | 1 | — | — | — | parity |
-| `Adw.ShortcutsSection` | 1 | 1 | — | — | ✓ `shortcut window`/`General` | parity |
-| `Adw.ShortcutsItem` | 4 | 4 (one factory, 4 call sites) | — | — | ✓ `New Window`, `Close Window`, `Show Shortcuts`, `Quit`, all with ctxt `shortcut window` | parity |
-
-Actions targeted: `app.new-window`, `app.close-window`, `app.shortcuts`,
-`app.quit` — all four match upstream. `Adwaita::ShortcutsItem.new(title, '')`
-plus `#action_name=` is forced by the bindings (`FINDINGS.md` section 3) and is
-a correspondence. Driven: `test/drive_window.rb` step 10 and
-`test/drive_translated.rb` step 5 both open the dialog and assert it is on
-screen, including under `LANGUAGE=de`; screenshots `tmp/shots/10`, `22`.
-
-**gap 3 — the accelerator is invented.** `lib/main.rb:39` registers
-`'shortcuts' => ['<primary>question']`. Upstream sets accelerators for exactly
-three actions (`quit`, `close-window`, `new-window`, `src/main.py:35-39`) and
-none for `about`, `preferences` or the `shortcuts` action it never creates. The
-port's shortcuts dialog therefore shows a `Ctrl+?` chip beside "Show Shortcuts"
-that no upstream build has ever shown, and `<primary>question` is now bound
-where upstream leaves it free for the user. The *action* being created is a
-divergence the port argues for in `FINDINGS.md` as fixing an upstream dead
-menu item; the *accelerator* is argued for nowhere and appears in no document
-until this line.
-
-**Verdict: 1 gap.**
-
----
-
-## Unit: the application — `src/main.py` → `lib/main.rb` + `exe/binary` + `lib/binary.rb`
-
-| Component | Upstream | Port | Verdict |
+| input | bases | upstream | port |
 |---|---|---|---|
-| application class | `Adw.Application` | `Gtk::Application` + `Adwaita.init` on `startup` | correspondence, `FINDINGS.md` §1 |
-| flags | `Gio.ApplicationFlags.DEFAULT_FLAGS` | `:handles_command_line` | **gap 4** |
-| app id | `io.github.fizzyizzy05.binary` | same (`lib/main.rb:13`) | parity |
-| default icon | `Gtk.Window.set_default_icon_name` | same (`lib/main.rb:220`) | parity |
-| action `quit` + `<primary>q` | ✓ | ✓ | parity |
-| action `about` | ✓ | ✓ | parity |
-| action `preferences` | ✓ | ✓ | parity |
-| action `close-window` + `<primary>w` | ✓ | ✓ | parity |
-| action `new-window` + `<primary>n` | ✓ | ✓ | parity |
-| action `shortcuts` | **absent** | present, + accel | gap 3 above |
-| `--new-window` / `-w` main option | `add_main_option` + `do_handle_local_options` | `add_main_option` + `handle-local-options` + `command-line` | parity, driven (steps 34–36) |
-| About dialog | `new_from_appdata(…, "5.4")`, fresh per activation | parsed out of the same metainfo file, fresh per activation | parity |
-| stylesheets | loaded by `AdwApplication` from the GResource base path | two `Gtk::CssProvider`s keyed on `notify::high-contrast` | correspondence |
-| `vertical-arrows-symbolic` | GResource | `Gtk::IconTheme` search path onto `data/icons` | correspondence |
-| exit status | `sys.exit(main.main(VERSION))` | **dropped** | **gap 5** |
+| `0b11` | 2 → 10 | `3` | `char` → `error` class + "Invalid input" tooltip |
+| `0B11` | 2 → 10 | `3` | `char` |
+| `0o17` | 8 → 10 | `15` | `char` |
+| `0x1F` | 16 → 10 | `31` | `char` |
+| `0b11` | 2 → 2 | `0b11`, no error | `char_dual` → **both** entries flagged |
 
-**gap 4 — the flags differ, and it changes what the app does with a stray
-argument.** With `DEFAULT_FLAGS` and no `HANDLES_OPEN`, GApplication rejects a
-non-option argument. With `:handles_command_line`, the port's
-`#handle_command_line` (`lib/main.rb:116-122`) scans for `--new-window`/`-w`
-and otherwise calls `app.activate`, so `binary 42` quietly opens a window.
-Nothing in the port's documents mentions the flag change; `lib/main.rb:82-83`
-explains why the flag was chosen and not what it costs.
+Three invented error states and one invented *double* error state, on input a
+user can reach by typing. `Integer("0b11", 2)` in Ruby returns `3`, so the
+conversion half of the port already behaves correctly — only the validity gate
+diverges.
 
-**gap 5 — `exe/binary` throws away the exit status.** `exe/binary:22` is
-`BinaryApp.new.tap(&:build).run`, and `#run` (`lib/main.rb:96`) returns
-`app.run(...)`'s value into nothing. Upstream's entry point is
-`sys.exit(main.main(VERSION))` (`src/binary.in:45`, `src/main.py:106`), so a
-run that GLib failed — an undeclared option, for instance — exits non-zero
-upstream and `0` here. `test/drive_window.rb` step 35 asserts GLib *names* the
-unknown option; no check looks at the status, which is why this survived.
+Two aggravations, both carried into
+`.reports/accountability-ensurance.md`:
 
-**gap 6 — nothing installs the application's data files.** The port ships
+- The comment above `Converter.valid?` states the opposite of the measured
+  fact: *"No sign, no `0x` prefix and no whitespace: `int()` takes those only
+  in base 10 or with a matching prefix, neither of which can reach here."* A
+  matching prefix is exactly what reaches here, in all three of the app's
+  non-decimal bases.
+- `test/test_converter.rb:54-57`, named
+  `test_prefixes_int_would_not_accept_in_these_bases`, asserts
+  `Converter.answer('0x1f', 16, 10) == 'char'` and
+  `Converter.answer('0b11', 2, 10) == 'char'`. The suite is green **because**
+  it pins the defect.
+
+Owed: `Converter.valid?` must accept the base-matching prefix the way
+`int(x, base)` does — `0b`/`0B` in base 2, `0o`/`0O` in base 8, `0x`/`0X` in
+base 16 — and the two assertions and the comment have to be rewritten against
+measured Python, not remembered Python. Python's `int()` also strips leading
+and trailing whitespace other than the space character the app rejects first
+(`int('\t10', 2) == 2`); the same gate rejects that too.
+
+## 2. NEW — `change_output_base` does work upstream's exception skips
+
+`src/window.py:93-100`:
+
+```python
+def change_output_base(self, *kwargs):
+    try:
+        self.input_handler()
+        self.toggle_bit_counter()
+        self.toggle_base_spin()
+        self.editable = True
+    except:
+        return
+```
+
+`input_handler` can raise: with a `+` in the input, `get_answer` reaches
+`src/lib/get_answer.py:57`'s `split_input('')`, which calls a list and raises
+`TypeError`. Inside `change_output_base` that exception is swallowed by the
+bare `except: return`, so **`toggle_bit_counter`, `toggle_base_spin` and
+`editable = True` never run** — the bit-counter and spin-button visibility
+stay as they were for the old base, and `editable` keeps whatever value
+`input_handler` left it with (`False`, set on its first line).
+
+The port models the raise as `Converter::ABORT`, a return value, so
+`BinaryWindow#input_handler` returns normally and `#change_output_base`
+(`lib/window.rb:63-67`) always goes on to `refresh_chrome` and
+`@editable = true`. With `+5` in the input entry, switching the output base
+to or from Binary updates the bit button's visibility in the port and leaves it
+stale upstream, and `@editable` ends up `true` here and `false` there — which
+also means the output entry accepts the next edit in the port and ignores it
+upstream.
+
+No check covers it: `test/test_converter.rb` tests `ABORT` at the `Converter`
+level only, and `test/drive_window.rb` never changes a base with a `+` in the
+entry.
+
+## 3. NEW — the installed gem has no GSettings schema, and aborts
+
+`lib/settings.rb` calls `Gio::Settings.new('io.github.fizzyizzy05.binary')` the
+first time `BinaryWindow#restore_bases` runs, i.e. on every window. GLib
+**aborts the process** (`g_error`) when the schema id is not installed; there
+is no exception to rescue.
+
+The schema reaches a checkout through `rake schemas`, which writes
+`data/schemas/gschemas.compiled`, and `exe/binary` puts that directory on
+`GSETTINGS_SCHEMA_DIR` when the file exists. But:
+
+- `.gitignore:6` ignores `data/schemas/gschemas.compiled`, so it is never
+  committed;
+- `rake build` depends on `:translations` only (Rakefile), not on `:schemas`,
+  so a gem packed from a clean checkout carries
+  `data/schemas/io.github.fizzyizzy05.binary.gschema.xml` and no compiled
+  schema;
+- nothing installs the schema into a system schema directory either (gap 6
+  below), and nothing compiles one at runtime.
+
+So `gem install binary-rb && binary` aborts before the window appears. The
+drive run proves nothing about this: it runs from the working tree, where
+`gschemas.compiled` happens to exist because `rake schemas` was run by hand.
+Owed: `task build: :schemas` as well as `:translations`, the compiled file in
+`spec.files`, and a check that runs `exe/binary` with `GSETTINGS_SCHEMA_DIR`
+unset and the compiled schema moved aside.
+
+## 4. CARRIED (round 3 gap 4) — `:handles_command_line` accepts arguments upstream rejects
+
+`src/main.py:33` passes `flags=Gio.ApplicationFlags.DEFAULT_FLAGS`. A
+`GApplication` with neither `HANDLES_OPEN` nor `HANDLES_COMMAND_LINE` refuses a
+non-option argument: it prints *"Application does not take command line
+arguments"* and exits 1. `lib/main.rb` uses `:handles_command_line`, and
+`#handle_command_line` scans the arguments for `--new-window`/`-w` and
+otherwise calls `app.activate`.
+
+Measured this round, in the dev shell:
+
+| invocation | port | upstream |
+|---|---|---|
+| `binary nonsense-argument` | window opens, process stays up (exit 124 under a 60s timeout) | message on stderr, exit 1 |
+| `binary --nonsense` | `Unknown option --nonsense`, exit 1 | same |
+| `binary --help` | usage incl. `-w, --new-window`, exit 0 | same |
+
+Still an invented success path. The flag is needed for nothing upstream does —
+`--new-window` is carried by `do_handle_local_options` + `register` +
+`activate_action`, which the port already implements — so this is a
+divergence, not a binding limitation (see
+`.reports/accountability-ensurance.md`).
+
+## 5. CARRIED (round 3 gap 6) — nothing installs `.desktop`, `.service` or metainfo
+
 `data/io.github.fizzyizzy05.binary.desktop.in`,
-`…metainfo.xml.in` and `…service.in`, all three byte-identical to upstream's,
-and has no task that turns them into installed files. Upstream's
-`data/meson.build` runs them through `configure_file` and `install_data`. The
-Rakefile's complete task list is `translations`, `schemas`, `pot`, `drive`,
-`lint`, `docs` and the default aggregator. Consequences a user sees: no entry
-in the shell's app grid, no `New Window` desktop action, no AppStream metadata
-on the software centre page, and `DBusActivatable=true` in a desktop file whose
-`.service` counterpart was never installed — so D-Bus activation fails.
-`@bindir@` in `…service.in:3` is never substituted by anything in the port.
+`.service.in` and `.metainfo.xml.in` are committed byte-identical to upstream
+and packed into the gem, and `@bindir@` in the service file is never
+substituted by anything. Nothing copies any of the three into
+`share/applications`, `share/dbus-1/services` or `share/metainfo`.
 
-**gap 7 — the gem ships no licence text.** Upstream carries `COPYING`, the
-full GPL-3. The port has no `COPYING` and no `LICENSE.md`, while
-`binary-rb.gemspec:18` declares `spec.licenses = ["GPL-3.0-or-later"]` and its
-file list names `LICENSE.md` behind a `.select { File.exist? }` that drops it
-silently (`binary-rb.gemspec:64-69`). A GPL-3 derivative distributed with no
-copy of the licence.
+What a user loses, as against `data/meson.build` upstream:
 
-**gap 8 — the gem ships no compiled catalogues.** `spec.files`
-(`binary-rb.gemspec:71-82`) globs `lib`, `exe`, `data/**/*` and `po/**/*`.
-`locale/` is in neither. `BinaryApp::LOCALE_DIRECTORIES`
-(`lib/main.rb:46-49`) looks for `../locale` and then `/usr/share/locale`, so an
-installed gem finds no `binary.mo` anywhere and runs in English in all 32
-languages while `.reports/translation-parity.md` reports 30/30. See that
-report's gap 1.
+- no launcher entry, so no icon in the shell and no `New Window` desktop action
+  (the `.desktop` file declares `Actions=new-window;`);
+- `DBusActivatable=true` cannot work, so `--gapplication-service` and D-Bus
+  activation are dead;
+- no app-store listing from the metainfo;
+- the hicolor icons are never installed either — the port finds
+  `vertical-arrows-symbolic` through a `Gtk::IconTheme` search path into its own
+  source tree, which an installed gem still resolves, but the application icon
+  itself (`Gtk::Window.set_default_icon_name`) has nothing to resolve against.
 
-**Verdict: 5 gaps (4, 5, 6, 7, 8) plus gap 3 above.**
+Drive checks 79 and 80 read the *files* and cross-check them against the live
+application's actions and flags. They do not test an installation, and the
+report must not be read as though they did.
+
+## 6. CARRIED (round 3 gap 3) — `app.shortcuts` and `<primary>question` are invented
+
+`src/main.py` creates `quit`, `about`, `preferences`, `close-window` and
+`new-window`. It never creates `shortcuts`, although `src/window.blp`'s menu
+item and all four `src/shortcuts-dialog.blp` items name `app.shortcuts`.
+Upstream therefore ships a dead menu item and a dialog nothing opens.
+
+The port creates the action and binds `<primary>question` to it
+(`lib/main.rb` `ACTIONS`). The menu item working is defensible; the
+accelerator is not derivable from anything upstream, and because
+`Adw.ShortcutsItem` renders whatever the application has bound to the action,
+the port's own shortcuts dialog *displays* a shortcut upstream's would show as
+blank. Still open, still a divergence rather than a fix.
+
+## 7. NEW — `Adw.PreferencesWindow` became an `Adw.PreferencesDialog`
+
+`src/preferences.blp:4` is a `template $PrefsWindow: Adw.PreferencesWindow`
+with `default-width: 400`, `default-height: 306`, `height-request: 200`, and
+`src/preferences.py` sets `transient_for` on it: upstream's preferences are a
+**separate top-level window** with its own titlebar and its own entry in the
+window list. `lib/preferences_dialog.rb` builds an
+`Adwaita::PreferencesDialog`, which presents as an `AdwDialog` inside the
+parent window — a different widget, a different look and a different
+interaction (it dims and traps the parent; it has no window-list entry; it
+closes on Escape).
+
+The substitution is explained in the file's own comment (the window class is
+deprecated) and is probably the right engineering call, but it is a
+user-visible divergence and it appears in no divergence list: `PORTING.md`
+records it as neither a gap nor a blocker. `content-width`/`content-height`
+carry the two default sizes; `height-request: 200` becomes
+`set_size_request(-1, 200)`, which on an `AdwDialog` constrains the dialog
+rather than a window. Owed: either the window class with its deprecation
+accepted, or the divergence written into `PORTING.md` where the next reader
+will find it.
+
+## 8. NEW — narrowed `notify`, and two extra boxes
+
+Two small structural divergences the regenerated inventory exposed:
+
+- `src/window.blp` connects `notify => $change_input_base()` and
+  `notify => $change_output_base()` to the **bare** `notify` signal, so every
+  property change on either `DropDown` re-runs the handler — including
+  `selected-item` immediately after `selected`, and including the model being
+  set in `__init__`, which is how upstream's initial bit-counter and
+  spin-button visibility gets computed at all. `lib/conversion_row.rb`
+  connects `notify::selected`. The end state is the same for every base change
+  a user can make, and `restore_bases` does the initial pass explicitly, so
+  nothing observable differs today — but it is a narrower connection than the
+  spec, and any future upstream handler that leans on another property
+  notification would silently not fire here.
+- `Gtk.Box` count is 6 upstream and 8 in the port:
+  `ConversionRow#container` is a vertical box per row holding the CenterBox and
+  the Entry, where upstream puts both straight into the content box. Spacing
+  is 6 at both levels so the result looks identical; it is still two widgets
+  of structure upstream's tree does not have.
+
+## 9. NEW — the About dialog shows a description upstream's does not
+
+`adw_about_dialog_new_from_appdata` sets `application-name`,
+`application-icon`, `developer-name`, `version`, `release-notes`,
+`release-notes-version`, `license-type`, `website`, `issue-url` and
+`support-url` from the AppStream data. It does **not** set `comments`.
+`lib/about_dialog.rb` sets
+
+```ruby
+about.comments = _('A small and simple app used to convert between different hexadecimal and binary numbers')
+```
+
+which puts a description paragraph under the app name that upstream's About
+dialog does not show. The msgid is an existing one (it comes from the metainfo
+`<description>`, which is in `po/POTFILES` on both sides), so translation
+parity is unaffected — but the dialog has one more line of content than the
+one being ported. The `support_url` the appdata path would have filled is
+absent from the port, which is moot only because the metainfo declares no
+`<url type="help">`.
 
 ---
 
-## Unit: conversion library — `src/lib/get_answer.py` + `src/lib/bit_count.py` → `lib/converter.rb`
+## Verified at parity this round
 
-| Behaviour | Upstream | Port | Verdict |
-|---|---|---|---|
-| base 2/8/10/16/36 conversion, digits → `A`–`Z` | `calc_numerator` | `Integer(input, base).to_s(out).upcase` | parity |
-| space anywhere → `char` | ✓ | ✓ (checked first, as upstream) | parity |
-| leading `-` → `char` | ✓ | ✓ | parity |
-| `+` anywhere → handler dies mid-way | `TypeError` from `split_input('')` | `Converter::ABORT`, which the window does nothing with | parity (bug reproduced) |
-| equal bases echo the input | ✓ | ✓ | parity |
-| equal bases + invalid → `char_dual`, both entries flagged | ✓ | ✓ | parity |
-| any `.` across unequal bases → `char` | ✓ (upstream's own `# TODO`) | ✓ | parity (bug reproduced) |
-| `_` digit separators accepted (`1_0` in base 2 is 2) | Python `int()` | `Integer()`, same terms | parity |
-| `bit_count`: binary place values, `= n` read as decimal, tail dropped for non-decimal | ✓ | ✓ | parity (bug reproduced) |
+Listed so the open gaps above are not read as the whole picture.
 
-Checked by hand against upstream for `""`, `"0"`, `"1"`, `"2"`, `"12"`, `"1A"`,
-`"1010"` — identical output in every case. Pinned by 14 cases in
-`test/test_converter.rb`, all passing.
-
-**Verdict: parity.**
-
----
-
-## Summary of gaps
-
-| # | Unit | Gap |
-|--:|---|---|
-| 1 | preferences | `#preferences_dialog` memoized; upstream builds a fresh `PrefsWindow` per activation |
-| 2 | shortcuts | `#shortcuts_dialog` memoized for the same reason |
-| 3 | shortcuts | `<primary>question` accelerator invented by the port |
-| 4 | application | `:handles_command_line` instead of `DEFAULT_FLAGS`; stray arguments silently accepted |
-| 5 | application | `exe/binary` discards GLib's exit status |
-| 6 | application | nothing installs `.desktop`, `.service` or metainfo; `@bindir@` never substituted; D-Bus activation broken |
-| 7 | application | no `COPYING`/`LICENSE.md` under a gemspec that declares GPL-3.0-or-later |
-| 8 | application | `locale/` absent from `spec.files`; the installed gem is English-only |
-| 9 | file layout | the About, preferences and shortcuts units have no `lib/*.rb` of their own — see `.reports/accountability-ensurance.md` entry 1 |
-
-Two extras, both located and explained rather than removed: the two
-`ConversionRow#container` boxes, and the `shortcuts` action itself
-(`FINDINGS.md`, "Upstream bugs found while porting").
+| Behaviour | Where checked |
+|---|---|
+| window geometry 360×390, minimum 360×294, title `Binary` untranslated | drive |
+| ToolbarView / HeaderBar `show-title: false` / start MenuButton with `open-menu-symbolic`, `Main Menu` tooltip, `primary: true` | drive |
+| primary menu: two sections, three items, exact labels and action names | drive |
+| Clamp 600 / 1000; content box margins 30/30/30/60, spacing 6, `valign: center` | drive |
+| arrow box: spacing 9, margins 18/12, `typing-label`, `vertical-arrows-symbolic` at `normal` | drive |
+| both dropdowns: 5 base names, `Binary` out of the undefined `Number base` domain, `flat-dropdown`, Input/Output Base tooltips | drive + `test/drive_translated.rb` |
+| both spin buttons: range 2–36, snap to ticks, increments 1/2, numeric, `margin-start: 6`, visible only on "Other" | drive |
+| both entries: placeholder `Enter numbers`, accessible label `Enter numbers…`, `enable-undo: false` | drive |
+| bit buttons: `bitLbl` + `flat`, `halign: start`, popover with a wrapping 30-char label, visible only when that row's base is Binary, insensitive while both digit counts are 0 | drive |
+| live conversion both directions, the `@editable` ping-pong guard, uppercase normalisation, `monospace` on/off | drive + `test/test_converter.rb` |
+| `error` class + `Invalid input` tooltip on one or both entries, and the `char_dual` echo | drive |
+| `+` aborting the handler with nothing changed; `.` across unequal bases erroring; `bit_count`'s decimal tail | `test/test_converter.rb` |
+| `input-base`/`output-base` written on close and restored on open | drive + `test/test_settings.rb` |
+| 6 actions, 4 accelerators, About/preferences/shortcuts dialogs built fresh per activation and never shared between windows | drive |
+| `style.css` and `style-hc.css` byte-identical; the high-contrast provider added and removed as `AdwStyleManager:high-contrast` flips, idempotently | `test/high_contrast_check.rb` |
+| exit status: 1 for a rejected option, 0 for `--help` | drive + measured |
+| all four data files and three icons byte-identical to upstream | `diff` against `origin/main` |

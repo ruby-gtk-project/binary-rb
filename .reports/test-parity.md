@@ -3,107 +3,160 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `eff4fa3` |
+| Port | `ruby` @ `ff54bec` |
+| Round | 5 |
 | Upstream tests | **0** |
-| Ported | 0 |
-| Gaps | 0 |
-| Test command | `rake test` (depends on `translations` and `schemas`); `rake drive` for the driven suites |
-| Suite run | **yes**, round 3 — `rake test`: **24 runs, 62 assertions, 0 failures, 0 errors, 0 skips** |
-| Driven suites run | **yes**, round 3 — `test/drive_window.rb` **54 of 54**, `test/drive_translated.rb` **8 of 8** |
-| How they were run | inside `nix develop`, with `DISPLAY` pointing at an `Xvfb` from `nix shell nixpkgs#xvfb`, `BUNDLE_GEMFILE` unset, and `RUBYLIB` assembled from the flake's gems derivation |
+| Ported | 0 of 0 |
+| Ported-test gaps | 0 (met trivially) |
+| **Gaps in the port's own suite** | **4** (2 new, 2 carried) |
+| Suite executed this round | **yes** — see below |
+| Verdict | **not clean** |
 
-Upstream has no test suite. Verified four ways against the extracted
-`origin/main` tree: the census
-(`.claude/skills/test-parity/scripts/test-census.sh`) returns **zero rows**;
-there is no `test/` or `tests/` directory and `find -iname '*test*'` matches
-nothing; `meson.build`, `src/meson.build`, `data/meson.build` and
-`po/meson.build` declare no `test()` target; and there is no `def test_`,
-`unittest`, `pytest`, `#[test]`, `Test.add_func` or `it(` anywhere under `src/`.
+## Upstream has no tests
 
-Parity is **0/0 and is met trivially.**
+Re-verified against the `origin/main` tree extracted with `git archive`:
+`.claude/skills/test-parity/scripts/test-census.sh` returns **zero rows**
+(`.reports/upstream-tests.tsv` is empty, correctly); there is no `test/` or
+`tests/` directory; `meson.build`, `src/meson.build`, `data/meson.build` and
+`po/meson.build` declare no `test()` target; and `def test_`, `unittest`,
+`pytest`, `#[test]` and `Test.add_func` appear nowhere under `src/`. Test
+parity is **0/0 and met trivially**.
 
-**The port therefore inherits no safety net.** Every check listed under
-`## Extra` was written for the port and pins nothing the original authors
-thought worth pinning. Nothing in the upstream repository records which edge
-case bit them, which bug came back, or why `get_answer` returns the string
-`"char_dual"` rather than raising — the port's tests are the first tests this
-app has ever had, and where they are wrong there is nothing to contradict them.
-Three of them encode upstream *bugs* as expected behaviour (`+5` doing nothing,
-`10.1` erroring across bases, the `bit_count` decimal tail), which is the
-correct call for a parity port and is also three places where a future upstream
-fix will read as a port regression.
+That is the whole of parity on this axis, and it is also why the rest of this
+document matters: **the port inherits no safety net.** Every check in the
+port's suite was written by the porter against the porter's own reading of
+upstream, with nothing upstream to contradict it. Section "A green suite that
+is wrong" below is that risk realised.
 
-## Census of the port's own suite
+## The port's suite, and what was actually executed
 
-`.claude/skills/test-parity/scripts/test-census.sh .` returns 131 rows. That
-number is not the suite's assertion count: the driver
-(`test/gtk_driver.rb`) exposes both `step` and `check`, the census collects
-both, and only `check` increments the pass counter. Read at the right call
-site:
+Run this round, from the project root, every invocation through the fork's dev
+shell and a virtual display exactly as the shell banner prints it:
 
-| File | `step`s | `check`s (the assertion unit) | Run result |
-|---|---:|---:|---|
-| `test/drive_window.rb` | 37 | 54 | 54 of 54 passed |
-| `test/drive_translated.rb` | 7 | 8 | 8 of 8 passed |
-| `test/test_converter.rb` | — | 14 minitest methods | part of the 24 |
-| `test/test_i18n.rb` | — | 7 minitest methods | part of the 24 |
-| `test/test_settings.rb` | — | 3 minitest methods | part of the 24 |
+| Command | Result |
+|---|---|
+| `nix develop --command xvfb-run -a ruby test/run_tests.rb` | **24 runs, 62 assertions, 0 failures, 0 errors, 0 skips** |
+| `nix develop --command xvfb-run -a ruby test/drive_window.rb` | **202 of 202 checks passed — DRIVE OK**, 17 components |
+| `nix develop --command xvfb-run -a ruby test/drive_translated.rb` | **8 of 8 — DRIVE OK** (German: plural bit count, translated tooltip, `shortcut window` section title) |
+| `nix develop --command xvfb-run -a ruby test/high_contrast_check.rb` | **6 of 6 — DRIVE OK** |
+| `nix develop --command xvfb-run -a ruby exe/binary --help` / `--nonsense` / `nonsense-argument` | exit 0 / 1 / still running at 60s |
 
-`test/environment.rb`, `test/gtk_driver.rb` and `test/test_helper.rb` are
-harness files and carry no cases; the census excludes `*driver*` and `*helper*`
-by name, and reading them confirms there is nothing hidden there.
+Nothing in this report rests on a suite that was not run. The runtime gate
+asked for — `drive_ok=true`, 202 passed, 0 failed, 17 components — is met.
 
-## Extra
+Census of the port's own checks: `test-census.sh .` returns 131 rows across
+`test/test_converter.rb`, `test/test_i18n.rb`, `test/test_settings.rb`,
+`test/drive_window.rb`, `test/drive_translated.rb` and
+`test/high_contrast_check.rb`. Row count is not assertion count — the driver
+exposes both `step` and `check` and the census collects both.
 
-- `test/test_converter.rb` — 14 cases on `Converter.answer` and
-  `Converter.bit_count`, including the three reproduced upstream bugs and the
-  `1_0` / `+5` / `-5` / `10.1` edges.
-- `test/test_i18n.rb` — 7 cases on the Fiddle gettext binding: `dgettext`, the
-  `\u0004` context key, `dngettext` plural selection, and the `%(name)d`
-  placeholder rewrite.
-- `test/test_settings.rb` — 3 cases on the GSettings wrapper under upstream's
-  schema id.
-- `test/drive_window.rb` — 54 checks driving the live window: both conversion
-  directions, the error class and tooltip on each entry, case normalisation,
-  the "Other" base spin button, base 36, the bit popover sum, the bit buttons
-  going insensitive, base persistence across a close, the About dialog's
-  release notes and per-activation construction, the second window, `--help`,
-  an undeclared option, the local-options handler, and `require "binary"`.
-- `test/drive_translated.rb` — 8 checks under `LANGUAGE=de`, asserting
-  translated base names, the base and menu tooltips, the placeholder, the
-  plural-correct bit counter, the invalid-input tooltip and the shortcuts
-  dialog's contextual section title.
+---
 
-## Open items against the suite itself
+## Gap 1. NEW — a green check that pins a defect
 
-These are not parity rows — upstream has no tests for them to fail against —
-and they are the reason the numbers above took three rounds to produce.
+`test/test_converter.rb:54-57`:
 
-1. **The suite cannot be run with the project's own toolchain.** The flake's
-   wrapped `rake` dies in `Bundler::Dsl#gemspec` ("There are no gemspecs at
-   /nix/store/…-gemfile-and-lockfile") because `flake.nix`'s `bundlerEnv` is
-   fed the **root** `Gemfile` — kettle-jem's development bundle, which has a
-   `gemspec` directive — instead of `nix/Gemfile`, which exists for exactly
-   this purpose and lists only `adwaita` and `gtk4`. `FINDINGS.md` section 10
-   records the symptom and stops short of the cause.
-2. **The devShell has no display server.** `xvfb-run` and `Xvfb` are both
-   absent from it. Every file in `test/` reaches `require 'adwaita'`, which
-   initialises GTK and raises `Gtk::InitError` with no `DISPLAY`, so even the
-   three pure-logic minitest files cannot run headless. The display used for
-   the runs above came from outside the project.
-3. **No check asserts the process exit status.** `test/drive_window.rb` step 35
-   asserts that GLib names an undeclared option and says so, and never looks at
-   what the process exits with — which is how
-   `.reports/component-parity.md` gap 5 (`exe/binary` dropping GLib's return
-   value) stayed invisible through two green rounds.
-4. **No check pins the preferences dialog's *identity* across activations.**
-   Steps 32–33 of `test/drive_window.rb` do that for About — "it is not an
-   instance shown on an earlier window", "its parent is the window it was
-   opened from". The preferences steps (`test/drive_window.rb:212-227`) check
-   that a dialog is showing and that its geometry is upstream's 400×306/200,
-   and never that a second activation produced a second dialog. That is how
-   `.reports/component-parity.md` gaps 1 and 2 — one memoized
-   `Adwaita::PreferencesDialog` and one memoized `Adwaita::ShortcutsDialog`,
-   against upstream's fresh `PrefsWindow()` per activation — stayed invisible
-   through two green rounds while the same question about About got three
-   checks.
+```ruby
+def test_prefixes_int_would_not_accept_in_these_bases
+  assert_equal 'char', Converter.answer('0x1f', 16, 10)
+  assert_equal 'char', Converter.answer('0b11', 2, 10)
+end
+```
+
+The name is false and the assertions lock in a divergence. Python's `int()`
+does accept the prefix matching the base it is given:
+`int('0x1f', 16) == 31`, `int('0b11', 2) == 3` — measured, not recalled. So
+upstream converts both and the port errors on both
+(`.reports/component-parity.md` gap 1), and this check is the reason nobody
+noticed: the suite is green **because** it asserts the wrong answer.
+
+This is the most serious kind of finding this axis can produce. A missing test
+leaves a behaviour unverified; a wrong test reports it as verified. Owed: fix
+`Converter.valid?` first, then rewrite these two assertions to the values
+`python3` prints, and add the equal-base case (`Converter.answer('0b11', 2, 2)`
+must be `'0b11'`, not `'char_dual'`).
+
+## Gap 2. NEW — `rake drive` runs two of the three drivers, and cannot run either
+
+`Rakefile`:
+
+```ruby
+task drive: %i[translations schemas] do
+  sh 'ruby -Ilib -Itest test/drive_window.rb'
+  sh 'ruby -Ilib -Itest test/drive_translated.rb'
+end
+```
+
+Two problems. `test/high_contrast_check.rb` is not in the list, so the only
+coverage the high-contrast stylesheet has — a component that exists solely
+because the port reimplements AdwApplication's automatic resource loading by
+hand — is a script no recipe calls and CI could never run. And the recipe
+shells out to bare `ruby`, not `xvfb-run -a ruby`, so even with gap 3 fixed it
+would die on `Gdk::Display.default` being nil in the dev shell the project
+ships. The banner's four `xvfb-run` lines are the real entry points; the Rake
+task is a third path that works nowhere.
+
+## Gap 3. CARRIED (round 3 gap 14) — the project's own toolchain cannot start
+
+Measured this round:
+
+```
+$ nix develop --command rake -T
+[!] There was an error parsing `Gemfile`: There are no gemspecs at
+    /nix/store/hdkzax361308821n39k410ng7wynavm6-gemfile-and-lockfile.
+    Bundler cannot continue.
+ #  # Include dependencies from binary-rb.gemspec
+ >  gemspec
+```
+
+`bundle` and `rubocop` fail identically. The cause is in `flake.nix`: the
+`bundlerEnv` is built from the root `Gemfile` — kettle-jem's development
+bundle, which carries a `gemspec` directive — instead of `nix/Gemfile`, and the
+derivation that bundler is pointed at contains only the Gemfile and the lock,
+no gemspec.
+
+Consequences, all of them real today:
+
+- `rake test`, `rake drive`, `rake lint`, `rake translations`, `rake schemas`
+  and `rake pot` cannot be run in the dev shell. The catalogues and the
+  compiled schema both exist in the tree only because those two recipes were
+  run by hand out of the gems derivation.
+- The shell banner's last line, `lint:          rubocop`, is a false claim:
+  that command exits with a Bundler backtrace.
+- There is no single command that runs the port's whole suite. `test/run_tests.rb`
+  runs the three minitest files; the three drivers are three more invocations;
+  nothing aggregates them and nothing fails the build if one regresses.
+
+`FINDINGS.md` section 10 records the symptom and not the cause.
+
+## Gap 4. CARRIED, now narrowed — coverage holes the 202 checks leave
+
+Round 3's gap 15 (the devShell has no display server) is **closed**:
+`flake.nix:96` ships `xvfb-run`, every command above ran through it, and
+`PORTING.md` still listing it as open is itself a finding
+(`.reports/accountability-ensurance.md`). What remains are three behaviours no
+check exercises, each one a component-parity gap whose *unverified* status is a
+test gap in its own right:
+
+1. **No check runs the port as an installed gem.** Gap 3 in
+   `.reports/component-parity.md` — a packed gem carries no compiled GSettings
+   schema and `Gio::Settings.new` aborts the process — is invisible to a suite
+   that always runs from a working tree where `rake schemas` has been run. A
+   check that moves `data/schemas/gschemas.compiled` aside, unsets
+   `GSETTINGS_SCHEMA_DIR` and runs `exe/binary` would have caught it.
+2. **No check changes a base with a `+` in the entry.** `Converter::ABORT` is
+   tested at the `Converter` level only, so the `change_output_base`
+   divergence (`.reports/component-parity.md` gap 2) is untested on both
+   sides of the behaviour it affects.
+3. **No check covers base-prefixed input at the window level.** Gap 1 above
+   is the unit-level half; nothing drives `0b11` into the entry and asserts
+   the absence of the `error` class.
+
+## A green suite that is wrong
+
+Three checks deliberately encode upstream *bugs* as expected behaviour — `+5`
+doing nothing, `10.1` erroring across bases, `bit_count`'s decimal tail. That
+is the correct call for a parity port. Gap 1 is the same shape and is **not**
+correct: it encodes a port bug as upstream behaviour. The difference between
+the two is a measurement, and the measurement was not taken until this round.
+Green suites are not parity.
