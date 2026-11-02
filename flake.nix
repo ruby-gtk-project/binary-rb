@@ -82,10 +82,52 @@
             harfbuzz
             libyaml
             openssl
+            gsettings-desktop-schemas
+            adwaita-icon-theme
+            # The spec runner. The gems in this shell are the app's runtime
+            # closure rather than the full development bundle, so the suite
+            # gets its own RSpec here.
+            rubyPackages_3_4.rspec
+            # gtk_init fails outright with no display on this machine — there
+            # is no offscreen fallback — so every `ruby` invocation that
+            # touches a widget goes through xvfb-run. Without this the drive
+            # script dies in Gtk::Loader#call_init_function with
+            # "failed to initialize GTK (Gtk::InitError)".
+            xvfb-run
+            # dbus-run-session. GApplication refuses to run at all without a
+            # session bus, and the one app id can only be registered once per
+            # bus, so the second instance test/drive_window.rb spawns (the
+            # high-contrast run) needs a bus of its own.
+            dbus
           ];
 
           shellHook = ''
             export GI_TYPELIB_PATH="${pkgs.gtk4}/lib/girepository-1.0:${pkgs.libadwaita}/lib/girepository-1.0''${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}"
+            export XDG_DATA_DIRS="${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}:${pkgs.gtk4}/share/gsettings-schemas/${pkgs.gtk4.name}:${pkgs.adwaita-icon-theme}/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+            # `ruby test/drive_window.rb` has to resolve `require "binary"`
+            # against the checkout rather than an installed gem.
+            export RUBYLIB="$PWD/lib''${RUBYLIB:+:$RUBYLIB}"
+            [ -d data/schemas ] && export GSETTINGS_SCHEMA_DIR="$PWD/data/schemas"
+            # A parent direnv may export a BUNDLE_GEMFILE for another project,
+            # which `bundle exec` in this shell would then try to satisfy.
+            unset BUNDLE_GEMFILE BUNDLE_FROZEN
+
+            # bundlerEnv's wrapped binstubs hard-set BUNDLE_GEMFILE to a store
+            # Gemfile that has no gemspec beside it, so the wrapped `rake` and
+            # `rubocop` both die in Bundler::Dsl#gemspec (FINDINGS.md 10).
+            # Unsetting it in the shell does not help — the wrapper sets it
+            # again at exec — so both are reached through plain ruby instead.
+            rake() { ruby -e 'require "rake"; Rake.application.run' -- "$@"; }
+            rubocop() { ruby -e 'require "rubocop"; exit RuboCop::CLI.new.run(ARGV)' -- "$@"; }
+            export -f rake rubocop 2>/dev/null || true
+
+            echo "binary devshell — ruby $(ruby -e 'print RUBY_VERSION')"
+            echo "run the app:   xvfb-run -a ruby exe/binary"
+            echo "drive the app: xvfb-run -a ruby test/drive_window.rb"
+            echo "               xvfb-run -a ruby test/drive_translated.rb"
+            echo "               xvfb-run -a ruby test/high_contrast_check.rb"
+            echo "run the specs: xvfb-run -a ruby test/run_tests.rb"
+            echo "lint:          rubocop"
           '';
         };
       }

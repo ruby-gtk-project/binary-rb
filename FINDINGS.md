@@ -169,6 +169,36 @@ initialize GTK") with `DISPLAY` and `WAYLAND_DISPLAY` unset, before any window
 is made. The runs recorded in `.reports/test-parity.md` were made under
 `xvfb-run -a`.
 
+Until this round the fork's `flake.nix` carried no display at all, so there
+was nothing to run them under: `xvfb-run: command not found`. The devShell now
+carries `pkgs.xvfb-run`, and its banner names the commands that use it.
+
+## 12. Four properties the UI has that the bindings will not read back
+
+Found while widening `test/drive_window.rb` to cover every component. None of
+them blocks the port — each one is a thing a *test* wanted to ask, and had to
+ask another way.
+
+| Missing | Effect | What the drive script does instead |
+|---|---|---|
+| `Gtk::CssProvider#to_string` | a loaded stylesheet cannot be read back, so "is `style.css` really on the display" has no direct answer | measures a `.bitLbl` label: the sheet sets a `font-size`, so the label's preferred width changes when the provider is added to or removed from the display |
+| `Adwaita::StyleManager#high_contrast=` | `high-contrast` is read-only and libadwaita settles it at startup, so the high-contrast branch of `#sync_high_contrast` cannot be reached in-process | `test/high_contrast_check.rb` — the same harness with `ADW_DEBUG_HIGH_CONTRAST=1` set before `Adwaita.init`, spawned under `dbus-run-session` so it gets a bus of its own |
+| `Gtk::Application#list_actions` | the registered action set cannot be enumerated | `#lookup_action` per name, against `BinaryApp::ACTIONS` |
+| `Adwaita::PreferencesPage#find_group` | only `#get_group(index)` exists | `#get_group(0)` being nil is the "no groups" assertion |
+
+## 13. A second instance on the same bus runs no steps and still prints `DRIVE OK`
+
+`GtkDriver` reports success when nothing failed, and a run where *nothing
+happened* has nothing failed in it. A second `BinaryApp` started on the same
+session bus goes remote — `Failed to register: Timeout was reached`, then
+`activate` never fires, no step runs, no check is recorded, and the report
+reads `DRIVE OK`.
+
+This bit once: the high-contrast child of finding 12 was spawned plainly and
+"passed" without doing anything. Two things close it — the child runs under
+`dbus-run-session`, and the parent asserts on the child's check *count*
+(`6 of 6 checks passed`) and not only on its `DRIVE OK`.
+
 ---
 
 ## Upstream bugs found while porting, reproduced rather than fixed
