@@ -38,6 +38,8 @@ class BinaryApp
 
   SHORTCUT_CONTEXT = 'shortcut window'
 
+  HIGH_CONTRAST_PRIORITY = Gtk::StyleProvider::PRIORITY_APPLICATION + 1
+
   # Message catalogues live beside the source when running from a checkout and
   # in the system locale directory once installed.
   LOCALE_DIRECTORIES = [
@@ -59,6 +61,9 @@ class BinaryApp
       end
 
       a.signal_connect('startup') do
+        # libadwaita has to be initialised before its style manager exists;
+        # Gtk::Application does not do it the way AdwApplication would.
+        Adwaita.init
         install_styles
         install_icons
       end
@@ -121,14 +126,53 @@ class BinaryApp
 
   def active_window = app.active_window
 
+  # Upstream keeps both stylesheets in its GResource bundle, where
+  # GtkApplication loads style.css for every look and style-hc.css only while
+  # high contrast is in effect. The port has no bundle, so that keying is done
+  # by hand: the base sheet stays on the display for good, and the
+  # high-contrast one is added and removed as AdwStyleManager:high-contrast
+  # flips.
   def install_styles
-    Gtk::CssProvider.new.tap do |provider|
-      provider.load(data: STYLE)
+    Gtk::StyleContext.add_provider_for_display(
+      display,
+      style_provider,
+      Gtk::StyleProvider::PRIORITY_APPLICATION,
+    )
+
+    style_manager.tap do |manager|
+      manager.signal_connect('notify::high-contrast') { sync_high_contrast }
+    end
+
+    sync_high_contrast
+  end
+
+  # Both sheets give .typing-label an opacity, so the high-contrast provider
+  # sits one step above the base priority and wins while it is on the display.
+  def sync_high_contrast
+    if style_manager.high_contrast?
       Gtk::StyleContext.add_provider_for_display(
-        Gdk::Display.default,
-        provider,
-        Gtk::StyleProvider::PRIORITY_APPLICATION,
+        display,
+        high_contrast_provider,
+        HIGH_CONTRAST_PRIORITY,
       )
+    else
+      Gtk::StyleContext.remove_provider_for_display(display, high_contrast_provider)
+    end
+  end
+
+  def display = @display ||= Gdk::Display.default
+
+  def style_manager = @style_manager ||= Adwaita::StyleManager.default
+
+  def style_provider
+    @style_provider ||= Gtk::CssProvider.new.tap do |provider|
+      provider.load(data: STYLE)
+    end
+  end
+
+  def high_contrast_provider
+    @high_contrast_provider ||= Gtk::CssProvider.new.tap do |provider|
+      provider.load(data: HIGH_CONTRAST_STYLE)
     end
   end
 
@@ -211,6 +255,14 @@ class BinaryApp
       font-size: 0.9em;
       opacity: 0.5;
       font-weight: 700;
+    }
+  CSS
+
+  # Ported from src/style-hc.css: the one rule the high-contrast look changes,
+  # lifting the typing label out of the 0.5 opacity the base sheet gives it.
+  HIGH_CONTRAST_STYLE = <<~CSS
+    .typing-label {
+      opacity: 0.75;
     }
   CSS
 end
