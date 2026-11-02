@@ -66,38 +66,39 @@ msgstr ""
 "Вікно \"Бінарність\", конвертація 17 в вісімковому форматі в F у "
 "шістнадцятковому"
 
-#: lib/main.rb:259
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: lib/about_dialog.rb:66
 msgid "translator-credits"
 msgstr "freeducks-debug"
 
-#: lib/main.rb:272
+#: lib/preferences_dialog.rb:30
 msgid "Preferences"
 msgstr "Налаштування"
 
-#: lib/main.rb:293
-msgctxt "shortcut window"
-msgid "General"
-msgstr "Загальні"
-
-#: lib/main.rb:295
+#: lib/shortcuts_dialog.rb:30
 msgctxt "shortcut window"
 msgid "New Window"
 msgstr "Нове вікно"
 
-#: lib/main.rb:296
+#: lib/shortcuts_dialog.rb:31
 msgctxt "shortcut window"
 msgid "Close Window"
 msgstr "Закрити вікно"
 
-#: lib/main.rb:297
+#: lib/shortcuts_dialog.rb:32
 msgctxt "shortcut window"
 msgid "Show Shortcuts"
 msgstr "Показати клавіатурні скорочення"
 
-#: lib/main.rb:298
+#: lib/shortcuts_dialog.rb:33
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "Вийти"
+
+#: lib/shortcuts_dialog.rb:42
+msgctxt "shortcut window"
+msgid "General"
+msgstr "Загальні"
 
 #: lib/window.rb:115 lib/window.rb:164 lib/window.rb:185 lib/window.rb:186
 msgid "Invalid input"

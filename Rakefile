@@ -236,3 +236,9 @@ task :lint do
 end
 
 task test: %i[translations schemas]
+
+# bundler/gem_tasks defines `build`; this only adds a prerequisite to it. The
+# gemspec ships locale/<lang>/LC_MESSAGES/binary.mo, which is a build product of
+# po/*.po, so the catalogues are compiled before the gem is packed rather than
+# left to whether someone happened to run `rake translations` first.
+task build: :translations

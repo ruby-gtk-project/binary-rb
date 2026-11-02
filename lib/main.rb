@@ -2,8 +2,11 @@
 
 require 'adwaita'
 
+require_relative 'about_dialog'
 require_relative 'i18n'
+require_relative 'preferences_dialog'
 require_relative 'settings'
+require_relative 'shortcuts_dialog'
 require_relative 'window'
 
 # The application singleton: actions, accelerators, and the windows.
@@ -12,20 +15,6 @@ class BinaryApp
 
   APP_ID = 'io.github.fizzyizzy05.binary'
   VERSION = '5.4'
-
-  # The same file AdwAboutDialog.new_from_appdata reads out of upstream's
-  # GResource bundle (src/main.py:71). The port ships it byte-identical, so the
-  # About dialog's description and release notes are read out of it here.
-  METAINFO = File.expand_path(
-    '../data/io.github.fizzyizzy05.binary.metainfo.xml.in',
-    __dir__,
-  )
-
-  # The <release version="…"> whose notes the About dialog shows, with the
-  # <description> body captured as the AppStream markup AdwAboutDialog wants.
-  RELEASE_NOTES = lambda do |version|
-    %r{<release\s+version="#{Regexp.escape(version)}"[^>]*>\s*<description>(.*?)</description>}m
-  end
 
   # The short option name upstream passes as the byte b"w" (src/main.py:46).
   NEW_WINDOW_SHORT = 'w'.ord
@@ -234,84 +223,22 @@ class BinaryApp
     end
   end
 
-  # The release notes AdwAboutDialog.new_from_appdata would have taken from
-  # data/io.github.fizzyizzy05.binary.metainfo.xml.in:30-53.
-  def release_notes
-    @release_notes ||= File.read(METAINFO)
-      .match(RELEASE_NOTES.call(VERSION))
-      .then { |found| found[1].strip }
-  end
-
   # Built on every activation, not memoized: upstream makes a new
   # Adw.AboutDialog each time the action runs (src/main.py:70), so no dialog
   # instance is ever shared between two windows.
-  def about_dialog
-    Adwaita::AboutDialog.new.tap do |about|
-      about.application_name = _('Binary')
-      about.application_icon = APP_ID
-      about.version = VERSION
-      about.comments = _('A small and simple app used to convert between different hexadecimal and binary numbers')
-      about.release_notes_version = VERSION
-      about.release_notes = release_notes
-      about.developer_name = 'Isabelle Jackson'
-      about.developers = ['Isabelle Jackson https://fizzyizzy05.dev']
-      about.designers = ['Gregor Niehl https://gitlab.gnome.org/gregorni']
-      about.copyright = '© 2023-2024 Isabelle Jackson.'
-      about.license_type = Gtk::License::GPL_3_0
-      about.website = 'https://apps.gnome.org/Binary/'
-      about.issue_url = 'https://github.com/fizzyizzy05/binary/issues'
-      # Translators put their own names here; the catalogues carry them.
-      about.translator_credits = _('translator-credits')
-    end
-  end
+  def about_dialog = AboutDialog.new(app_id: APP_ID, version: VERSION).build
 
-  # Upstream's preferences window is an empty page — the action exists so the
-  # desktop shell can open it, and there is nothing in it yet.
-  # src/preferences.blp:6-8 gives the window default-width 400,
-  # default-height 306 and height-request 200. AdwDialog has no default size —
-  # content-width and content-height are its name for the same thing, and
-  # #set_default_size does not exist on it in the bindings — so the first two
-  # land there and the minimum height stays a size request.
-  def preferences_dialog
-    @preferences_dialog ||= Adwaita::PreferencesDialog.new.tap do |dialog|
-      dialog.title = _('Preferences')
-      dialog.content_width = 400
-      dialog.content_height = 306
-      dialog.set_size_request(-1, 200)
-      dialog.add(Adwaita::PreferencesPage.new)
-    end
-  end
+  # Fresh per activation as well: upstream's on_preferences_action builds a new
+  # PrefsWindow every time the action runs (src/main.py:79-83), so the dialog is
+  # never an instance left over from another window.
+  def preferences_dialog = PreferencesDialog.new.build
 
-  def shortcuts_dialog
-    @shortcuts_dialog ||= Adwaita::ShortcutsDialog.new.tap do |dialog|
-      dialog.add(general_shortcuts)
-    end
-  end
-
-  # One c_ call per item, with the context and the msgid written out, because a
-  # table of titles walked in a loop is five msgids xgettext cannot see — and a
-  # msgid that does not reach po/binary.pot is marked obsolete in all 32
-  # catalogues on the next `rake pot`. Upstream writes them out the same way,
-  # in src/shortcuts-dialog.blp:6, :9, :14, :19, :24.
-  def general_shortcuts
-    @general_shortcuts ||= Adwaita::ShortcutsSection.new.tap do |section|
-      section.title = c_('shortcut window', 'General')
-
-      section.add(shortcut_item(c_('shortcut window', 'New Window'), 'app.new-window'))
-      section.add(shortcut_item(c_('shortcut window', 'Close Window'), 'app.close-window'))
-      section.add(shortcut_item(c_('shortcut window', 'Show Shortcuts'), 'app.shortcuts'))
-      section.add(shortcut_item(c_('shortcut window', 'Quit'), 'app.quit'))
-    end
-  end
-
-  # Both two-argument constructors take (title, String), and the bindings
-  # always resolve that to the accelerator one — hence the empty accelerator
-  # and the setter for the action name.
-  def shortcut_item(title, action)
-    Adwaita::ShortcutsItem.new(title, '').tap do |item|
-      item.action_name = action
-    end
-  end
+  # Upstream never opens its shortcuts dialog at all — src/main.py creates no
+  # app.shortcuts action for the menu item and the dialog items that point at
+  # it — so the port decides this one, and it decides it the way the other two
+  # dialogs behave: a new dialog per activation rather than one instance
+  # followed from window to window.
+  def shortcuts_dialog = ShortcutsDialog.new.build
 
   STYLE = <<~CSS
     .bitLbl {

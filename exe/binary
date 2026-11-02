@@ -13,10 +13,21 @@ if File.exist?(File.join(root, 'data/schemas/gschemas.compiled'))
     [File.join(root, 'data/schemas'), ENV['GSETTINGS_SCHEMA_DIR']].compact.join(':')
 end
 
+# Upstream resets SIGINT to the system default (src/binary.in:33), so Ctrl-C in
+# the terminal kills the app the way it kills any other process. Ruby's own
+# handler would raise Interrupt out of the GTK main loop and print a backtrace
+# instead.
+Signal.trap('INT', 'SYSTEM_DEFAULT')
+
 require_relative '../lib/main'
 
 # #build returns the Gtk::Application so the test driver can run it its own
 # way, which means a bare `.build.run` would be Gio's run with no argv at all —
 # and GLib then never sees `--help` or `--new-window`. The port's own #run is
 # the one that passes them along.
-BinaryApp.new.tap(&:build).run
+#
+# Its result is the status g_application_run returns, which is what upstream's
+# `sys.exit(main.main())` in src/binary.in leaves the process with: 1 when GLib
+# rejects an option, 0 otherwise. Exiting with it rather than dropping it is the
+# difference between `binary --nonsense` failing and appearing to succeed.
+exit(BinaryApp.new.tap(&:build).run)

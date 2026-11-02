@@ -30,9 +30,9 @@ Kinds: `app` application singleton · `window` · `dialog` · `menu` ·
 | 3 | `src/window.blp` (the two symmetric half-rows) | `lib/conversion_row.rb` | composite ×2 | yes |
 | 4 | `src/window.blp` `menu primary_menu` | `lib/window.rb` (`#primary_menu`) | menu | yes |
 | 5 | `src/window.blp` `Popover in_bit_popover` / `out_bit_popover` | `lib/conversion_row.rb` (`#bit_popover`) | composite ×2 | yes |
-| 6 | `src/main.py` `on_about_action` + `data/…metainfo.xml.in` | `lib/main.rb` (`#about_dialog`) | dialog | yes — inline, no own file |
-| 7 | `src/preferences.blp` + `src/preferences.py` | `lib/main.rb` (`#preferences_dialog`) | dialog | yes — inline, no own file |
-| 8 | `src/shortcuts-dialog.blp` | `lib/main.rb` (`#shortcuts_dialog`) | dialog | yes — inline, no own file |
+| 6 | `src/main.py` `on_about_action` + `data/…metainfo.xml.in` | `lib/about_dialog.rb` | dialog | yes |
+| 7 | `src/preferences.blp` + `src/preferences.py` | `lib/preferences_dialog.rb` | dialog | yes |
+| 8 | `src/shortcuts-dialog.blp` | `lib/shortcuts_dialog.rb` | dialog | yes |
 | 9 | `src/lib/get_answer.py` + `src/lib/bit_count.py` | `lib/converter.rb` | logic | yes — two files merged into one |
 | 10 | `data/io.github.fizzyizzy05.binary.gschema.xml` | `lib/settings.rb` + `data/schemas/…gschema.xml` | backend | yes |
 | 11 | `src/binary.in` (`bindtextdomain` / `gettext.install`) | `lib/i18n.rb` | backend | yes |
@@ -46,10 +46,10 @@ Kinds: `app` application singleton · `window` · `dialog` · `menu` ·
 | 19 | `po/` — `LINGUAS`, `POTFILES`, `binary.pot`, 32 `.po` | `po/` | data | yes — 32/32, `LINGUAS` identical |
 | 20 | `meson.build`, `data/meson.build`, `src/meson.build`, `po/meson.build`, `subprojects/*.wrap` | `Rakefile` / `binary-rb.gemspec` | — | n/a by design |
 
-No component in the list is missing from the port. Items 6–8 exist but live
-inline in `lib/main.rb` rather than in their own `lib/*.rb`, which is the one
-place the tree departs from the house rule of one upstream source file to one
-`lib/<thing>.rb`.
+No component in the list is missing from the port, and since round 4 every one
+of them has a file of its own: items 6–8 were lifted out of `lib/main.rb` into
+`lib/about_dialog.rb`, `lib/preferences_dialog.rb` and
+`lib/shortcuts_dialog.rb`.
 
 ## Per-unit detail
 
@@ -151,16 +151,17 @@ Two sections, three items, no `custom:` slots:
 There is no Preferences item anywhere in the UI — `app.preferences` is
 reachable only from the desktop shell. The port matches.
 
-### 6. About dialog — `src/main.py:70-77` → `lib/main.rb#about_dialog`
+### 6. About dialog — `src/main.py:70-77` → `lib/about_dialog.rb`
 
 Upstream builds it with `Adw.AboutDialog.new_from_appdata(…metainfo.xml, "5.4")`,
 then overrides developers, designers, translator credits and copyright. The
 port has no GResource, so it reads the same metainfo file off disk, pulls the
 `<release version="5.4">` description out as AppStream markup for
 `release-notes`, and sets the remaining fields explicitly. Rebuilt on every
-activation, not memoized, because upstream makes a fresh dialog each time.
+activation, not memoized, because upstream makes a fresh dialog each time — as
+are the preferences and shortcuts dialogs since round 4.
 
-### 7. Preferences — `src/preferences.blp` + `src/preferences.py` → `lib/main.rb#preferences_dialog`
+### 7. Preferences — `src/preferences.blp` + `src/preferences.py` → `lib/preferences_dialog.rb`
 
 | Widget | × | Notes |
 |---|--:|---|
@@ -172,7 +173,7 @@ An empty shell upstream, and an empty shell in the port. The port substitutes
 `content-width` / `content-height`, which is what `AdwDialog` calls a default
 size. `group-digits` exists in the GSettings schema and no widget binds it.
 
-### 8. Shortcuts — `src/shortcuts-dialog.blp` → `lib/main.rb#shortcuts_dialog`
+### 8. Shortcuts — `src/shortcuts-dialog.blp` → `lib/shortcuts_dialog.rb`
 
 A standalone blueprint object with no backing source file, and nothing
 upstream ever loads it.
@@ -226,16 +227,16 @@ handled by `#install_styles` and `#install_icons`. `img/*.png`,
 
 ## Gaps
 
-1. **Three dialogs have no file of their own.** About, Preferences and
-   Shortcuts are built in `lib/main.rb`, which is 345 lines and holds both
-   stylesheets as well. The house rule is one upstream source file to one
-   `lib/<thing>.rb`, which would make `lib/about_dialog.rb`,
-   `lib/preferences_dialog.rb` and `lib/shortcuts_dialog.rb`. Nothing is
-   missing from the app; this is a file-layout gap.
+1. ~~**Three dialogs have no file of their own.**~~ Closed in round 4: About,
+   Preferences and Shortcuts moved out of `lib/main.rb` into
+   `lib/about_dialog.rb`, `lib/preferences_dialog.rb` and
+   `lib/shortcuts_dialog.rb`. `lib/main.rb` keeps the application, the actions
+   and the two stylesheets.
 2. **`src/lib/get_answer.py` and `src/lib/bit_count.py` share
    `lib/converter.rb`.** Defensible — they are 40 lines between them and one
    module is the natural shape — but it is the same rule bent a second time.
 3. **No specs.** `spec/` holds `spec_helper.rb` and a README and nothing else,
    against upstream's own empty test suite. Not a component gap; recorded
    because the converter's sentinel behaviour is the most testable thing in
-   the app and nothing tests it.
+   the app, and what covers it is `test/test_converter.rb` under minitest
+   rather than anything under `spec/`.

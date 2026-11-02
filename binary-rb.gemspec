@@ -61,8 +61,12 @@ Gem::Specification.new do |spec|
   enumerate_package_files = lambda do |root|
     enumerate_package_glob.call(File.join(gemspec_root, root, "**", "*"))
   end
+  # COPYING is upstream's own copy of the GPL-3 text, shipped verbatim: the gem
+  # declares GPL-3.0-or-later above, and a GPL gem that carries no licence text
+  # does not give the person who installed it the terms it was granted under.
   package_metadata_files = %w[
     CHANGELOG.md
+    COPYING
     LICENSE.md
     README.md
     sig/binary/rb.rbs
@@ -78,7 +82,13 @@ Gem::Specification.new do |spec|
     *enumerate_package_files.call("exe"),
     # Extra package files configured by .structuredmerge/kettle-jem.yml
     *enumerate_package_glob.call(File.join(gemspec_root, "data/**/*")),
-    *enumerate_package_glob.call(File.join(gemspec_root, "po/**/*"))
+    *enumerate_package_glob.call(File.join(gemspec_root, "po/**/*")),
+    # The compiled catalogues lib/main.rb's LOCALE_DIRECTORIES looks beside the
+    # source for. po/*.po is the source form and no gettext reads it at
+    # runtime, so without these the installed gem is English in all 32
+    # languages. `rake build` compiles them first — the Rakefile makes build
+    # depend on :translations — so this glob is never empty on a release.
+    *enumerate_package_glob.call(File.join(gemspec_root, "locale/**/*"))
   ]
   spec.rdoc_options += [
     "--title",

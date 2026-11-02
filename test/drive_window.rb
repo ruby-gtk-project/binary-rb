@@ -3,6 +3,8 @@
 # Drives the real window: types into the entries, switches bases, opens the
 # menu dialogs, and writes screenshots to tmp/shots for eyeballing.
 
+require 'English'
+
 require_relative 'environment'
 require_relative '../lib/main'
 require_relative 'gtk_driver'
@@ -204,8 +206,25 @@ BinaryApp.new.then do |app|
     end
 
     d.step('shortcuts is on screen') do
-      d.check('a dialog is showing') { !app.active_window.visible_dialog.nil? }
+      SEEN[:shortcuts] = app.active_window.visible_dialog
+      d.check('a dialog is showing') { !SEEN[:shortcuts].nil? }
       d.shot('10-shortcuts')
+      app.active_window.visible_dialog&.close
+    end
+
+    d.step('shortcuts reopens after being closed') do
+      app.activate_action('shortcuts')
+    end
+
+    # A memoized dialog is one object presented twice: closed once, it is a
+    # widget with no parent being shown again, and on a second window it is a
+    # dialog whose root is the window it was first opened from. Every dialog
+    # here is built per activation, and this is the check that says so.
+    d.step('shortcuts is a fresh dialog') do
+      d.check('a dialog is showing') { !app.active_window.visible_dialog.nil? }
+      d.check('it is not the closed one') do
+        !app.active_window.visible_dialog.equal?(SEEN[:shortcuts])
+      end
       app.active_window.visible_dialog&.close
     end
 
@@ -214,6 +233,7 @@ BinaryApp.new.then do |app|
     end
 
     d.step('preferences is on screen') do
+      SEEN[:preferences] = app.active_window.visible_dialog
       d.check('a dialog is showing') { !app.active_window.visible_dialog.nil? }
       d.check('it opens at upstream\'s 400x306') do
         app.active_window.visible_dialog.then do |dialog|
@@ -224,6 +244,18 @@ BinaryApp.new.then do |app|
         app.active_window.visible_dialog.size_request == [-1, 200]
       end
       d.shot('11-preferences')
+      app.active_window.visible_dialog&.close
+    end
+
+    d.step('preferences reopens after being closed') do
+      app.activate_action('preferences')
+    end
+
+    d.step('preferences is a fresh dialog') do
+      d.check('a dialog is showing') { !app.active_window.visible_dialog.nil? }
+      d.check('it is not the closed one') do
+        !app.active_window.visible_dialog.equal?(SEEN[:preferences])
+      end
       app.active_window.visible_dialog&.close
     end
 
@@ -277,14 +309,21 @@ BinaryApp.new.then do |app|
     # and rejects anything it was not told about.
     d.step('--help documents the flag') do
       SEEN[:help] = `#{RbConfig.ruby} #{File.expand_path('../exe/binary', __dir__)} --help 2>&1`
+      SEEN[:help_status] = $CHILD_STATUS.exitstatus
       d.check('help mentions --new-window') { SEEN[:help].include?('--new-window') }
       d.check('help gives the short name too') { SEEN[:help].include?('-w') }
+      d.check('and asking for it succeeds') { SEEN[:help_status].zero? }
     end
 
     d.step('an option nobody declared is rejected') do
       SEEN[:nonsense] = `#{RbConfig.ruby} #{File.expand_path('../exe/binary', __dir__)} --nonsense 2>&1`
+      SEEN[:nonsense_status] = $CHILD_STATUS.exitstatus
       d.check('GLib names the unknown option') { SEEN[:nonsense].include?('--nonsense') }
       d.check('and says so') { SEEN[:nonsense].downcase.include?('unknown option') }
+      # g_application_run returns 1 here, and exe/binary exits with it, the way
+      # upstream's `sys.exit(main.main())` does — a rejected option that left
+      # the process reporting success is a failure no caller could see.
+      d.check('and the process fails') { SEEN[:nonsense_status] == 1 }
     end
 
     # The local-options path upstream takes: not remote here, so it declines

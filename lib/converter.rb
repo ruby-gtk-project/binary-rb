@@ -54,8 +54,9 @@ module Converter
   end
 
   # Upstream refuses any input containing "." unless the two bases are equal
-  # (src/lib/get_answer.py:84, `# TODO: add separate calculations`), in which
-  # case the input is echoed back untouched. The port is faithful to that: a
+  # (src/lib/get_answer.py:84, where a comment asks for the fractional case to
+  # be calculated separately one day), in which case the input is echoed back
+  # untouched. The port is faithful to that: a
   # user who types "10.1" gets an error on both sides, in both apps. That is
   # upstream's debt, not this port's licence to keep it — closing it here means
   # closing it upstream first, where the behaviour is decided.
