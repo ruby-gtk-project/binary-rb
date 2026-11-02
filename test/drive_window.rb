@@ -12,6 +12,18 @@ def window(app)
   app.windows.last
 end
 
+# Objects a later step has to compare against an earlier one.
+SEEN = {}
+
+# The options dict GLib hands to handle-local-options for `binary -w`. The
+# value has to be a GLib::Variant — GLib::VariantDict#insert with a plain Ruby
+# true segfaults the bindings (FINDINGS.md).
+def new_window_options
+  GLib::VariantDict.new(nil).tap do |options|
+    options.insert('new-window', GLib::Variant.new(true))
+  end
+end
+
 BinaryApp.new.then do |app|
   GtkDriver.drive(app, shots: 'tmp/shots') do |d, _|
     d.window { app.active_window }
@@ -32,6 +44,21 @@ BinaryApp.new.then do |app|
         window(app).input_row.dropdown.model.n_items == 5
       end
       d.shot('01-empty')
+    end
+
+    # Upstream's `editable` guard is False until something sets it True, and
+    # what sets it is the `notify` handler in src/window.blp:112 — connected to
+    # every property notification, so the set_model in src/window.py:67 fires
+    # change_output_base, which runs to the end and sets editable = True before
+    # __init__ returns. Typing into the output entry therefore works on a fresh
+    # window in both apps, and this is the step that says so.
+    d.step('typing into the output entry works on a fresh window') do
+      window(app).output_row.entry.text = '2'
+    end
+
+    d.step('the input followed without a base change first') do
+      d.check('input reads 10') { window(app).input_row.text == '10' }
+      window(app).output_row.entry.text = ''
     end
 
     d.step('typing binary converts to decimal') do
@@ -139,19 +166,36 @@ BinaryApp.new.then do |app|
     end
 
     d.step('about is on screen') do
-      d.check('a dialog is showing') { !app.active_window.visible_dialog.nil? }
+      SEEN[:about] = app.active_window.visible_dialog
+      d.check('a dialog is showing') { !SEEN[:about].nil? }
+      d.check('it names the release the notes are for') do
+        SEEN[:about].release_notes_version == BinaryApp::VERSION
+      end
+      d.check('it carries the 5.4 release notes') do
+        SEEN[:about].release_notes.include?('Binary 5.4 is a small update')
+      end
+      d.check('the notes are the metainfo markup, list and all') do
+        SEEN[:about].release_notes.include?("<li>Binary now uses the system's monospace font by default</li>")
+      end
+      d.check('the summary came across too') do
+        SEEN[:about].comments.start_with?('A small and simple app')
+      end
       d.shot('09-about')
       app.active_window.visible_dialog&.close
     end
 
-    # The dialogs are memoized, so reopening one has to work on an object that
-    # has already been closed once — and on a window it was not first shown on.
+    # Upstream builds a new Adw.AboutDialog on every activation (src/main.py:70)
+    # and the port does the same, so reopening is a second object rather than a
+    # closed one shown again.
     d.step('about reopens after being closed') do
       app.activate_action('about')
     end
 
     d.step('about is on screen again') do
       d.check('a dialog is showing') { !app.active_window.visible_dialog.nil? }
+      d.check('it is a fresh dialog, not the closed one') do
+        !app.active_window.visible_dialog.equal?(SEEN[:about])
+      end
       app.active_window.visible_dialog&.close
     end
 
@@ -171,6 +215,14 @@ BinaryApp.new.then do |app|
 
     d.step('preferences is on screen') do
       d.check('a dialog is showing') { !app.active_window.visible_dialog.nil? }
+      d.check('it opens at upstream\'s 400x306') do
+        app.active_window.visible_dialog.then do |dialog|
+          dialog.content_width == 400 && dialog.content_height == 306
+        end
+      end
+      d.check('and refuses to go under 200 high') do
+        app.active_window.visible_dialog.size_request == [-1, 200]
+      end
       d.shot('11-preferences')
       app.active_window.visible_dialog&.close
     end
@@ -211,7 +263,48 @@ BinaryApp.new.then do |app|
 
     d.step('the dialog followed the new window') do
       d.check('a dialog is showing') { !app.active_window.visible_dialog.nil? }
+      d.check('it is not an instance shown on an earlier window') do
+        !app.active_window.visible_dialog.equal?(SEEN[:about])
+      end
+      d.check('its parent is the window it was opened from') do
+        app.active_window.visible_dialog.root.equal?(app.active_window)
+      end
       d.shot('13-about-second-window')
+      app.active_window.visible_dialog&.close
+    end
+
+    # --new-window is a GLib main option, so GLib itself prints it in the help
+    # and rejects anything it was not told about.
+    d.step('--help documents the flag') do
+      SEEN[:help] = `#{RbConfig.ruby} #{File.expand_path('../exe/binary', __dir__)} --help 2>&1`
+      d.check('help mentions --new-window') { SEEN[:help].include?('--new-window') }
+      d.check('help gives the short name too') { SEEN[:help].include?('-w') }
+    end
+
+    d.step('an option nobody declared is rejected') do
+      SEEN[:nonsense] = `#{RbConfig.ruby} #{File.expand_path('../exe/binary', __dir__)} --nonsense 2>&1`
+      d.check('GLib names the unknown option') { SEEN[:nonsense].include?('--nonsense') }
+      d.check('and says so') { SEEN[:nonsense].downcase.include?('unknown option') }
+    end
+
+    # The local-options path upstream takes: not remote here, so it declines
+    # (-1) and leaves the normal startup to open the window.
+    d.step('the local-options handler declines when it is the only instance') do
+      d.check('new-window in the dict defers to startup') do
+        app.handle_local_options(new_window_options) == -1
+      end
+      d.check('an empty dict declines too') do
+        app.handle_local_options(GLib::VariantDict.new(nil)) == -1
+      end
+    end
+
+    # The gem's require entry point has to reach the real application, not a
+    # second one with its own app id.
+    d.step('require "binary" loads the port') do
+      require 'binary'
+      d.check('BinaryApp is defined') { defined?(BinaryApp) == 'constant' }
+      d.check('under upstream\'s app id') { BinaryApp::APP_ID == 'io.github.fizzyizzy05.binary' }
+      d.check('and no scaffold application survives') { !defined?(Binary::Application) }
     end
   end
 end

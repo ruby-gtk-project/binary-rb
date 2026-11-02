@@ -15,4 +15,8 @@ end
 
 require_relative '../lib/main'
 
-BinaryApp.new.build.run
+# #build returns the Gtk::Application so the test driver can run it its own
+# way, which means a bare `.build.run` would be Gio's run with no argv at all —
+# and GLib then never sees `--help` or `--new-window`. The port's own #run is
+# the one that passes them along.
+BinaryApp.new.tap(&:build).run

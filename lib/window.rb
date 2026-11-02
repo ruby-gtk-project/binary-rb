@@ -107,6 +107,9 @@ class BinaryWindow
 
   def show_forwards(in_str, answer)
     case answer
+    when Converter::ABORT
+      # Upstream's handler raised here and did nothing more. Neither does this.
+      nil
     when 'char'
       input_row.error = true
       input_row.tooltip = _('Invalid input')
@@ -143,7 +146,18 @@ class BinaryWindow
     end
   end
 
+  # Upstream's handler raised on ABORT before it reached the cursor move, so
+  # the whole body — the error styling and the position alike — is skipped.
   def show_backwards(in_str, answer)
+    if answer == Converter::ABORT
+      nil
+    else
+      apply_backwards(in_str, answer)
+      output_row.entry.position = -1
+    end
+  end
+
+  def apply_backwards(in_str, answer)
     case answer
     when 'char'
       output_row.error = true
@@ -161,7 +175,6 @@ class BinaryWindow
       input_row.tooltip = nil
       settle(bits: true)
     end
-    output_row.entry.position = -1
   end
 
   # Equal bases means an invalid string is invalid on both sides, so both
@@ -307,10 +320,13 @@ class BinaryWindow
     end
   end
 
+  # The bit-count labels are built here rather than in the row so that both
+  # msgids reach xgettext as literals — upstream calls ngettext twice for the
+  # same reason, once per row (src/window.py:212, :221).
   def input_row
     @input_row ||= ConversionRow.new(
       tooltip:        _('Input Base'),
-      bit_plural:     ['%(in_count)d bit', '%(in_count)d bits'],
+      bit_label:      ->(count) { n_('%(in_count)d bit', '%(in_count)d bits', count) },
       on_base_change: method(:change_input_base),
       on_text_change: method(:input_handler),
     )
@@ -319,7 +335,7 @@ class BinaryWindow
   def output_row
     @output_row ||= ConversionRow.new(
       tooltip:        _('Output Base'),
-      bit_plural:     ['%(out_count)d bit', '%(out_count)d bits'],
+      bit_label:      ->(count) { n_('%(out_count)d bit', '%(out_count)d bits', count) },
       on_base_change: method(:change_output_base),
       on_text_change: method(:output_handler),
     )

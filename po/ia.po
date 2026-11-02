@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: binary\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-27 19:00+0000\n"
+"POT-Creation-Date: 2026-09-04 12:31+0100\n"
 "PO-Revision-Date: 2025-01-22 01:00+0000\n"
 "Last-Translator: \"Emilio S.\" <emism.translations@gmail.com>\n"
 "Language-Team: Interlingua <https://hosted.weblate.org/projects/binary/"
@@ -20,7 +20,7 @@ msgstr ""
 "X-Generator: Weblate 5.10-dev\n"
 
 #: data/io.github.fizzyizzy05.binary.desktop.in:2
-#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:6 src/window.py:51
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:6
 msgid "Binary"
 msgstr "Binary"
 
@@ -34,7 +34,7 @@ msgstr ""
 msgid "binary;decimal;hexadecimal;base;convert;"
 msgstr ""
 
-#: data/io.github.fizzyizzy05.binary.desktop.in:16 src/window.blp:180
+#: data/io.github.fizzyizzy05.binary.desktop.in:16
 msgid "New Window"
 msgstr "Nove fenestra"
 
@@ -56,104 +56,102 @@ msgstr ""
 msgid "Binary window converting 17 in octal to F in hexadecimal"
 msgstr ""
 
-#: src/shortcuts-dialog.blp:6
+#: lib/main.rb:259
+msgid "translator-credits"
+msgstr "Emilio Sepúlveda <emism.translations@gmail.com>"
+
+#: lib/main.rb:272
+msgid "Preferences"
+msgstr "Preferentias"
+
+#: lib/main.rb:293
 msgctxt "shortcut window"
 msgid "General"
 msgstr "General"
 
-#: src/shortcuts-dialog.blp:9
+#: lib/main.rb:295
 msgctxt "shortcut window"
 msgid "New Window"
 msgstr "Nove fenestra"
 
-#: src/shortcuts-dialog.blp:14
+#: lib/main.rb:296
 msgctxt "shortcut window"
 msgid "Close Window"
 msgstr "Clauder fenestra"
 
-#: src/shortcuts-dialog.blp:19
+#: lib/main.rb:297
 msgctxt "shortcut window"
 msgid "Show Shortcuts"
 msgstr "Monstrar commandos curte"
 
-#: src/shortcuts-dialog.blp:24
+#: lib/main.rb:298
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "Quitar"
 
-#. Translators: Replace "translator-credits" with your names, one name per line
-#: src/main.py:80
-msgid "translator-credits"
-msgstr "Emilio Sepúlveda <emism.translations@gmail.com>"
-
-#. Translators: this string is used to describe how many bits there are.
-#: src/window.py:48
-msgid "bits"
-msgstr ""
-
-#: src/window.py:52
-msgid "Octal"
-msgstr ""
-
-#: src/window.py:53
-msgid "Decimal"
-msgstr ""
-
-#: src/window.py:54
-msgid "Hexadecimal"
-msgstr ""
-
-#: src/window.py:55
-msgid "Other"
-msgstr "Altere"
-
-#: src/window.py:124 src/window.py:128 src/window.py:130 src/window.py:168
-#: src/window.py:172 src/window.py:174
+#: lib/window.rb:115 lib/window.rb:164 lib/window.rb:185 lib/window.rb:186
 msgid "Invalid input"
 msgstr ""
 
-#: src/window.py:212
+#: lib/window.rb:263
+msgid "Main Menu"
+msgstr "Menu principal"
+
+#: lib/window.rb:282
+msgid "_Keyboard Shortcuts"
+msgstr "_Commandos curte de claviero"
+
+#: lib/window.rb:283
+msgid "_About Binary"
+msgstr "_A proposito de Binary"
+
+#: lib/window.rb:328
+msgid "Input Base"
+msgstr ""
+
+#: lib/window.rb:329
 #, python-format
 msgid "%(in_count)d bit"
 msgid_plural "%(in_count)d bits"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/window.py:221
+#: lib/window.rb:337
+msgid "Output Base"
+msgstr ""
+
+#: lib/window.rb:338
 #, python-format
 msgid "%(out_count)d bit"
 msgid_plural "%(out_count)d bits"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/window.blp:21
-msgid "Main Menu"
-msgstr "Menu principal"
-
-#: src/window.blp:45
-msgid "Input Base"
+#: lib/conversion_row.rb:23
+msgid "Octal"
 msgstr ""
 
-#: src/window.blp:75 src/window.blp:136
+#: lib/conversion_row.rb:24
+msgid "Decimal"
+msgstr ""
+
+#: lib/conversion_row.rb:25
+msgid "Hexadecimal"
+msgstr ""
+
+#: lib/conversion_row.rb:26
+msgid "Other"
+msgstr "Altere"
+
+#. Translators: this string is used to describe how many bits there are.
+#: lib/conversion_row.rb:36
+msgid "bits"
+msgstr ""
+
+#: lib/conversion_row.rb:190
 msgid "Enter numbers"
 msgstr ""
 
-#: src/window.blp:80 src/window.blp:141
+#: lib/conversion_row.rb:192
 msgid "Enter numbers…"
 msgstr ""
-
-#: src/window.blp:106
-msgid "Output Base"
-msgstr ""
-
-#: src/window.blp:186
-msgid "_Keyboard Shortcuts"
-msgstr "_Commandos curte de claviero"
-
-#: src/window.blp:191
-msgid "_About Binary"
-msgstr "_A proposito de Binary"
-
-#: src/preferences.blp:5
-msgid "Preferences"
-msgstr "Preferentias"

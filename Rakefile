@@ -191,11 +191,28 @@ task :schemas do
   sh "glib-compile-schemas #{SCHEMA_DIR}"
 end
 
+XGETTEXT = 'xgettext --from-code=UTF-8 --add-comments=Translators: ' \
+           '--keyword=_ --keyword=n_:1,2 --keyword=c_:1c,2 --keyword=d_:2'
+
 desc 'Refresh po/binary.pot and merge it into every po/*.po'
 task :pot do
-  sh 'xgettext --from-code=UTF-8 --add-comments=Translators: ' \
-     '--keyword=_ --keyword=n_:1,2 --keyword=c_:1c,2 --keyword=d_:2 ' \
-     '--output=po/binary.pot --files-from=po/POTFILES'
+  # GNU xgettext does not read Ruby itself: handed a .rb file it shells out to
+  # rxgettext, which the gettext *gem* provides and this dev shell does not, so
+  # the whole run fails with "rxgettext subprocess failed". The Ruby sources are
+  # therefore scanned as Python — same call syntax, same quoting, same
+  # "%(name)d" placeholders, which is also why the catalogues' python-format
+  # flags still apply — while the .desktop, metainfo and gschema files keep
+  # xgettext's own ITS rules. Two runs, concatenated data-first so the order
+  # matches the catalogues'.
+  File.readlines('po/POTFILES', chomp: true).reject(&:empty?)
+      .partition { |path| path.end_with?('.rb') }
+      .then do |sources, data|
+    sh "#{XGETTEXT} --output=po/data.pot #{data.join(' ')}"
+    sh "#{XGETTEXT} --language=Python --output=po/source.pot #{sources.join(' ')}"
+    sh 'msgcat --use-first --output=po/binary.pot po/data.pot po/source.pot'
+    FileUtils.rm_f(['po/data.pot', 'po/source.pot'])
+  end
+
   File.readlines('po/LINGUAS', chomp: true).reject(&:empty?).each do |lang|
     sh "msgmerge --update --backup=none po/#{lang}.po po/binary.pot"
   end

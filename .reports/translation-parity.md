@@ -6,8 +6,8 @@
 | Port | `ruby` @ `4b4300e` |
 | Domain | `binary` (upstream's, confirmed from `data/…gschema.xml` `gettext-domain="binary"`, `<translation type="gettext">binary</translation>` in the metainfo, and `po/binary.pot`) |
 | Upstream messages | 30 |
-| Ported | 29 (24 by census + 5 hand-censused, below) |
-| Gaps | **1** |
+| Ported | **30** (round 2: `bits` added, and the nine keys that only the census could see are now literals at their call sites) |
+| Gaps | **0** |
 | Extra (untranslated) | 1 (test-only) |
 | Upstream occurrences | 41 across 30 messages (6 reused) |
 | Port occurrences | 37 |
@@ -15,7 +15,8 @@
 | Languages shipped by the port | 32 — `po/` is byte-identical to upstream, file for file, including `LINGUAS` and `binary.pot` |
 | `domain_matches` | true |
 | Build command | `rake translations` → `locale/<lang>/LC_MESSAGES/binary.mo` |
-| Checks not run | `msgfmt`, `xgettext` and the German-locale on-screen check — see **What could not be checked** |
+| Checks run | round 2, inside `nix develop` under `xvfb-run -a`: `rake translations` (32 `.mo` files via `msgfmt`), `rake pot` (`xgettext` + `msgmerge` over all 32 `.po`), `rake test` (**24 runs, 62 assertions, 0 failures**) and `rake drive` (`drive_window.rb` **54/54**, `drive_translated.rb` **8/8**, including the eight German-locale on-screen assertions) |
+| `rake pot` outcome | `po/binary.pot` regenerated: its `(msgctxt, msgid)` set is **identical** to upstream's pot, and **no `.po` gained a `#~` block** — the obsolete-entry count is unchanged in all 32 files |
 
 Generated documents: `.reports/translation-parity.yaml`,
 `.reports/upstream-catalogue.yaml`, `.reports/port-catalogue.yaml`.
@@ -125,7 +126,41 @@ once each.)
 
 ---
 
-## `rake pot` destroys 288 translations
+## `rake pot` destroys 288 translations — **closed in round 2**
+
+Closed by writing every msgid out as a literal at its call site and then
+running the task. What changed:
+
+- `lib/main.rb` `#general_shortcuts` — five separate
+  `c_('shortcut window', …)` calls, the `SHORTCUTS` table and
+  `SHORTCUT_CONTEXT` deleted.
+- `lib/window.rb` `#input_row` / `#output_row` — the plural forms are now
+  `n_('%(in_count)d bit', '%(in_count)d bits', count)` and the `out_count`
+  pair, one lambda per row; `ConversionRow#refresh_bits` calls the lambda, so
+  the splat is gone.
+- `lib/main.rb` `#about_dialog` — the summary is inline; the `SUMMARY`
+  constant is deleted.
+- `lib/conversion_row.rb` `.placeholder_text` / `.accessible_label` — two
+  msgids that were inside a `#{}` interpolation in the builder heredoc, which
+  xgettext also cannot see. Found by running the task: the first run marked
+  exactly those two obsolete in 29 catalogues.
+- `ConversionRow::BITS_TEXT` — upstream's dead `bits_text = _("bits")`
+  (`src/window.py:48`), reproduced so the 30th msgid stays in the catalogues.
+
+The task itself could not run either, for a reason the first draft did not
+find: GNU `xgettext` hands a `.rb` file to `rxgettext`, from the gettext
+*gem*, which this shell does not have — `xgettext: rxgettext subprocess
+failed`. The task now reads the Ruby sources as Python and the data files
+through xgettext's ITS rules, concatenating the two with `msgcat`
+(FINDINGS.md section 9).
+
+Verified after the change: `po/binary.pot`'s `(msgctxt, msgid)` set is
+identical to upstream's, and the `#~ msgid` count is unchanged in all 32
+`.po` files — nothing was marked obsolete. The 288 translations are still
+there, and `rake pot` is safe to run.
+
+### What the finding said
+
 
 `Rakefile:196` runs:
 
@@ -166,6 +201,16 @@ run `rake pot`**, and this ledger's 29 `ported` rows depend on a hand census
 that the project's own tooling contradicts.
 
 ## What could not be checked
+
+**Round 2: both of these were checked.** `nix develop` has `msgfmt`,
+`xgettext`, `msgcat` and `glib-compile-schemas`; what it lacks is a working
+`rake` wrapper (FINDINGS.md section 10) and a display (section 11), so the
+tasks were run through rake's own `exe` under `xvfb-run -a`.
+`rake translations` compiled all 32 catalogues with no `msgfmt` diagnostics,
+and `test/drive_translated.rb` ran the window under `LANGUAGE=de` with all
+eight on-screen assertions passing — including `6 Bits` from the plural form
+and `Ungültige Eingabe` from the tooltip. The two items below are the
+first draft's text, kept for the record.
 
 - **`msgfmt` is not installed in this shell**, so `rake translations` could
   not run, `locale/` does not exist in the working tree, and the claim that

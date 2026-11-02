@@ -27,9 +27,17 @@ class ConversionRow
     ]
   end
 
-  def initialize(tooltip:, bit_plural:, on_base_change:, on_text_change:)
+  # Upstream's src/window.py:48 asks gettext for "bits" into a class attribute
+  # called bits_text that nothing ever reads — the bit counts are built from
+  # the two plural forms instead. The string is in all 32 catalogues, so it is
+  # asked for here too, dead in the same way, rather than dropped and marked
+  # obsolete in every one of them.
+  # Translators: this string is used to describe how many bits there are.
+  BITS_TEXT = -> { _('bits') }
+
+  def initialize(tooltip:, bit_label:, on_base_change:, on_text_change:)
     @tooltip = tooltip
-    @bit_plural = bit_plural
+    @bit_label = bit_label
     @on_base_change = on_base_change
     @on_text_change = on_text_change
   end
@@ -105,8 +113,10 @@ class ConversionRow
   # Upstream counts decimal digits only, whatever the base — so "4B1" is 2.
   def digit_count = entry.text.gsub(/[^0-9]/, '').length
 
+  # The plural forms are asked for by the window, one call site per row, so the
+  # msgids sit in the source as literals where xgettext can read them.
   def refresh_bits
-    bit_button.label = n_(*@bit_plural, digit_count)
+    bit_button.label = @bit_label.call(digit_count)
     bits_label.label = Converter.bit_count(entry.text)
   end
 
@@ -162,15 +172,24 @@ class ConversionRow
       <?xml version="1.0" encoding="UTF-8"?>
       <interface>
         <object class="GtkEntry" id="entry">
-          <property name="placeholder-text">#{escape(_('Enter numbers'))}</property>
+          <property name="placeholder-text">#{escape(placeholder_text)}</property>
           <property name="enable-undo">false</property>
           <accessibility>
-            <property name="label">#{escape(_('Enter numbers…'))}</property>
+            <property name="label">#{escape(accessible_label)}</property>
           </accessibility>
         </object>
       </interface>
     XML
   end
+
+  # Asked for here rather than inside the heredoc above: a gettext call buried
+  # in a #{} interpolation is one xgettext does not find, and a msgid xgettext
+  # does not find is marked obsolete in all 32 catalogues on the next
+  # `rake pot`. Upstream has both as plain properties in src/window.blp:75,
+  # :80, :136 and :141, which its own extractor reads.
+  def self.placeholder_text = _('Enter numbers')
+
+  def self.accessible_label = _('Enter numbers…')
 
   # Translations arrive from the catalogues, so they go through XML escaping
   # before being interpolated into the builder document.

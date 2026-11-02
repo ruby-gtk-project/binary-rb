@@ -4,15 +4,29 @@
 #
 # The two sentinel strings are upstream's: "char" means the input is not valid
 # in its own base, "char_dual" means the same but the two bases are equal, so
-# both entries get flagged rather than just the input one.
+# both entries get flagged rather than just the input one. ABORT is this port's
+# name for upstream's third outcome — the crash described on #answer.
 module Converter
   DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz'
 
+  # Upstream's `+` crash, reproduced rather than fixed: src/lib/get_answer.py:57
+  # reads `if '+' in input: split_input('')`, which calls a list and raises
+  # TypeError, and the handler it was called from (src/window.py:100) never
+  # finishes. Nothing the user can see changes — no answer, no error styling,
+  # no bit count. The window does the same nothing when it sees this.
+  ABORT = 'abort'
+
   module_function
 
-  # Convert +input+ from +in_base+ to +out_base+, or return "char"/"char_dual".
+  # Convert +input+ from +in_base+ to +out_base+, or return one of the three
+  # sentinels. The checks run in upstream's order — space, then "+", then a
+  # leading "-" — so "+ " is "char" and "+5" aborts, exactly as upstream's do.
   def answer(input, in_base, out_base)
-    if input.include?(' ') || input.start_with?('-')
+    if input.include?(' ')
+      'char'
+    elsif input.include?('+')
+      ABORT
+    elsif input.start_with?('-')
       'char'
     # -1 keeps trailing empty parts, so "1." is a part that fails to parse
     # rather than a bare "1" that succeeds — Ruby drops them by default,
@@ -26,16 +40,25 @@ module Converter
     end
   end
 
-  # A part is valid when it is a non-empty run of digits legal in +base+.
-  # Deliberately stricter than Integer(): no sign, no underscores, no 0x
-  # prefix, no whitespace — upstream rejects all of those too.
+  # A part is valid when upstream's `int(part, base)`
+  # (src/lib/get_answer.py:66) would parse it: a run of digits legal in +base+,
+  # optionally separated by single underscores, which Python's int() accepts
+  # and Ruby's Integer() accepts on the same terms. So "1_0" in base 2 is 2 in
+  # both apps, and "_10", "10_" and "1__0" are rejected by both. No sign, no
+  # "0x" prefix and no whitespace: int() takes those only in base 10 or with a
+  # matching prefix, neither of which can reach here.
   def valid?(part, base)
-    part.match?(/\A[#{DIGITS[0, base]}]+\z/i)
+    DIGITS[0, base].then do |digits|
+      part.match?(/\A[#{digits}](?:_?[#{digits}])*\z/i)
+    end
   end
 
-  # Upstream never implemented fractional parts: anything with a "." falls
-  # through to "char" unless the bases are equal, in which case the input is
-  # echoed back untouched.
+  # Upstream refuses any input containing "." unless the two bases are equal
+  # (src/lib/get_answer.py:84, `# TODO: add separate calculations`), in which
+  # case the input is echoed back untouched. The port is faithful to that: a
+  # user who types "10.1" gets an error on both sides, in both apps. That is
+  # upstream's debt, not this port's licence to keep it — closing it here means
+  # closing it upstream first, where the behaviour is decided.
   def convert(input, in_base, out_base)
     if in_base == out_base
       input

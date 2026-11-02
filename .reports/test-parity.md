@@ -8,7 +8,9 @@
 | Ported | 0 |
 | Gaps | 0 |
 | Test command | `rake test` (depends on `translations` and `schemas`) |
-| Suite run in this session | **no** — see below |
+| Suite run | **yes**, round 2 — `rake test`: **24 runs, 62 assertions, 0 failures, 0 errors, 0 skips** |
+| Driven suite run | **yes**, round 2 — `rake drive`: `test/drive_window.rb` **54 of 54 checks passed**, `test/drive_translated.rb` **8 of 8 checks passed** |
+| How they were run | inside `nix develop`, under `xvfb-run -a`, going straight to rake's `exe` with `GEM_HOME` set and `BUNDLE_GEMFILE` unset — the shell's wrapped `rake`/`bundle` cannot start (FINDINGS.md sections 10 and 11) |
 
 Upstream has no test suite. Verified: the census
 (`.claude/skills/test-parity/scripts/test-census.sh`) over the extracted
@@ -28,6 +30,24 @@ case bit them, which bug came back, or why `get_answer` returns the string
 app has ever had, and where they are wrong there is nothing to contradict them.
 
 Do not build empty tables below this line.
+
+## Round 2 — the suites were run
+
+Both ran green, and running them changed two things about this ledger.
+
+- The driven count in the first draft was 43 checks, and one of them —
+  "entries carry an accessible label" — **could never have passed**:
+  `gtk_test_accessible_*` reads GTK's test accessibility backend and nothing
+  set `GTK_A11Y=test`, so it returned `false` whatever the widget carried. The
+  entries were correct the whole time; the assertion was lying. Fixed in
+  `test/environment.rb`.
+- `test/drive_window.rb` is now 54 checks, 11 of them new this round: the
+  About dialog's release notes and version and that it is a fresh instance per
+  activation with the right transient parent, the preferences dialog's
+  geometry, `--help` listing `-w, --new-window` and GLib rejecting an
+  undeclared option, the `handle-local-options` return values, typing into the
+  output entry on a freshly opened window, and `require "binary"` reaching the
+  real application.
 
 ## Extra
 

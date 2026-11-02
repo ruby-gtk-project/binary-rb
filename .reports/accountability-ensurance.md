@@ -196,3 +196,31 @@ accelerator form) are recorded only as code comments in `lib/main.rb:32`,
 `lib/conversion_row.rb:152` and `lib/main.rb:235`. **Create `FINDINGS.md` and
 move them there**, because a binding defect in a code comment is a defect
 nobody can find, and the next agent re-derives it or writes around it.
+
+---
+
+# Round 2 — what happened to each row
+
+Port: `ruby` @ `7a91064` plus this round's commit. Every row above is either
+rewritten in place in the file it lives in, or closed by code. Nothing was
+deleted.
+
+| # | Where | Outcome |
+|--:|---|---|
+| 1 | `.reports/component-inventory.md` `## Gaps to close` | rewritten against the tree. Items 1, 2 and 4 are marked closed with the commit that closed them and kept as rows; item 3 (three dialogs in `lib/main.rb`) stays open and says what is wrong; a new item 5 records the About dialog's missing What's New section and its fix. The document now carries the two shas it was written against. |
+| 2 | `.reports/component-inventory.md` `## Not portable` | heading **deleted**. The three true correspondences moved under `## Correspondences`; the `new_from_appdata` entry became the admission drafted above, and the feature was built — `lib/main.rb` `#about_dialog` parses the `<release version="5.4">` description out of `data/io.github.fizzyizzy05.binary.metainfo.xml.in` and sets `release_notes_version` and `release_notes`, asserted on screen in `test/drive_window.rb`. |
+| 3 | `lib/binary/application.rb:49` | file **deleted**; the admission is recorded as gap 2 in the inventory. `lib/binary.rb` now `require_relative`s `lib/main.rb` and says in its own comment what used to be there. `test/drive_window.rb` asserts `require "binary"` defines `BinaryApp` under upstream's app id and that no `Binary::Application` survives. |
+| 4 | `lib/i18n.rb` `LC_ALL` | rewritten in place as the drafted admission: first person, behaviour named (every string the user sees stays English while 32 compiled catalogues sit there correct), both sides cited. The `ponytail:` marker is gone — a private marker word is a status field nobody else greps. The constraint moved to `FINDINGS.md` section 8. |
+| 5 | `lib/window.rb:85` | left alone, as drafted. False positive: it describes upstream's behaviour and why the port reproduces it. |
+| 6 | `lib/converter.rb` fractional parts | rewritten in place with the behaviour named and whose debt it is: a user who types `10.1` gets an error on both sides, in both apps, and closing it means closing it upstream first (`src/lib/get_answer.py:84`). Also recorded in `FINDINGS.md` under the upstream bugs the port reproduces. |
+| 7 | `lib/converter.rb` "deliberately stricter" | the word is gone **and so is the divergence**. `_` digit separators are accepted exactly where Python's `int()` accepts them, so `1_0` in base 2 converts to `2` in both apps; `+5` now reproduces upstream's crash-and-do-nothing through `Converter::ABORT`, which the window handlers ignore on purpose. Both pinned in `test/test_converter.rb`. |
+| — | `FINDINGS.md` | created. It holds the three binding defects that existed only as code comments (`Adwaita::Application`, `Gtk::Accessible#update_property`, `Adwaita::ShortcutsItem`), the eight more this round turned up, and the upstream bugs the port reproduces on purpose. |
+
+## New entries found this round
+
+| Where | Entry |
+|---|---|
+| `test/gtk_driver.rb:24`–`:25` | "Run it with no display server at all — GTK4 renders to an offscreen surface … No Xvfb needed." This is false: `require 'gtk4'` raises `Gtk::InitError` with `DISPLAY` and `WAYLAND_DISPLAY` unset, before a window exists. The claim is part of why two rounds of reports said the suite could not be run — the shell was fine, the instruction was wrong. Recorded as `FINDINGS.md` section 11; the comment itself is the next thing to rewrite, in the skill it was copied from as well as here. |
+| `test/environment.rb` | the accessible-label check in `test/drive_window.rb` had never passed, because `gtk_test_accessible_*` reads GTK's test a11y backend and nothing set `GTK_A11Y=test`. A check that cannot pass is worse than a missing one: it was counted among the "43 driven checks" nobody had run. Fixed by setting the variable; the widget had been correct all along. |
+| `Rakefile`, task `pot` | the task could never have run in this project's own dev shell: GNU `xgettext` hands `.rb` files to `rxgettext`, which the gettext *gem* provides and the shell does not. Two rounds of translation reports were written against a `po/binary.pot` still carrying upstream's `src/*.py` line references. Fixed in the task (FINDINGS.md section 9) and the pot regenerated. |
+

@@ -51,10 +51,32 @@ class TestConverter < Minitest::Test
     assert_equal 'char', Converter.answer('-5', 10, 10)
   end
 
-  def test_prefixes_underscores_and_signs_ruby_would_otherwise_accept
+  def test_prefixes_int_would_not_accept_in_these_bases
     assert_equal 'char', Converter.answer('0x1f', 16, 10)
-    assert_equal 'char', Converter.answer('1_0', 10, 2)
-    assert_equal 'char', Converter.answer('+5', 10, 2)
+    assert_equal 'char', Converter.answer('0b11', 2, 10)
+  end
+
+  # Python's int() takes single underscores between digits, so upstream's
+  # int(x, in_base) converts "1_0" and this does too. The rejected spellings
+  # are the ones int() rejects as well.
+  def test_digit_separators_are_accepted_exactly_as_python_int_accepts_them
+    assert_equal '2', Converter.answer('1_0', 2, 10)
+    assert_equal '1010', Converter.answer('1_0', 10, 2)
+    assert_equal 'char', Converter.answer('_10', 10, 2)
+    assert_equal 'char', Converter.answer('10_', 10, 2)
+    assert_equal 'char', Converter.answer('1__0', 10, 2)
+  end
+
+  # Upstream's "+" branch (src/lib/get_answer.py:57) calls a list and raises,
+  # which aborts the handler and leaves the window exactly as it was. ABORT is
+  # how that reaches the window here; it is not an error string, and the window
+  # does nothing with it on purpose.
+  def test_a_plus_aborts_the_conversion_the_way_upstream_crashes_out_of_it
+    assert_equal Converter::ABORT, Converter.answer('+5', 10, 2)
+    assert_equal Converter::ABORT, Converter.answer('+5', 10, 10)
+    assert_equal Converter::ABORT, Converter.answer('1+1', 10, 2)
+    # Upstream checks for a space first, so a space wins over a "+".
+    assert_equal 'char', Converter.answer('+ 5', 10, 2)
   end
 
   # Upstream never implemented fractional conversion; a "." only survives when

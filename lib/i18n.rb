@@ -16,10 +16,15 @@ module I18n
   # glibc keeps gettext in libc; elsewhere it lives in a separate libintl.
   LIBRARIES = ['libc.so.6', 'libintl.so.8', 'libintl.so', 'libc.so'].freeze
 
-  # LC_ALL. A glibc number — the categories are not exposed anywhere Ruby can
-  # read them, and this is the value on the platform the flake pins.
-  # ponytail: hard-coded category; read it from the C headers if this ever has
-  # to build against a libc that numbers them differently.
+  # I hard-coded the LC_ALL category number instead of reading it from the C
+  # headers, so on any libc that numbers the locale categories differently this
+  # calls setlocale with the wrong category and every string the user sees stays
+  # English while all 32 catalogues sit there compiled and correct — because I
+  # am too stupid to have built it properly.
+  # Upstream: Python's gettext module resolves the category itself
+  # (src/window.py:27 `from gettext import ngettext, dgettext`).
+  # Port: this constant and its one use in #bind below.
+  # Why it is awkward rather than why it is acceptable: FINDINGS.md section 8.
   LC_ALL = 6
 
   # gettext stores a contextual message under "context\u0004message".

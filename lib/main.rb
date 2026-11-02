@@ -13,10 +13,22 @@ class BinaryApp
   APP_ID = 'io.github.fizzyizzy05.binary'
   VERSION = '5.4'
 
-  # The description AdwAboutDialog.new_from_appdata would have read out of the
-  # metainfo file, wrapped exactly as the catalogues have it.
-  SUMMARY = 'A small and simple app used to convert between different ' \
-            'hexadecimal and binary numbers'
+  # The same file AdwAboutDialog.new_from_appdata reads out of upstream's
+  # GResource bundle (src/main.py:71). The port ships it byte-identical, so the
+  # About dialog's description and release notes are read out of it here.
+  METAINFO = File.expand_path(
+    '../data/io.github.fizzyizzy05.binary.metainfo.xml.in',
+    __dir__,
+  )
+
+  # The <release version="…"> whose notes the About dialog shows, with the
+  # <description> body captured as the AppStream markup AdwAboutDialog wants.
+  RELEASE_NOTES = lambda do |version|
+    %r{<release\s+version="#{Regexp.escape(version)}"[^>]*>\s*<description>(.*?)</description>}m
+  end
+
+  # The short option name upstream passes as the byte b"w" (src/main.py:46).
+  NEW_WINDOW_SHORT = 'w'.ord
 
   ACTIONS = {
     'quit'         => ['<primary>q'],
@@ -26,17 +38,6 @@ class BinaryApp
     'new-window'   => ['<primary>n'],
     'shortcuts'    => ['<primary>question'],
   }.freeze
-
-  # Translated out of the "shortcut window" context, as upstream's
-  # shortcuts-dialog.blp asks for them.
-  SHORTCUTS = [
-    ['New Window', 'app.new-window'],
-    ['Close Window', 'app.close-window'],
-    ['Show Shortcuts', 'app.shortcuts'],
-    ['Quit', 'app.quit'],
-  ].freeze
-
-  SHORTCUT_CONTEXT = 'shortcut window'
 
   HIGH_CONTRAST_PRIORITY = Gtk::StyleProvider::PRIORITY_APPLICATION + 1
 
@@ -70,6 +71,14 @@ class BinaryApp
 
       a.signal_connect('activate') { present_window }
 
+      # Upstream's do_handle_local_options (src/main.py:57): --new-window
+      # registers, and a second invocation that finds itself remote hands the
+      # action to the instance already running and exits 0. Anything else
+      # returns -1, which is GLib's "carry on with the normal startup".
+      a.signal_connect('handle-local-options') do |_, options|
+        handle_local_options(options)
+      end
+
       # HANDLES_COMMAND_LINE is what carries `--new-window` from a second
       # invocation over to the instance that is already running.
       a.signal_connect('command-line') do |_, command_line|
@@ -79,7 +88,30 @@ class BinaryApp
     end
   end
 
-  def run = app.run(ARGV)
+  # $0 goes back on the front: g_application_run takes a C argv and skips its
+  # first element as the program name, while Ruby's ARGV has no program name in
+  # it, so a bare `app.run(ARGV)` eats the first argument — `binary --help`
+  # opened a window instead of printing anything. Upstream passes sys.argv,
+  # which carries argv[0] (src/main.py:106).
+  def run = app.run([$PROGRAM_NAME, *ARGV])
+
+  def handle_local_options(options)
+    if options.contains?('new-window')
+      forward_new_window
+    else
+      -1
+    end
+  end
+
+  def forward_new_window
+    app.register
+    if app.remote?
+      app.activate_action('new-window', nil)
+      0
+    else
+      -1
+    end
+  end
 
   def handle_command_line(arguments)
     if arguments.include?('--new-window') || arguments.include?('-w')
@@ -186,15 +218,41 @@ class BinaryApp
   def app
     @app ||= Gtk::Application.new(APP_ID, :handles_command_line).tap do |a|
       Gtk::Window.set_default_icon_name(APP_ID)
+
+      # Registering the option with GLib is what puts "-w, --new-window" in
+      # `binary --help` and makes GLib reject an option nobody declared, as
+      # upstream's add_main_option does (src/main.py:46). The description is
+      # the English one upstream passes; it marks no msgid there either.
+      a.add_main_option(
+        'new-window',
+        NEW_WINDOW_SHORT,
+        :none,
+        :none,
+        'Open a new window',
+        nil,
+      )
     end
   end
 
+  # The release notes AdwAboutDialog.new_from_appdata would have taken from
+  # data/io.github.fizzyizzy05.binary.metainfo.xml.in:30-53.
+  def release_notes
+    @release_notes ||= File.read(METAINFO)
+      .match(RELEASE_NOTES.call(VERSION))
+      .then { |found| found[1].strip }
+  end
+
+  # Built on every activation, not memoized: upstream makes a new
+  # Adw.AboutDialog each time the action runs (src/main.py:70), so no dialog
+  # instance is ever shared between two windows.
   def about_dialog
-    @about_dialog ||= Adwaita::AboutDialog.new.tap do |about|
+    Adwaita::AboutDialog.new.tap do |about|
       about.application_name = _('Binary')
       about.application_icon = APP_ID
       about.version = VERSION
-      about.comments = _(SUMMARY)
+      about.comments = _('A small and simple app used to convert between different hexadecimal and binary numbers')
+      about.release_notes_version = VERSION
+      about.release_notes = release_notes
       about.developer_name = 'Isabelle Jackson'
       about.developers = ['Isabelle Jackson https://fizzyizzy05.dev']
       about.designers = ['Gregor Niehl https://gitlab.gnome.org/gregorni']
@@ -209,9 +267,17 @@ class BinaryApp
 
   # Upstream's preferences window is an empty page — the action exists so the
   # desktop shell can open it, and there is nothing in it yet.
+  # src/preferences.blp:6-8 gives the window default-width 400,
+  # default-height 306 and height-request 200. AdwDialog has no default size —
+  # content-width and content-height are its name for the same thing, and
+  # #set_default_size does not exist on it in the bindings — so the first two
+  # land there and the minimum height stays a size request.
   def preferences_dialog
     @preferences_dialog ||= Adwaita::PreferencesDialog.new.tap do |dialog|
       dialog.title = _('Preferences')
+      dialog.content_width = 400
+      dialog.content_height = 306
+      dialog.set_size_request(-1, 200)
       dialog.add(Adwaita::PreferencesPage.new)
     end
   end
@@ -222,13 +288,19 @@ class BinaryApp
     end
   end
 
+  # One c_ call per item, with the context and the msgid written out, because a
+  # table of titles walked in a loop is five msgids xgettext cannot see — and a
+  # msgid that does not reach po/binary.pot is marked obsolete in all 32
+  # catalogues on the next `rake pot`. Upstream writes them out the same way,
+  # in src/shortcuts-dialog.blp:6, :9, :14, :19, :24.
   def general_shortcuts
     @general_shortcuts ||= Adwaita::ShortcutsSection.new.tap do |section|
-      section.title = c_(SHORTCUT_CONTEXT, 'General')
+      section.title = c_('shortcut window', 'General')
 
-      SHORTCUTS.each do |title, action|
-        section.add(shortcut_item(c_(SHORTCUT_CONTEXT, title), action))
-      end
+      section.add(shortcut_item(c_('shortcut window', 'New Window'), 'app.new-window'))
+      section.add(shortcut_item(c_('shortcut window', 'Close Window'), 'app.close-window'))
+      section.add(shortcut_item(c_('shortcut window', 'Show Shortcuts'), 'app.shortcuts'))
+      section.add(shortcut_item(c_('shortcut window', 'Quit'), 'app.quit'))
     end
   end
 

@@ -7,12 +7,21 @@
 | Units | 5 (window, preferences, shortcuts, application, conversion library) |
 | Units with parity | **1 / 5** (conversion library — and see its caveats) |
 
-Checks that **did not run** in this environment, and so are not reported as
-passed: Step 5 (driving the signals) and the screenshot comparison.
-`minitest`, `msgfmt`, `glib-compile-schemas` and `xgettext` are all absent
-from the shell this audit ran in, so `rake test` and `rake drive` could not be
-executed. `test/drive_window.rb` exists and asserts much of the behaviour
-below; nobody in this session watched it pass.
+**Round 2: the suites were run.** Inside `nix develop`, under `xvfb-run -a`:
+`rake test` is 24 runs / 62 assertions / 0 failures, `rake drive` is 54 of 54
+checks in `test/drive_window.rb` and 8 of 8 in `test/drive_translated.rb`, and
+`rake translations`, `rake schemas` and `rake pot` all run. The tools were
+never missing — the shell's wrapped `rake` cannot start and GTK needs a
+display, both written up in `FINDINGS.md` sections 10 and 11. Seven of this
+document's gaps were closed in the same round: the About dialog's release
+notes and its per-activation construction, the preferences geometry, the
+registered `--new-window` main option, the input-validation divergences on
+`1_0` and `+5`, the scaffold application on the gem's entry point, and the
+nine msgids `xgettext` could not see.
+
+The first draft's note, kept for the record: checks that **did not run** in
+that environment, and so were not reported as passed: Step 5 (driving the
+signals) and the screenshot comparison.
 
 ---
 

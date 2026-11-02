@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: binary\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-27 19:00+0000\n"
+"POT-Creation-Date: 2026-09-04 12:31+0100\n"
 "PO-Revision-Date: 2025-12-22 21:00+0000\n"
 "Last-Translator: Asier Saratsua Garmendia <asier.sarasua@gmail.com>\n"
 "Language-Team: Basque <https://hosted.weblate.org/projects/binary/binary-app/"
@@ -20,7 +20,7 @@ msgstr ""
 "X-Generator: Weblate 5.15.1\n"
 
 #: data/io.github.fizzyizzy05.binary.desktop.in:2
-#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:6 src/window.py:51
+#: data/io.github.fizzyizzy05.binary.metainfo.xml.in:6
 msgid "Binary"
 msgstr "Bitarra"
 
@@ -34,7 +34,7 @@ msgstr "Bihurtu zenbakiak oinarri batetik beste batera"
 msgid "binary;decimal;hexadecimal;base;convert;"
 msgstr "bitarra;hamartarra;hamaseitarra;oinarria;bihurtu;"
 
-#: data/io.github.fizzyizzy05.binary.desktop.in:16 src/window.blp:180
+#: data/io.github.fizzyizzy05.binary.desktop.in:16
 msgid "New Window"
 msgstr "Leiho berria"
 
@@ -61,104 +61,102 @@ msgid "Binary window converting 17 in octal to F in hexadecimal"
 msgstr ""
 "Bitarra aplikazioaren leihoa 17 zenbaki zortzitarra F hamaseitar bihurtzen"
 
-#: src/shortcuts-dialog.blp:6
+#: lib/main.rb:259
+msgid "translator-credits"
+msgstr "Asier Saratsua"
+
+#: lib/main.rb:272
+msgid "Preferences"
+msgstr "Hobespenak"
+
+#: lib/main.rb:293
 msgctxt "shortcut window"
 msgid "General"
 msgstr "Orokorra"
 
-#: src/shortcuts-dialog.blp:9
+#: lib/main.rb:295
 msgctxt "shortcut window"
 msgid "New Window"
 msgstr "Leiho berria"
 
-#: src/shortcuts-dialog.blp:14
+#: lib/main.rb:296
 msgctxt "shortcut window"
 msgid "Close Window"
 msgstr "Itxi leihoa"
 
-#: src/shortcuts-dialog.blp:19
+#: lib/main.rb:297
 msgctxt "shortcut window"
 msgid "Show Shortcuts"
 msgstr "Erakutsi lasterbideak"
 
-#: src/shortcuts-dialog.blp:24
+#: lib/main.rb:298
 msgctxt "shortcut window"
 msgid "Quit"
 msgstr "Irten"
 
-#. Translators: Replace "translator-credits" with your names, one name per line
-#: src/main.py:80
-msgid "translator-credits"
-msgstr "Asier Saratsua"
-
-#. Translators: this string is used to describe how many bits there are.
-#: src/window.py:48
-msgid "bits"
-msgstr "bit"
-
-#: src/window.py:52
-msgid "Octal"
-msgstr "Zortzitarra"
-
-#: src/window.py:53
-msgid "Decimal"
-msgstr "Hamartarra"
-
-#: src/window.py:54
-msgid "Hexadecimal"
-msgstr "Hamaseitarra"
-
-#: src/window.py:55
-msgid "Other"
-msgstr "Bestelakoa"
-
-#: src/window.py:124 src/window.py:128 src/window.py:130 src/window.py:168
-#: src/window.py:172 src/window.py:174
+#: lib/window.rb:115 lib/window.rb:164 lib/window.rb:185 lib/window.rb:186
 msgid "Invalid input"
 msgstr "Sarrera baliogabea"
 
-#: src/window.py:212
+#: lib/window.rb:263
+msgid "Main Menu"
+msgstr "Menu nagusia"
+
+#: lib/window.rb:282
+msgid "_Keyboard Shortcuts"
+msgstr "_Laster-teklak"
+
+#: lib/window.rb:283
+msgid "_About Binary"
+msgstr "Bitarra aplikazioari _buruz"
+
+#: lib/window.rb:328
+msgid "Input Base"
+msgstr "Sarrerako oinarria"
+
+#: lib/window.rb:329
 #, python-format
 msgid "%(in_count)d bit"
 msgid_plural "%(in_count)d bits"
 msgstr[0] "Bit %(in_count)d"
 msgstr[1] "%(in_count)d bit"
 
-#: src/window.py:221
+#: lib/window.rb:337
+msgid "Output Base"
+msgstr "Irteerako oinarria"
+
+#: lib/window.rb:338
 #, python-format
 msgid "%(out_count)d bit"
 msgid_plural "%(out_count)d bits"
 msgstr[0] "Bit %(out_count)d"
 msgstr[1] "%(out_count)d bit"
 
-#: src/window.blp:21
-msgid "Main Menu"
-msgstr "Menu nagusia"
+#: lib/conversion_row.rb:23
+msgid "Octal"
+msgstr "Zortzitarra"
 
-#: src/window.blp:45
-msgid "Input Base"
-msgstr "Sarrerako oinarria"
+#: lib/conversion_row.rb:24
+msgid "Decimal"
+msgstr "Hamartarra"
 
-#: src/window.blp:75 src/window.blp:136
+#: lib/conversion_row.rb:25
+msgid "Hexadecimal"
+msgstr "Hamaseitarra"
+
+#: lib/conversion_row.rb:26
+msgid "Other"
+msgstr "Bestelakoa"
+
+#. Translators: this string is used to describe how many bits there are.
+#: lib/conversion_row.rb:36
+msgid "bits"
+msgstr "bit"
+
+#: lib/conversion_row.rb:190
 msgid "Enter numbers"
 msgstr "Sartu zenbakiak"
 
-#: src/window.blp:80 src/window.blp:141
+#: lib/conversion_row.rb:192
 msgid "Enter numbers…"
 msgstr "Sartu zenbakiak…"
-
-#: src/window.blp:106
-msgid "Output Base"
-msgstr "Irteerako oinarria"
-
-#: src/window.blp:186
-msgid "_Keyboard Shortcuts"
-msgstr "_Laster-teklak"
-
-#: src/window.blp:191
-msgid "_About Binary"
-msgstr "Bitarra aplikazioari _buruz"
-
-#: src/preferences.blp:5
-msgid "Preferences"
-msgstr "Hobespenak"
