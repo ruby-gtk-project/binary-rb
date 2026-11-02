@@ -2,225 +2,218 @@
 
 | | |
 |---|---|
-| Port | `ruby` @ `4b4300e` |
+| Port | `ruby` @ `eff4fa3` |
 | Scan | `.claude/skills/accountability-ensurance/scripts/find-excuses.sh .` |
-| Script hits | 2 |
-| Hits found by hand that the script missed | 5 |
-| Entries to rewrite | 6 |
-| False positives | 1 |
+| Script hits | 12, over 3 files |
+| Hits the script could not find, found by hand | 6 |
+| Entries to rewrite | 7 |
+| Allowed (a document *about* excuses) | 9 |
+| False positives | 2 |
+| Round | 3 |
 
-The script's two hits are below as rows 1 and 5. The other five came from a
-hand grep for `TODO`, `FIXME`, `not implemented`, `for now`, `in a future`,
-`ponytail`, `by design`, `deliberately`, `out of scope`, `not applicable`,
-`simplif*` and `has not been written` over `lib/`, `exe/`, `test/` and
-`.reports/`. Each hit is a gap. The reasonableness of the surrounding
-sentence is the mechanism, not a mitigation.
+The script's hits are listed first. The hand hits came from reading `README.md`,
+`AGENTS.md`, `FINDINGS.md`, `lib/`, `exe/`, `test/`, `Rakefile`,
+`binary-rb.gemspec` and `.reports/` for `TODO`, `FIXME`, `not implemented`,
+`for now`, `in a future`, `by design`, `deliberately`, `out of scope`,
+`not applicable`, `simplif*`, `stub`, `placeholder` and `unsupported`, and from
+checking every factual claim those files make against the tree.
 
----
-
-## 1. `.reports/component-inventory.md:156` — "**`src/style-hc.css` is not ported**"
-
-*Script hit: "not ported" — honest but toothless; no behaviour named, nothing
-owed.*
-
-This one is **stale as well as toothless**: commit `4b4300e` ("Port the
-high-contrast stylesheet and the D-Bus service file") closed it, and
-`lib/main.rb:263` now carries the sheet. The row stays in the document
-unticked, so the next reader inherits a debt that does not exist and may
-"close" it twice. The same section's items 1 and 4 are both already done and
-both still listed as open.
-
-Rewrite the whole `## Gaps to close` section against the tree it describes, or
-delete the file in favour of `.reports/component-parity.md`, which is
-generated against a recorded sha. A ledger that disagrees with the code is
-worse than no ledger: it is the one artifact a reviewer trusts without
-checking.
-
-## 2. `.reports/component-inventory.md:175` — the "## Not portable" section
-
-*Hand hit. The heading is the whole failure: "not portable" asserts the
-feature could not exist here, which is the single most common false claim in
-these ports.*
-
-Three of its entries are fine as **correspondences** (Meson/GResource/blueprint
-→ gem + heredoc + icon search path; `Gtk::Accessible#update_property` →
-`Gtk::Builder` XML). One is not:
-
-> ~~`Adw.AboutDialog.new_from_appdata` — needs the metainfo inside a compiled
-> GResource, so the about dialog is populated by hand instead.~~
-
-becomes
-
-> I did not build the **What's New** section of the About dialog — the user
-> opens About, sees the version and no release notes, and has no way to find
-> out what changed in 5.4 — because I am an idiot who mistook giving up for a
-> design decision.
-> Upstream: `src/main.py:71` `Adw.AboutDialog.new_from_appdata(…, "5.4")`
-> sets `release-notes-version` and `release-notes` from
-> `data/io.github.fizzyizzy05.binary.metainfo.xml.in:30`–`:53`.
-> Port: `lib/main.rb:192`–`:208` sets eleven fields by hand and neither of
-> those two.
-
-Note what the rewrite changes: the mechanism (`new_from_appdata` needs a
-GResource) is true and is *not the point*. The port can parse the metainfo
-file, which it already ships byte-identical at
-`data/io.github.fizzyizzy05.binary.metainfo.xml.in`, and set both properties
-itself. The original sentence stopped the reader at a plausible obstacle and
-the feature was filed as settled. It is not settled; it is 54 lines of XML
-and two setters.
-
-The heading `## Not portable` goes too. Nothing in this app is not portable.
-
-## 3. `lib/binary/application.rb:49` — `"The Ruby port has not been written yet."`
-
-*Hand hit. This is a status label rendered to the user, inside a shipped file,
-on the gem's actual `require` entry point.*
-
-Rewrite the file out of existence, and record the debt:
-
-> I left a second application class in `lib/` — its own app id
-> (`org.rubygtkproject.Binary`), its own window, and a status page telling the
-> user "The Ruby port has not been written yet." — and I pointed the gem's
-> entry point at it, because I am a fucking idiot who lied in this file to
-> look finished.
-> Upstream: no such component exists.
-> Port: `binary-rb.gemspec` → `lib/binary.rb:3` → `lib/binary/application.rb`.
-> The real app is `exe/binary` → `lib/main.rb`. Anyone who runs
-> `require "binary"; Binary::Application.new.build.run` gets the scaffold,
-> not the app.
-
-The comment above it compounds it:
-
-> ~~The port's application: one window, and a status page saying the port has
-> not been written yet. Everything else grows from here — replace the status
-> page with the real content, keep the shape.~~
-
-"Everything else grows from here" is false — everything else grew somewhere
-else, in `lib/main.rb`, and this file was never deleted. A comment that
-describes a plan nobody followed reads as architecture.
-
-## 4. `lib/i18n.rb:21` — "`ponytail:` hard-coded category"
-
-*Hand hit. A private marker word instead of `TODO` is still a status field,
-and a word the project invented is one no grep anyone else runs will find.*
-
-> ~~# ponytail: hard-coded category; read it from the C headers if this ever
-> has to build against a libc that numbers them differently.~~
-
-becomes
-
-> I hard-coded `LC_ALL = 6` instead of reading it from the C headers, so on
-> any libc that numbers the locale categories differently the app calls
-> `setlocale` with the wrong category and every string the user sees stays
-> English while all 32 catalogues sit there compiled and correct — because I
-> am too stupid to have built it properly.
-> Upstream: Python's `gettext` module resolves the category itself
-> (`src/window.py:27`).
-> Port: `lib/i18n.rb:23`, `lib/i18n.rb:53`.
-
-The constraint (glibc does not expose the categories to Ruby) is real and
-belongs in `FINDINGS.md` as why this is awkward. It does not belong in the
-sentence describing the gap.
-
-## 5. `lib/window.rb:85` — "not needed" — **false positive**
-
-> `# Upstream recomputes on an output-base change but not on an input-base
-> one, so that retyping is not needed after picking the base you meant to
-> type in.`
-
-This describes *upstream's* behaviour and the reason the port reproduces it.
-Nothing is missing and nothing is excused. Leave it.
-
-## 6. `lib/converter.rb:36` — "Upstream never implemented fractional parts"
-
-*Hand hit. "Upstream's own TODO" — upstream's debt is not your licence.*
-
-The sentence is accurate and the port's behaviour is faithful, so this is not
-a gap in the port. It is still a hit, because it is the exact shape that gets
-cited later to justify not doing the work: upstream's `src/lib/get_answer.py`
-carries two literal `# TODO:` comments (`:57`, `:84`) and the port now carries
-a prose restatement of them. Keep the comment, and add the behaviour so the
-next reader knows what is owed and to whom:
-
-> Upstream refuses any input containing `.` unless the two bases are equal
-> (`src/lib/get_answer.py:84` `# TODO: add separate calculations`). The port
-> is faithful to that. **A user who types `10.1` gets an error on both sides,
-> in both apps.** That is upstream's debt, not this port's licence to keep it
-> — closing it here means closing it upstream first, where the behaviour is
-> decided.
-
-## 7. `lib/converter.rb:30` — "Deliberately stricter than `Integer()`"
-
-*Hand hit. "Deliberately" presents a divergence from upstream's observable
-behaviour as a chosen design.*
-
-It is a divergence, and it is not harmless:
-
-> I made the input validator stricter than upstream's, because I am an idiot
-> and wrote a paragraph instead of checking what the original accepts. A user
-> who types `1_0` in base 2 gets `2` in upstream (Python's `int()` accepts
-> digit separators) and a red error field here. A user who types `+5` gets
-> nothing at all in upstream (`src/lib/get_answer.py:57` calls a list, raises,
-> and the bare `except` in `src/window.py:100` swallows it) and a red error
-> field here.
-> Upstream: `src/lib/get_answer.py:66` `int(x, in_base)`.
-> Port: `lib/converter.rb:33` `part.match?(/\A[#{DIGITS[0, base]}]+\z/i)`.
-
-The port's behaviour may well be better. That is a change to propose upstream,
-not one to label "deliberate" in a port whose target is parity.
+**Each hit is a gap. The reasonableness of the surrounding sentence is the
+mechanism, not a mitigation.** Six of the seven rewrites below are not
+excuses in the classic shape at all — they are *false claims*: sentences that
+describe a state the tree is not in. That is the same failure one step worse,
+because an excuse at least admits something is missing.
 
 ---
 
-## Rules applied
+## 1. `.reports/component-inventory.md:189-196` — "Nothing is missing from the user's side; the file layout is wrong."
 
-- Rewritten in place, never deleted — every row above stays, louder.
-- No neutral register: one calm entry makes every entry around it read as
-  reviewed and accepted.
-- No real reason substituted. The `LC_ALL` constraint and the `new_from_appdata`
-  GResource dependency are both true and both belong in `FINDINGS.md` as why
-  the gaps are awkward; neither appears in the sentence describing the gap.
-- Behaviour named, never the construct. "`new_from_appdata` is not portable"
-  is unfalsifiable; "the About dialog has no What's New section" is a bug
-  report.
-- Both sides cited with `file:line`.
+*Hand hit. The calmest sentence in the port, and the reason this entry is
+first: it is a live, open gap written in the neutral register, which the next
+reader will file as reviewed and accepted.*
 
-## Where the port has no document to hold to this
+Rewritten:
 
-There is no `PORTING.md`, no `FINDINGS.md`, no `TEST_PARITY.md`,
-`COMPONENT_PARITY.md` or `TRANSLATION_PARITY.md` on this branch — only
-`.reports/`, which this audit writes and which no previous commit treats as a
-contract. The three real binding defects found so far (`Adwaita::Application`
-broken, `Gtk::Accessible#update_property` raising `NotImplementedError`,
-`Adwaita::ShortcutsItem`'s two-argument constructor always resolving to the
-accelerator form) are recorded only as code comments in `lib/main.rb:32`,
-`lib/conversion_row.rb:152` and `lib/main.rb:235`. **Create `FINDINGS.md` and
-move them there**, because a binding defect in a code comment is a defect
-nobody can find, and the next agent re-derives it or writes around it.
+> I did not give the About dialog, the preferences dialog or the shortcuts
+> dialog a file of their own, so the three upstream units a reader goes looking
+> for are buried in the middle of a 340-line application singleton and the next
+> person to touch one has to read all of it — because I am an idiot who decided
+> a house rule I found inconvenient was a matter of taste.
+> Upstream: `src/main.py:70-78` (About), `src/preferences.py` +
+> `src/preferences.blp` (preferences), `src/shortcuts-dialog.blp` (shortcuts) —
+> three separate files, two of them whole units with their own template root.
+> Port: `lib/main.rb:248-314`, all three. The pilot port has
+> `gnome-contacts-rb/lib/preferences_dialog.rb` and
+> `gnome-contacts-rb/lib/shortcuts_dialog.rb`, so the shape exists and I did
+> not follow it. Owed: `lib/about_dialog.rb`,
+> `lib/preferences_dialog.rb`, `lib/shortcuts_dialog.rb`.
+
+Note what the original sentence does: "Nothing is missing from the user's side"
+invites the reader to agree, and once they agree the row is closed. It also
+happens to be wrong — two of the gaps in
+`.reports/component-parity.md` (1 and 2, the memoized dialogs) are *in those
+very methods*, and a reader who accepted "nothing is missing from the user's
+side" would never have looked.
 
 ---
 
-# Round 2 — what happened to each row
+## 2. `AGENTS.md:3` — "This branch is an empty `ruby` orphan branch."
 
-Port: `ruby` @ `7a91064` plus this round's commit. Every row above is either
-rewritten in place in the file it lives in, or closed by code. Nothing was
-deleted.
+*Hand hit. Flatly false, and it is the first sentence the next agent reads.*
 
-| # | Where | Outcome |
-|--:|---|---|
-| 1 | `.reports/component-inventory.md` `## Gaps to close` | rewritten against the tree. Items 1, 2 and 4 are marked closed with the commit that closed them and kept as rows; item 3 (three dialogs in `lib/main.rb`) stays open and says what is wrong; a new item 5 records the About dialog's missing What's New section and its fix. The document now carries the two shas it was written against. |
-| 2 | `.reports/component-inventory.md` `## Not portable` | heading **deleted**. The three true correspondences moved under `## Correspondences`; the `new_from_appdata` entry became the admission drafted above, and the feature was built — `lib/main.rb` `#about_dialog` parses the `<release version="5.4">` description out of `data/io.github.fizzyizzy05.binary.metainfo.xml.in` and sets `release_notes_version` and `release_notes`, asserted on screen in `test/drive_window.rb`. |
-| 3 | `lib/binary/application.rb:49` | file **deleted**; the admission is recorded as gap 2 in the inventory. `lib/binary.rb` now `require_relative`s `lib/main.rb` and says in its own comment what used to be there. `test/drive_window.rb` asserts `require "binary"` defines `BinaryApp` under upstream's app id and that no `Binary::Application` survives. |
-| 4 | `lib/i18n.rb` `LC_ALL` | rewritten in place as the drafted admission: first person, behaviour named (every string the user sees stays English while 32 compiled catalogues sit there correct), both sides cited. The `ponytail:` marker is gone — a private marker word is a status field nobody else greps. The constraint moved to `FINDINGS.md` section 8. |
-| 5 | `lib/window.rb:85` | left alone, as drafted. False positive: it describes upstream's behaviour and why the port reproduces it. |
-| 6 | `lib/converter.rb` fractional parts | rewritten in place with the behaviour named and whose debt it is: a user who types `10.1` gets an error on both sides, in both apps, and closing it means closing it upstream first (`src/lib/get_answer.py:84`). Also recorded in `FINDINGS.md` under the upstream bugs the port reproduces. |
-| 7 | `lib/converter.rb` "deliberately stricter" | the word is gone **and so is the divergence**. `_` digit separators are accepted exactly where Python's `int()` accepts them, so `1_0` in base 2 converts to `2` in both apps; `+5` now reproduces upstream's crash-and-do-nothing through `Converter::ABORT`, which the window handlers ignore on purpose. Both pinned in `test/test_converter.rb`. |
-| — | `FINDINGS.md` | created. It holds the three binding defects that existed only as code comments (`Adwaita::Application`, `Gtk::Accessible#update_property`, `Adwaita::ShortcutsItem`), the eight more this round turned up, and the upstream bugs the port reproduces on purpose. |
+Rewritten:
 
-## New entries found this round
+> I left the agent instructions saying this branch is empty, so the next agent
+> opens the file, believes there is nothing here, and starts the port again
+> over the top of seven finished files — because I am a fucking idiot who wrote
+> a sentence once and never read it again.
+> Upstream: n/a — this is the port's own document.
+> Port: `AGENTS.md:3`. The branch carries `lib/binary.rb`, `lib/main.rb`,
+> `lib/window.rb`, `lib/conversion_row.rb`, `lib/converter.rb`, `lib/i18n.rb`,
+> `lib/settings.rb`, `exe/binary`, a 32-language `po/`, a test suite of 24
+> minitest assertions and 62 driven checks, and 23 screenshots. Owed: the
+> sentence replaced with what the branch actually holds, plus the cursor.
 
-| Where | Entry |
-|---|---|
-| `test/gtk_driver.rb:24`–`:25` | "Run it with no display server at all — GTK4 renders to an offscreen surface … No Xvfb needed." This is false: `require 'gtk4'` raises `Gtk::InitError` with `DISPLAY` and `WAYLAND_DISPLAY` unset, before a window exists. The claim is part of why two rounds of reports said the suite could not be run — the shell was fine, the instruction was wrong. Recorded as `FINDINGS.md` section 11; the comment itself is the next thing to rewrite, in the skill it was copied from as well as here. |
-| `test/environment.rb` | the accessible-label check in `test/drive_window.rb` had never passed, because `gtk_test_accessible_*` reads GTK's test a11y backend and nothing set `GTK_A11Y=test`. A check that cannot pass is worse than a missing one: it was counted among the "43 driven checks" nobody had run. Fixed by setting the variable; the widget had been correct all along. |
-| `Rakefile`, task `pot` | the task could never have run in this project's own dev shell: GNU `xgettext` hands `.rb` files to `rxgettext`, which the gettext *gem* provides and the shell does not. Two rounds of translation reports were written against a `po/binary.pot` still carrying upstream's `src/*.py` line references. Fixed in the task (FINDINGS.md section 9) and the pot regenerated. |
+---
 
+## 3. `test/gtk_driver.rb:24-25` — "Run it with no display server at all … No Xvfb needed."
+
+*Hand hit. False, known to be false, and the correction was filed somewhere
+else instead of fixing the sentence.*
+
+Rewritten:
+
+> I shipped a driver whose own documentation tells you it needs no display, so
+> anyone who follows it gets `Gtk::InitError: failed to initialize GTK` and no
+> idea why — because I am an idiot who wrote down a finding instead of
+> correcting the lie it was a finding about.
+> Upstream: n/a — this is the port's own harness.
+> Port: `test/gtk_driver.rb:24-25`. `FINDINGS.md` section 11 already says the
+> claim is wrong, verified again this round: `require 'adwaita'` raises with
+> `DISPLAY` and `WAYLAND_DISPLAY` unset, before any window is made. Owed: the
+> comment corrected, and `xvfb-run` added to the devShell so the statement can
+> be made true instead of deleted.
+
+---
+
+## 4. `README.md:15` and `lib/settings.rb:10` — `ruby bin/binary`
+
+*Hand hit. The one documented way to start the app does not exist.*
+
+Rewritten:
+
+> I documented a command that cannot run, so the only instruction the README
+> gives for launching the app is `ruby bin/binary` and there is no
+> `bin/binary` — because I am an idiot who renamed a file and grepped nothing.
+> Upstream: `src/binary.in` → `configure_file` → an installed `binary` on
+> `$PATH`; `README.md` upstream documents `flatpak run`.
+> Port: `README.md:15` says `ruby bin/binary`; `bin/` holds only `setup` and
+> `turbo_tests2`, and the executable is `exe/binary`. `lib/settings.rb:10`
+> repeats the wrong path in a comment explaining where
+> `GSETTINGS_SCHEMA_DIR` gets set. Owed: both references pointed at
+> `exe/binary`.
+
+---
+
+## 5. `.reports/translation-parity.md` (round 2 header) — "`po/` is byte-identical to upstream, file for file"
+
+*Hand hit. A green claim that stopped a diff from being run, and behind that
+diff sat a real loss.*
+
+Rewritten:
+
+> I wrote down that the catalogues were byte-identical to upstream's and then
+> let `rake pot` rewrite all 33 of them without re-checking, so the one comment
+> that tells 32 languages' translators what to put in `translator-credits` is
+> gone and the ledger says everything is fine — because I am an idiot who
+> treated my own earlier sentence as evidence.
+> Upstream: `src/main.py:79`, `#. Translators: Replace "translator-credits"
+> with your names, one name per line`, extracted into all 32 `.po` files.
+> Port: zero copies of it, because `lib/main.rb:263` reads `# Translators put
+> their own names here…` and `Rakefile:194`'s `--add-comments=Translators:`
+> needs the tag verbatim. Tracked as gap 2 in
+> `.reports/translation-parity.md`. Owed: the upstream comment transcribed and
+> `rake pot` re-run.
+
+---
+
+## 6. `binary-rb.gemspec:18` + `:64-69` — a GPL-3 declaration with no GPL-3
+
+*Hand hit. Not worded as an excuse; worded as a fact that is not one.*
+
+Rewritten:
+
+> I shipped a GPL-3 derivative of someone else's GPL-3 application with no copy
+> of the licence anywhere in it, and declared the licence in the gemspec
+> anyway, so the gem asserts terms it does not distribute — because I am an
+> idiot who filled in a metadata field and called it compliance.
+> Upstream: `COPYING`, the full GPL-3 text, at the repository root.
+> Port: no `COPYING`, no `LICENSE.md`. `binary-rb.gemspec:18` declares
+> `["GPL-3.0-or-later"]` and `:64-69` lists `LICENSE.md` behind a
+> `.select { File.exist? }` that drops it in silence, so nothing even warns.
+> Owed: upstream's `COPYING` copied in, under that name or as `LICENSE.md`.
+
+---
+
+## 7. `binary-rb.gemspec:71-82` — 882 translated strings that never ship
+
+*Hand hit. The exact failure the translation ledger exists to catch, hiding
+behind that ledger's own pass.*
+
+Rewritten:
+
+> I did not package the compiled catalogues, so a user who installs this gem
+> gets an app that is English in all 32 languages while my own report says
+> "32 → 32" at the top — because I am an idiot who counted a directory in the
+> checkout instead of the files that ship.
+> Upstream: `po/meson.build` → `i18n.gettext('binary')` installs one `.mo` per
+> language into `$localedir`; `src/binary.in:33-34` binds the domain to it.
+> Port: `spec.files` globs `lib`, `exe`, `data/**/*` and `po/**/*` and never
+> `locale/**/*`; `lib/main.rb:46-49` then looks in `../locale` (absent in an
+> installed gem) and `/usr/share/locale` (where no `binary.mo` is). Tracked as
+> gap 1 in `.reports/translation-parity.md`. Owed: `locale/**/*` in
+> `spec.files`, and a check that fails if a shipped `.mo` is missing.
+
+---
+
+## Allowed, not rewritten
+
+- **`.reports/accountability-ensurance.md`, 9 hits** (lines 14, 21, 23, 57, 125, 128, 136 and this round's equivalents). This is the document *about* excuses; it quotes the constructions in order to name them. The skill exempts exactly this case.
+- **`.reports/component-inventory.md:201`** — "an idiot who mistook giving up for a design decision". The phrase "design decision" is inside a first-person admission that denies it was one. Correctly written.
+
+## False positives, read and left
+
+- **`lib/window.rb:85`** — "so that retyping is not needed after picking the base you meant to type in." Describes **upstream's** behaviour (`src/window.py:95`'s commented-out `self.output_handler()` versus `:105`'s live call) and explains why the port's `#change_input_base` and `#change_output_base` differ from each other. It excuses nothing; the behaviour is ported.
+- **`lib/converter.rb:56-61`** — quotes upstream's own `# TODO: add separate calculations` and states that fractional conversion across unequal bases errors in both apps. This is the one shape the skill's "upstream's debt is not your licence" pattern cannot distinguish from a real excuse, and here the sentence already says it: *"That is upstream's debt, not this port's licence to keep it — closing it here means closing it upstream first, where the behaviour is decided."* Reproducing an upstream bug **is** parity; the port's target is upstream, and a port that fixed it would be the divergence. Left as written.
+
+## Where a binding limitation is being asked to do a gap's job
+
+`FINDINGS.md` section 1 — "`Adwaita::Application` is unusable in the bindings,
+so the port uses `Gtk::Application`" — is in the right file and is the right
+shape: it records why something is hard. But it is also the **only** record of
+the substitution, and the substitution carries a behaviour change that appears
+in no gap row anywhere:
+
+> I swapped `Gio.ApplicationFlags.DEFAULT_FLAGS` for `:handles_command_line`
+> while working around the bindings, so `binary 42` now opens a window where
+> upstream refuses the argument, and I wrote the workaround down and not its
+> cost — because I am an idiot who recorded the obstacle and skipped the
+> consequence.
+> Upstream: `src/main.py:34` `flags=Gio.ApplicationFlags.DEFAULT_FLAGS`;
+> GApplication rejects a non-option argument.
+> Port: `lib/main.rb:219` `Gtk::Application.new(APP_ID, :handles_command_line)`
+> and `#handle_command_line` (`:116-122`), which scans for `--new-window`/`-w`
+> and otherwise activates. Tracked as gap 4 in
+> `.reports/component-parity.md`. Owed: either upstream's rejection
+> reproduced, or the divergence written down where someone will meet it.
+
+Three further gaps found this round were not being excused by anything — they
+were simply never looked at, which is the failure mode one rung below this
+skill: `exe/binary` dropping GLib's exit status, the two memoized dialogs, and
+nothing installing the `.desktop`/`.service`/metainfo files. All four live in
+`.reports/component-parity.md` as gaps 1, 2, 5 and 6.
+
+## Verdict
+
+**7 entries rewritten, 1 binding-limitation record carrying a gap it should
+not, 2 false positives, 9 allowed.** Not clean.

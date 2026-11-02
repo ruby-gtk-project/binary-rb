@@ -4,17 +4,17 @@ tree:
   role: port
   path: "."
   ref: ruby
-  sha: 4b4300e
+  sha: eff4fa3
   scanned: '2026-11-02'
 domain: binary
 domain_source: po/*.pot
 totals:
-  messages: 25
-  occurrences: 37
-  reused: 7
+  messages: 26
+  occurrences: 41
+  reused: 9
   plural: 2
   with_context: 0
-  unresolved: 4
+  unresolved: 2
 languages:
   count: 32
   translated_strings: 882
@@ -55,39 +55,38 @@ languages:
   - zh_Hans
   linguas_matches_files: true
 unresolved:
-- marker: n_(*@bit_plural, digit_count)     bits_label.label = Converter.
-  site: lib/conversion_row.rb:109
 - marker: _(message) = I18n.translate(message) def d_(domain, message) =
-  site: lib/i18n.rb:105
+  site: lib/i18n.rb:110
 - marker: n_(singular, plural, count) = I18n.plural(singular, plural, cou
-  site: lib/i18n.rb:108
-- marker: _(SUMMARY)       about.developer_name = 'Isabelle Jackson'
-  site: lib/main.rb:197
+  site: lib/i18n.rb:113
 messages:
 - id: "%(in_count)d bit"
   kind: plural
-  uses: 2
+  uses: 3
   sites:
+  - lib/window.rb:329
   - test/test_i18n.rb:35
   - test/test_i18n.rb:36
 - id: "%(out_count)d bit"
   kind: plural
-  uses: 1
+  uses: 2
   sites:
+  - lib/window.rb:338
   - test/test_i18n.rb:37
 - id: A small and simple app used to convert between different hexadecimal and binary
     numbers
   kind: single
-  uses: 1
+  uses: 2
   sites:
   - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  - lib/main.rb:253
 - id: Binary
   kind: single
   uses: 3
   sites:
   - data/io.github.fizzyizzy05.binary.desktop.in:2
   - data/io.github.fizzyizzy05.binary.metainfo.xml.in
-  - lib/main.rb:194
+  - lib/main.rb:250
 - id: Binary window converting 101010 in binary to 42 in decimal
   kind: single
   uses: 1
@@ -118,12 +117,12 @@ messages:
   kind: single
   uses: 1
   sites:
-  - lib/conversion_row.rb:165
+  - lib/conversion_row.rb:190
 - id: Enter numbers…
   kind: single
   uses: 1
   sites:
-  - lib/conversion_row.rb:168
+  - lib/conversion_row.rb:192
 - id: Hexadecimal
   kind: single
   uses: 1
@@ -133,29 +132,29 @@ messages:
   kind: single
   uses: 1
   sites:
-  - lib/window.rb:312
+  - lib/window.rb:328
 - id: Invalid input
   kind: single
   uses: 6
   sites:
-  - lib/window.rb:112
-  - lib/window.rb:150
-  - lib/window.rb:172
-  - lib/window.rb:173
+  - lib/window.rb:115
+  - lib/window.rb:164
+  - lib/window.rb:185
+  - lib/window.rb:186
   - test/test_i18n.rb:24
   - test/test_i18n.rb:29
 - id: Main Menu
   kind: single
   uses: 2
   sites:
-  - lib/window.rb:250
+  - lib/window.rb:263
   - test/test_i18n.rb:25
 - id: New Window
   kind: single
   uses: 2
   sites:
   - data/io.github.fizzyizzy05.binary.desktop.in:16
-  - lib/window.rb:263
+  - lib/window.rb:276
 - id: Octal
   kind: single
   uses: 2
@@ -171,27 +170,32 @@ messages:
   kind: single
   uses: 1
   sites:
-  - lib/window.rb:321
+  - lib/window.rb:337
 - id: Preferences
   kind: single
   uses: 1
   sites:
-  - lib/main.rb:214
+  - lib/main.rb:277
 - id: _About Binary
   kind: single
   uses: 1
   sites:
-  - lib/window.rb:270
+  - lib/window.rb:283
 - id: _Keyboard Shortcuts
   kind: single
   uses: 1
   sites:
-  - lib/window.rb:269
+  - lib/window.rb:282
 - id: binary;decimal;hexadecimal;base;convert;
   kind: single
   uses: 1
   sites:
   - data/io.github.fizzyizzy05.binary.desktop.in:10
+- id: bits
+  kind: single
+  uses: 1
+  sites:
+  - lib/conversion_row.rb:36
 - id: not in any catalogue
   kind: single
   uses: 1
@@ -201,4 +205,4 @@ messages:
   kind: single
   uses: 1
   sites:
-  - lib/main.rb:206
+  - lib/main.rb:264

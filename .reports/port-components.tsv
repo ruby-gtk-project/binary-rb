@@ -16,13 +16,6 @@ lib/conversion_row.rb	css	flat-dropdown	1
 lib/conversion_row.rb	css	monospace	2
 lib/conversion_row.rb	signal	changed	2
 lib/conversion_row.rb	signal	notify::selected	1
-lib/binary/application.rb	type	Adw.Application	1
-lib/binary/application.rb	widget	Adw.ApplicationWindow	1
-lib/binary/application.rb	widget	Adw.HeaderBar	1
-lib/binary/application.rb	widget	Adw.StatusPage	1
-lib/binary/application.rb	widget	Adw.ToolbarView	1
-lib/binary/application.rb	type	Gtk.Application	1
-lib/binary/application.rb	signal	activate	1
 lib/window.rb	widget	Adw.ApplicationWindow	1
 lib/window.rb	widget	Adw.Clamp	1
 lib/window.rb	widget	Adw.HeaderBar	1
@@ -33,7 +26,7 @@ lib/window.rb	widget	Gtk.MenuButton	1
 lib/window.rb	widget	Gtk.WindowHandle	1
 lib/window.rb	css	typing-label	1
 lib/window.rb	signal	close-request	1
-lib/main.rb	widget	Adw.AboutDialog	1
+lib/main.rb	widget	Adw.AboutDialog	2
 lib/main.rb	widget	Adw.PreferencesDialog	1
 lib/main.rb	widget	Adw.PreferencesPage	1
 lib/main.rb	widget	Adw.ShortcutsDialog	1
@@ -49,5 +42,6 @@ lib/main.rb	type	Gtk.StyleProvider	2
 lib/main.rb	widget	Gtk.Window	1
 lib/main.rb	signal	activate	2
 lib/main.rb	signal	command-line	1
+lib/main.rb	signal	handle-local-options	1
 lib/main.rb	signal	notify::high-contrast	1
 lib/main.rb	signal	startup	1

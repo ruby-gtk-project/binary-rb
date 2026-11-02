@@ -2,7 +2,7 @@
 version: 1
 upstream:
   role: upstream
-  path: "/tmp/claude-1001/-home-nathan-src-github-ruby-gtk-project/9e6adaef-98a4-4c7a-bedc-91433423f878/scratchpad/up"
+  path: "/tmp/claude-1001/-home-nathan-src-github-ruby-gtk-project/9e6adaef-98a4-4c7a-bedc-91433423f878/scratchpad/u2"
   scanned: '2026-11-02'
   domain: binary
   messages: 30
@@ -15,24 +15,24 @@ port:
   role: port
   path: "."
   ref: ruby
-  sha: 4b4300e
+  sha: eff4fa3
   scanned: '2026-11-02'
   domain: binary
-  messages: 25
-  occurrences: 37
-  reused: 7
+  messages: 26
+  occurrences: 41
+  reused: 9
   plural: 2
   with_context: 0
-  unresolved: 4
+  unresolved: 2
 summary:
-  ported: 24
-  gaps: 6
+  ported: 25
+  gaps: 5
   extra: 1
   kind_mismatch: 0
-  uses_mismatch: 5
+  uses_mismatch: 7
   occurrences:
     upstream: 41
-    port: 37
+    port: 41
   languages:
     upstream: 32
     port: 32
@@ -47,11 +47,12 @@ messages:
     port: plural
   uses:
     upstream: 1
-    port: 2
+    port: 3
   uses_mismatch: true
   upstream_sites:
   - src/window.py:211
   port_sites:
+  - lib/window.rb:329
   - test/test_i18n.rb:35
   - test/test_i18n.rb:36
 - id: "%(out_count)d bit"
@@ -61,10 +62,12 @@ messages:
     port: plural
   uses:
     upstream: 1
-    port: 1
+    port: 2
+  uses_mismatch: true
   upstream_sites:
   - src/window.py:220
   port_sites:
+  - lib/window.rb:338
   - test/test_i18n.rb:37
 - id: A small and simple app used to convert between different hexadecimal and binary
     numbers
@@ -74,11 +77,13 @@ messages:
     port: single
   uses:
     upstream: 1
-    port: 1
+    port: 2
+  uses_mismatch: true
   upstream_sites:
   - data/io.github.fizzyizzy05.binary.metainfo.xml.in
   port_sites:
   - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  - lib/main.rb:253
 - id: Binary
   state: ported
   kind:
@@ -94,7 +99,7 @@ messages:
   port_sites:
   - data/io.github.fizzyizzy05.binary.desktop.in:2
   - data/io.github.fizzyizzy05.binary.metainfo.xml.in
-  - lib/main.rb:194
+  - lib/main.rb:250
 - id: Binary window converting 101010 in binary to 42 in decimal
   state: ported
   kind:
@@ -170,7 +175,7 @@ messages:
   - src/window.blp:136
   - src/window.blp:75
   port_sites:
-  - lib/conversion_row.rb:165
+  - lib/conversion_row.rb:190
 - id: Enter numbers…
   state: ported
   kind:
@@ -184,7 +189,7 @@ messages:
   - src/window.blp:141
   - src/window.blp:80
   port_sites:
-  - lib/conversion_row.rb:168
+  - lib/conversion_row.rb:192
 - id: Hexadecimal
   state: ported
   kind:
@@ -208,7 +213,7 @@ messages:
   upstream_sites:
   - src/window.blp:45
   port_sites:
-  - lib/window.rb:312
+  - lib/window.rb:328
 - id: Invalid input
   state: ported
   kind:
@@ -225,10 +230,10 @@ messages:
   - src/window.py:172
   - src/window.py:174
   port_sites:
-  - lib/window.rb:112
-  - lib/window.rb:150
-  - lib/window.rb:172
-  - lib/window.rb:173
+  - lib/window.rb:115
+  - lib/window.rb:164
+  - lib/window.rb:185
+  - lib/window.rb:186
   - test/test_i18n.rb:24
   - test/test_i18n.rb:29
 - id: Main Menu
@@ -243,7 +248,7 @@ messages:
   upstream_sites:
   - src/window.blp:21
   port_sites:
-  - lib/window.rb:250
+  - lib/window.rb:263
   - test/test_i18n.rb:25
 - id: New Window
   state: ported
@@ -258,7 +263,7 @@ messages:
   - src/window.blp:180
   port_sites:
   - data/io.github.fizzyizzy05.binary.desktop.in:16
-  - lib/window.rb:263
+  - lib/window.rb:276
 - id: Octal
   state: ported
   kind:
@@ -296,7 +301,7 @@ messages:
   upstream_sites:
   - src/window.blp:106
   port_sites:
-  - lib/window.rb:321
+  - lib/window.rb:337
 - id: Preferences
   state: ported
   kind:
@@ -308,7 +313,7 @@ messages:
   upstream_sites:
   - src/preferences.blp:5
   port_sites:
-  - lib/main.rb:214
+  - lib/main.rb:277
 - id: _About Binary
   state: ported
   kind:
@@ -320,7 +325,7 @@ messages:
   upstream_sites:
   - src/window.blp:191
   port_sites:
-  - lib/window.rb:270
+  - lib/window.rb:283
 - id: _Keyboard Shortcuts
   state: ported
   kind:
@@ -332,7 +337,7 @@ messages:
   upstream_sites:
   - src/window.blp:186
   port_sites:
-  - lib/window.rb:269
+  - lib/window.rb:282
 - id: binary;decimal;hexadecimal;base;convert;
   state: ported
   kind:
@@ -346,16 +351,17 @@ messages:
   port_sites:
   - data/io.github.fizzyizzy05.binary.desktop.in:10
 - id: bits
-  state: gap
+  state: ported
   kind:
     upstream: single
-    port:
+    port: single
   uses:
     upstream: 1
-    port: 0
+    port: 1
   upstream_sites:
   - src/window.py:48
-  text_owed: bits
+  port_sites:
+  - lib/conversion_row.rb:36
 - id: not in any catalogue
   state: extra
   kind:
@@ -377,7 +383,7 @@ messages:
   upstream_sites:
   - src/main.py:80
   port_sites:
-  - lib/main.rb:206
+  - lib/main.rb:264
 - ctxt: shortcut window
   id: Close Window
   state: gap

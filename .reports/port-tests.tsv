@@ -13,83 +13,110 @@ test/drive_translated.rb	the shortcuts dialog opens	61
 test/drive_translated.rb	the tooltip is translated	54
 test/drive_translated.rb	the window comes up in German	23
 test/drive_translated.rb	type something binary	41
-test/drive_window.rb	a bare invocation just presents what is there	200
-test/drive_window.rb	about is on screen	141
-test/drive_window.rb	about is on screen again	153
-test/drive_window.rb	about opens on the second window too	208
-test/drive_window.rb	about reopens after being closed	149
-test/drive_window.rb	a dialog is showing	142
-test/drive_window.rb	a dialog is showing	154
-test/drive_window.rb	a dialog is showing	163
-test/drive_window.rb	a dialog is showing	173
-test/drive_window.rb	a dialog is showing	213
-test/drive_window.rb	an invalid digit for the base is rejected	68
-test/drive_window.rb	a second window opens	178
-test/drive_window.rb	base 2 to 36 is selectable by hand	115
-test/drive_window.rb	base 36 converts	121
-test/drive_window.rb	base spin hidden until Other	25
-test/drive_window.rb	bit counter hidden for decimal output	24
-test/drive_window.rb	bit counters hidden away from binary	93
-test/drive_window.rb	bit counter shows for binary input	23
-test/drive_window.rb	bit label counts the digits	43
-test/drive_window.rb	closing saves the chosen bases	131
-test/drive_window.rb	decimal 1201 is hex 4B1	91
-test/drive_window.rb	entries carry an accessible label	26
-test/drive_window.rb	entry went monospace	47
-test/drive_window.rb	input base is binary by default	21
-test/drive_window.rb	input base persisted	133
-test/drive_window.rb	input has the error class	74
-test/drive_window.rb	input is tooltipped	77
-test/drive_window.rb	input reads 111111112	73
-test/drive_window.rb	input reads 11111111	61
-test/drive_window.rb	input upper cased	106
-test/drive_window.rb	lower case hex is normalised upwards	99
-test/drive_window.rb	no error styling	50
-test/drive_window.rb	no fourth window	205
-test/drive_window.rb	output base is decimal by default	22
-test/drive_window.rb	output base persisted	134
-test/drive_window.rb	output kept its last good answer	80
-test/drive_window.rb	output reads 255	107
-test/drive_window.rb	output reads 35	127
-test/drive_window.rb	output reads 42	42
-test/drive_window.rb	output reads 4B1	92
-test/drive_window.rb	popover shows the sum	44
-test/drive_window.rb	preferences is on screen	172
-test/drive_window.rb	shortcuts is on screen	162
-test/drive_window.rb	spin is visible	116
-test/drive_window.rb	spin starts at base 2	117
-test/drive_window.rb	still three windows	204
-test/drive_window.rb	switching to decimal in, hexadecimal out	84
-test/drive_window.rb	the about dialog opens	137
-test/drive_window.rb	the answer and the bit breakdown appear	41
-test/drive_window.rb	the dialog followed the new window	212
-test/drive_window.rb	the dropdown lists all five bases	31
-test/drive_window.rb	the entry now reads FF	105
-test/drive_window.rb	the input follows the output	60
-test/drive_window.rb	the input is flagged and the output left alone	72
-test/drive_window.rb	the --new-window flag opens another	189
-test/drive_window.rb	the Other base reveals the spin button	111
-test/drive_window.rb	the preferences dialog opens	168
-test/drive_window.rb	there are three windows	193
-test/drive_window.rb	there are two windows	182
-test/drive_window.rb	the shortcuts dialog opens	158
-test/drive_window.rb	the window comes up	19
-test/drive_window.rb	three toplevels	194
-test/drive_window.rb	two toplevels	183
-test/drive_window.rb	typing binary converts to decimal	37
-test/drive_window.rb	typing into the output converts backwards	56
-test/drive_window.rb	window exists	20
-test/drive_window.rb	z is 35	126
+test/drive_window.rb	a bare invocation just presents what is there	252
+test/drive_window.rb	about is on screen	168
+test/drive_window.rb	about is on screen again	194
+test/drive_window.rb	about opens on the second window too	260
+test/drive_window.rb	about reopens after being closed	190
+test/drive_window.rb	a dialog is showing	170
+test/drive_window.rb	a dialog is showing	195
+test/drive_window.rb	a dialog is showing	207
+test/drive_window.rb	a dialog is showing	217
+test/drive_window.rb	a dialog is showing	265
+test/drive_window.rb	and no scaffold application survives	307
+test/drive_window.rb	and refuses to go under 200 high	223
+test/drive_window.rb	and says so	287
+test/drive_window.rb	an empty dict declines too	296
+test/drive_window.rb	an invalid digit for the base is rejected	95
+test/drive_window.rb	an option nobody declared is rejected	284
+test/drive_window.rb	a second window opens	230
+test/drive_window.rb	base 2 to 36 is selectable by hand	142
+test/drive_window.rb	base 36 converts	148
+test/drive_window.rb	base spin hidden until Other	37
+test/drive_window.rb	BinaryApp is defined	305
+test/drive_window.rb	bit counter hidden for decimal output	36
+test/drive_window.rb	bit counters hidden away from binary	120
+test/drive_window.rb	bit counter shows for binary input	35
+test/drive_window.rb	bit label counts the digits	70
+test/drive_window.rb	closing saves the chosen bases	158
+test/drive_window.rb	decimal 1201 is hex 4B1	118
+test/drive_window.rb	entries carry an accessible label	38
+test/drive_window.rb	entry went monospace	74
+test/drive_window.rb	GLib names the unknown option	286
+test/drive_window.rb	--help documents the flag	278
+test/drive_window.rb	help gives the short name too	281
+test/drive_window.rb	help mentions --new-window	280
+test/drive_window.rb	input base is binary by default	33
+test/drive_window.rb	input base persisted	160
+test/drive_window.rb	input has the error class	101
+test/drive_window.rb	input is tooltipped	104
+test/drive_window.rb	input reads 10	60
+test/drive_window.rb	input reads 111111112	100
+test/drive_window.rb	input reads 11111111	88
+test/drive_window.rb	input upper cased	133
+test/drive_window.rb	it carries the 5.4 release notes	174
+test/drive_window.rb	it is a fresh dialog, not the closed one	196
+test/drive_window.rb	it is not an instance shown on an earlier window	266
+test/drive_window.rb	it names the release the notes are for	171
+test/drive_window.rb	it opens at upstream\	218
+test/drive_window.rb	its parent is the window it was opened from	269
+test/drive_window.rb	lower case hex is normalised upwards	126
+test/drive_window.rb	new-window in the dict defers to startup	293
+test/drive_window.rb	no error styling	77
+test/drive_window.rb	no fourth window	257
+test/drive_window.rb	output base is decimal by default	34
+test/drive_window.rb	output base persisted	161
+test/drive_window.rb	output kept its last good answer	107
+test/drive_window.rb	output reads 255	134
+test/drive_window.rb	output reads 35	154
+test/drive_window.rb	output reads 42	69
+test/drive_window.rb	output reads 4B1	119
+test/drive_window.rb	popover shows the sum	71
+test/drive_window.rb	preferences is on screen	216
+test/drive_window.rb	require 	303
+test/drive_window.rb	shortcuts is on screen	206
+test/drive_window.rb	spin is visible	143
+test/drive_window.rb	spin starts at base 2	144
+test/drive_window.rb	still three windows	256
+test/drive_window.rb	switching to decimal in, hexadecimal out	111
+test/drive_window.rb	the about dialog opens	164
+test/drive_window.rb	the answer and the bit breakdown appear	68
+test/drive_window.rb	the dialog followed the new window	264
+test/drive_window.rb	the dropdown lists all five bases	43
+test/drive_window.rb	the entry now reads FF	132
+test/drive_window.rb	the input followed without a base change first	59
+test/drive_window.rb	the input follows the output	87
+test/drive_window.rb	the input is flagged and the output left alone	99
+test/drive_window.rb	the local-options handler declines when it is the only instance	292
+test/drive_window.rb	the --new-window flag opens another	241
+test/drive_window.rb	the notes are the metainfo markup, list and all	177
+test/drive_window.rb	the Other base reveals the spin button	138
+test/drive_window.rb	the preferences dialog opens	212
+test/drive_window.rb	there are three windows	245
+test/drive_window.rb	there are two windows	234
+test/drive_window.rb	the shortcuts dialog opens	202
+test/drive_window.rb	the summary came across too	180
+test/drive_window.rb	the window comes up	31
+test/drive_window.rb	three toplevels	246
+test/drive_window.rb	two toplevels	235
+test/drive_window.rb	typing binary converts to decimal	64
+test/drive_window.rb	typing into the output converts backwards	83
+test/drive_window.rb	typing into the output entry works on a fresh window	55
+test/drive_window.rb	under upstream\	306
+test/drive_window.rb	window exists	32
+test/drive_window.rb	z is 35	153
+test/test_converter.rb	test_a_plus_aborts_the_conversion_the_way_upstream_crashes_out_of_it	74
 test/test_converter.rb	test_bases_up_to_thirty_six	21
-test/test_converter.rb	test_bit_count_on_non_decimal_and_empty_input	77
-test/test_converter.rb	test_bit_count_sums_the_binary_place_values	69
+test/test_converter.rb	test_bit_count_on_non_decimal_and_empty_input	99
+test/test_converter.rb	test_bit_count_sums_the_binary_place_values	91
 test/test_converter.rb	test_converts_between_the_four_named_bases	8
+test/test_converter.rb	test_digit_separators_are_accepted_exactly_as_python_int_accepts_them	62
 test/test_converter.rb	test_digits_outside_the_base_are_rejected	36
 test/test_converter.rb	test_equal_bases_echo_the_input_untouched	31
-test/test_converter.rb	test_fractions_are_unsupported_across_bases	62
+test/test_converter.rb	test_fractions_are_unsupported_across_bases	84
 test/test_converter.rb	test_invalid_input_in_a_single_base_flags_both_entries	42
 test/test_converter.rb	test_letters_come_back_upper_case_and_are_accepted_in_either_case	15
-test/test_converter.rb	test_prefixes_underscores_and_signs_ruby_would_otherwise_accept	54
+test/test_converter.rb	test_prefixes_int_would_not_accept_in_these_bases	54
 test/test_converter.rb	test_spaces_and_negatives_are_rejected_whatever_the_bases	47
 test/test_converter.rb	test_zero_round_trips	26
 test/test_i18n.rb	test_a_missing_context_falls_back_to_the_message	47

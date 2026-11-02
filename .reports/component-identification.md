@@ -2,14 +2,15 @@
 
 | | |
 |---|---|
-| Upstream | `origin/main` @ `e96066b` (Python + blueprint) |
-| Port | `ruby` @ `4b4300e` |
-| Scan | `.claude/skills/component-identification/scripts/component-scan.sh` |
+| Upstream | `origin/main` @ `e96066b` (Python 3 + PyGObject + Blueprint) |
+| Port | `ruby` @ `eff4fa3` |
+| Scan | `.claude/skills/component-identification/scripts/component-scan.sh`, with `scripts/symbols.tsv` present |
 | Upstream rows | 47 |
-| Port rows | 53 |
+| Port rows | 47 |
+| Round | 3 — rescanned against `eff4fa3`, not against the tree round 2 described |
 
-Upstream has declarative UI (`src/*.blp`), so Step 1 applies: the blueprint
-files are the inventory and the unit list. Three declarative roots:
+Upstream has declarative UI, so Step 1 applies: `src/*.blp` **is** the inventory
+and the unit list. Three declarative roots:
 
 | Root | Kind | Unit |
 |---|---|---|
@@ -19,145 +20,135 @@ files are the inventory and the unit list. Three declarative roots:
 
 Plus two units with no widget class of their own:
 
-- the application class `BinaryApplication(Adw.Application)` in `src/main.py` — actions, accels, About, preferences entry point;
+- the application class `BinaryApplication(Adw.Application)` (`src/main.py`) — actions, accels, About, the preferences entry point, `--new-window`;
 - the conversion library `src/lib/get_answer.py` + `src/lib/bit_count.py` — no widgets, pure behaviour.
 
 ## File mapping
 
 ```
-src/window.py + src/window.blp                 -> lib/window.rb + lib/conversion_row.rb
-src/preferences.py + src/preferences.blp       -> lib/main.rb  (#preferences_dialog)
-src/shortcuts-dialog.blp                       -> lib/main.rb  (#shortcuts_dialog, #general_shortcuts, #shortcut_item)
-src/main.py                                    -> lib/main.rb + exe/binary
-src/lib/get_answer.py + src/lib/bit_count.py   -> lib/converter.rb
-src/style.css + src/style-hc.css               -> lib/main.rb  (STYLE, HIGH_CONTRAST_STYLE heredocs)
-data/io.github.fizzyizzy05.binary.gschema.xml  -> data/schemas/... + lib/settings.rb
-(nothing upstream)                             -> lib/i18n.rb          — the gettext binding
-(nothing upstream)                             -> lib/binary.rb + lib/binary/application.rb  — UNEXPLAINED EXTRA
+src/window.py + src/window.blp             -> lib/window.rb + lib/conversion_row.rb
+src/preferences.py + src/preferences.blp   -> lib/main.rb  (#preferences_dialog)
+src/shortcuts-dialog.blp                   -> lib/main.rb  (#shortcuts_dialog, #general_shortcuts, #shortcut_item)
+src/main.py                                -> lib/main.rb + exe/binary + lib/binary.rb
+src/lib/get_answer.py + src/lib/bit_count.py -> lib/converter.rb
+src/style.css                              -> lib/main.rb  STYLE (heredoc)
+src/style-hc.css                           -> lib/main.rb  HIGH_CONTRAST_STYLE (heredoc)
+data/io.github.fizzyizzy05.binary.gschema.xml -> data/schemas/… + lib/settings.rb
 ```
 
-The mapping is 2→2 for the window: upstream repeats the whole input/output
-block twice inline in `window.blp`, and the port factors the repeat into
-`ConversionRow`, instantiated twice from `lib/window.rb`. **Every
-`lib/conversion_row.rb` count below is therefore doubled before comparing.**
+Three upstream units (preferences, shortcuts, the About dialog) have **no
+`lib/*.rb` of their own** — see the gap in `.reports/component-parity.md`.
 
-## src/window.blp + src/window.py — the one window
+## src/window.blp + src/window.py — the one window, two conversion halves
 
 | Widget | × | CSS | Signals | Notes |
 |---|---:|---|---|---|
-| `Adw.ApplicationWindow` | 1 | — | `close-request` → `on_close` | 360×390 default, 360×294 minimum, title `"Binary"` (unmarked literal, both sides) |
+| `Adw.ApplicationWindow` | 1 | — | `close-request` → `on_close` | title `Binary` (unmarked upstream and in the port), default 360×390, request 360×294 |
 | `Adw.ToolbarView` | 1 | — | — | |
 | `Adw.HeaderBar` | 1 | — | — | `show-title: false` |
-| `Gtk.MenuButton` | 1 | — | — | `primary`, `open-menu-symbolic`, tooltip `_("Main Menu")`, menu-model `primary_menu` |
+| `Gtk.MenuButton` | 3 | `bitLbl`+`flat` (2 of 3) | — | 1 primary menu button (`open-menu-symbolic`, tooltip `Main Menu`), 2 bit-count buttons each hosting a `Gtk.Popover` |
 | `Gtk.WindowHandle` | 1 | — | — | |
 | `Adw.Clamp` | 1 | — | — | max 600, tightening 1000 |
-| `Gtk.Box` | 6 | `typing-label` (arrow box only) | — | content box, 2× dropdown-row box, arrow box, 2× popover box |
-| `Gtk.CenterBox` | 2 | — | — | one per conversion half |
-| `Gtk.DropDown` | 2 | `flat-dropdown` | `notify` → `change_input_base` / `change_output_base` | model is a 5-item `Gtk.StringList`, tooltip `_("Input Base")` / `_("Output Base")` |
-| `Gtk.SpinButton` | 2 | — | `changed` → same handlers | range 2–36, snap-to-ticks, increments (1,2), `numeric`, `margin-start: 6`; revealed only for base "Other" |
-| `Gtk.MenuButton` | 2 | `bitLbl`, `flat` | — | the bit counter; label set from `ngettext`, popover `in_bit_popover`/`out_bit_popover`; `sensitive` toggled by digit count; `visible` toggled by base == 2 |
+| `Gtk.Box` | 6 | `typing-label` (1 of 6) | — | content box (spacing 6, margins 30/30/30/60), 2 dropdown+spin boxes, the arrow box, 2 popover boxes |
+| `Gtk.CenterBox` | 2 | — | — | start = dropdown+spin, end = bit button |
+| `Gtk.DropDown` | 2 | `flat-dropdown` | `notify` (**every** property, not just `selected`) | tooltips `Input Base` / `Output Base`; model is a 5-item `Gtk.StringList` |
+| `Gtk.SpinButton` | 2 | — | `changed` | range 2–36, snap to ticks, increments (1,2), numeric, margin-start 6; visible only for base "Other" |
+| `Gtk.Entry` | 2 | `error`, `monospace` (both dynamic) | `changed` → `input_handler` / `output_handler` | placeholder `Enter numbers`, accessible label `Enter numbers…`, `enable-undo: false` |
+| `Gtk.Image` | 1 | — | — | `vertical-arrows-symbolic`, icon-size normal |
 | `Gtk.Popover` | 2 | — | — | `has-arrow: true` |
-| `Gtk.Label` | 2 | — | — | the bit breakdown; wrap, word mode, max 30 chars |
-| `Gtk.Entry` | 2 | `error` (dynamic), `monospace` (dynamic) | `changed` → `input_handler` / `output_handler` | placeholder `_("Enter numbers")`, accessible label `_("Enter numbers…")`, `enable-undo: false`, tooltip `_("Invalid input")` set dynamically |
-| `Gtk.Image` | 1 | — | — | `vertical-arrows-symbolic`, normal size |
+| `Gtk.Label` | 2 | — | — | the bit sums; wrap, word mode, max 30 chars |
+| `Gio.Menu` (`menu primary_menu`) | 1 | — | — | 2 sections, 3 items: `New Window` → `app.new-window`; `_Keyboard Shortcuts` → `app.shortcuts`; `_About Binary` → `app.about` |
 
-Repeaters: none at runtime — the two halves are written out twice in the
-blueprint. Conditional: `in_spin`/`out_spin` visible only at dropdown index 4;
-`in_bit_label`/`out_bit_label` visible only when their own dropdown is index 0.
+Dynamic CSS, resolved by reading `src/window.py`: `error` added/removed on both
+entries by `input_handler`/`output_handler`/`blank` (13 attachment sites);
+`monospace` added/removed by `toggle_mono` (4 sites). Repeaters: none —
+the two halves are written out twice in the `.blp`. Conditional: the spin
+buttons (`toggle_base_spin`, base "Other" only) and the bit buttons
+(`toggle_bit_counter`, binary only).
 
-Dynamic CSS: `error` (added on invalid input, removed on valid),
-`monospace` (added while the entry is non-empty).
+Port side: `lib/window.rb` builds the window, header bar, menu, clamp, content
+box and arrow box; `lib/conversion_row.rb` is one half, instantiated twice, so
+all of its counts double. The port adds **two** `Gtk::Box` upstream does not
+have — `ConversionRow#container`, the per-half vertical box — taking the content
+box from 5 children to 3. The `css`, `signal` and widget sets otherwise match
+one for one, and `notify` is narrowed to `notify::selected`.
 
-Menu model `primary_menu`: two sections, three items —
-`_("New Window")`→`app.new-window`, `_("_Keyboard Shortcuts")`→`app.shortcuts`,
-`_("_About Binary")`→`app.about`.
-
-### Port: lib/window.rb + lib/conversion_row.rb
-
-| Widget | × | CSS | Signals | Notes |
-|---|---:|---|---|---|
-| `Adwaita::ApplicationWindow` | 1 | — | `close-request` → `on_close` | `lib/window.rb:229` |
-| `Adwaita::ToolbarView` | 1 | — | — | |
-| `Adwaita::HeaderBar` | 1 | — | — | |
-| `Gtk::MenuButton` | 1 | — | — | `lib/window.rb:246` |
-| `Gtk::WindowHandle` | 1 | — | — | |
-| `Adwaita::Clamp` | 1 | — | — | |
-| `Gtk::Box` | 8 | `typing-label` | — | `content_box`, `arrow_box`, + 3 per row × 2 |
-| `Gtk::CenterBox` | 2 | — | — | 1 × 2 |
-| `Gtk::DropDown` | 2 | `flat-dropdown` | `notify::selected` | 1 × 2 |
-| `Gtk::SpinButton` | 2 | — | `changed` | 1 × 2 |
-| `Gtk::MenuButton` (bit) | 2 | `bitLbl`, `flat` | — | 1 × 2 |
-| `Gtk::Popover` | 2 | — | — | 1 × 2 |
-| `Gtk::Label` | 2 | — | — | 1 × 2 |
-| `Gtk::Entry` | 2 | `error`, `monospace` | `changed` | built from a `Gtk::Builder` XML string, `lib/conversion_row.rb:156` |
-| `Gtk::Image` | 1 | — | — | |
-
-Repeater: `ConversionRow` — one class, two instances (`lib/window.rb:310`, `:319`).
-
-## src/preferences.blp + src/preferences.py — preferences
+## src/preferences.blp + src/preferences.py — the preferences window
 
 | Widget | × | CSS | Signals | Notes |
 |---|---:|---|---|---|
-| `Adw.PreferencesWindow` | 1 | — | — | title `_("Preferences")`, default 400×306, height-request 200; `set_transient_for(active_window)` in `src/main.py:85` |
-| `Adw.PreferencesPage` | 1 | — | — | id `preferences`, **empty** |
+| `Adw.PreferencesWindow` | 1 | — | — | title `Preferences`, default 400×306, height-request 200 |
+| `Adw.PreferencesPage` | 1 | — | — | **empty** — upstream has no rows in it |
 
-Port: `lib/main.rb:212` builds `Adwaita::PreferencesDialog` + one
-`Adwaita::PreferencesPage`. No size properties.
+`PrefsWindow.__init__` constructs a `Gio.Settings` it never reads. Nothing in
+upstream's menu opens this window; only the `app.preferences` action does, and
+the only caller of that is the desktop shell.
 
 ## src/shortcuts-dialog.blp — the shortcuts dialog
 
 | Widget | × | CSS | Signals | Notes |
 |---|---:|---|---|---|
-| `Adw.ShortcutsDialog` | 1 | — | — | named root, never instantiated anywhere in `src/` |
+| `Adw.ShortcutsDialog` | 1 | — | — | named root, no template |
 | `Adw.ShortcutsSection` | 1 | — | — | title `C_("shortcut window", "General")` |
-| `Adw.ShortcutsItem` | 4 | — | — | New Window / Close Window / Show Shortcuts / Quit, actions `app.new-window`, `app.close-window`, `app.shortcuts`, `app.quit` |
+| `Adw.ShortcutsItem` | 4 | — | — | `New Window` → `app.new-window`, `Close Window` → `app.close-window`, `Show Shortcuts` → `app.shortcuts`, `Quit` → `app.quit` |
 
-**Upstream never builds this dialog.** It is compiled into
-`src/binary.gresource.xml:8` and no Python code loads it, and `app.shortcuts`
-is never created in `create_action` — so upstream's own
-`_("_Keyboard Shortcuts")` menu item and its `Show Shortcuts` row are dead.
-Port: `lib/main.rb:219` builds it and `lib/main.rb:27` installs the action.
+Compiled into `src/binary.gresource.xml` and **never loaded by any upstream
+source file.** `src/main.py` creates no `shortcuts` action, so upstream's
+`_Keyboard Shortcuts` menu item and this dialog's `Show Shortcuts` row both
+point at an action that does not exist. Recorded as an upstream bug in
+`FINDINGS.md`.
 
 ## src/main.py — the application
 
-| Component | Detail |
-|---|---|
-| Actions installed | `quit`, `about`, `preferences`, `close-window`, `new-window` — 5, all via the `create_action` helper, names are literals |
-| Accelerators | `quit`=`<primary>q`, `close-window`=`<primary>w`, `new-window`=`<primary>n`. `about` and `preferences` have none |
-| Main option | `add_main_option("new-window", b"w", NONE, NONE, "Open a new window", None)` — so `--new-window` / `-w` appear in `--help` |
-| Flags | `Gio.ApplicationFlags.DEFAULT_FLAGS` + `do_handle_local_options` |
-| `Adw.AboutDialog` | 1, built by `new_from_appdata("io/github/fizzyizzy05/binary/metainfo.xml", "5.4")` then `set_developers`, `set_designers`, `set_translator_credits(_("translator-credits"))`, `set_copyright` |
-| `Gtk.Window` | `set_default_icon_name('io.github.fizzyizzy05.binary')` |
-| Signals | `activate` (via `do_activate`) |
+| Component | × | Notes |
+|---|---:|---|
+| `Adw.Application` | 1 | app id `io.github.fizzyizzy05.binary`, `Gio.ApplicationFlags.DEFAULT_FLAGS` |
+| `Adw.AboutDialog` | 1 | `new_from_appdata("io/github/fizzyizzy05/binary/metainfo.xml", "5.4")`, built fresh on every activation; developers, designers, `_("translator-credits")`, copyright set by hand |
+| `Gtk.Window.set_default_icon_name` | 1 | `io.github.fizzyizzy05.binary` |
+| actions | 5 | `quit` (`<primary>q`), `about` (no accel), `preferences` (no accel), `close-window` (`<primary>w`), `new-window` (`<primary>n`) |
+| main option | 1 | `--new-window` / `-w`, `GLib.OptionArg.NONE`, description `Open a new window` (**unmarked** upstream) |
+| signals | 1 | `do_activate`; `do_handle_local_options` is a vfunc override |
 
-Port: `lib/main.rb` — 6 actions (adds `shortcuts` with `<primary>question`),
-accels from the `ACTIONS` table (names are loop variables, so the scan's
-`action` stream is empty for the port; read off `lib/main.rb:21`), flags
-`:handles_command_line` plus a `command-line` handler, `Adwaita::AboutDialog`
-populated field by field, plus `startup` → `Adwaita.init` + style and icon
-installation (`lib/main.rb:63`).
+Actions referenced but **not installed**: `app.shortcuts` (2 reference sites).
 
-## Stylesheets
+Port side: `lib/main.rb` installs **six** actions — upstream's five plus
+`shortcuts`, with an accelerator `<primary>question` that upstream never set —
+and uses `Gtk::Application` with `:handles_command_line` rather than
+`Adw.Application` with `DEFAULT_FLAGS`.
 
-| Upstream | Port | Rules |
-|---|---|---|
-| `src/style.css` | `lib/main.rb:244` `STYLE` heredoc | `.bitLbl`, `.flat-dropdown button:not(:checked):not(:hover)`, `.typing-label` |
-| `src/style-hc.css` | `lib/main.rb:263` `HIGH_CONTRAST_STYLE` heredoc | `.typing-label { opacity: 0.75 }` |
+## src/lib/get_answer.py + src/lib/bit_count.py — the conversion library
 
-Both heredocs are character-for-character the upstream files. Platform classes
-in play and defined by GTK/libadwaita, not by either sheet: `error`,
-`monospace`, `flat`.
+No widgets. `get_answer` returns the converted string or the sentinels `char` /
+`char_dual`; spaces and a leading `-` are invalid; equal bases echo the input
+untouched; any `.` is refused across unequal bases; digits above 9 become `A`–`Z`
+up to base 36. `bit_count` renders `8 + 2 = 1010`, reading the `1` digits as
+binary place values while the `= n` tail reads the input as **decimal**, and
+dropping that tail (trailing `" + "` and all) for non-decimal input. A third
+outcome exists and is not a return value: `if '+' in input: split_input('')`
+calls a list and raises `TypeError`, killing the calling handler mid-way.
+All three behaviours are reproduced in `lib/converter.rb`.
 
-## Extra in the port, not derived from any upstream file
+## src/style.css + src/style-hc.css — the stylesheets
 
-- `lib/binary.rb` + `lib/binary/application.rb` — a second, parallel
-  application class holding `Adwaita::ApplicationWindow`,
-  `Adwaita::ToolbarView`, `Adwaita::HeaderBar` and an
-  **`Adwaita::StatusPage`** under a different application id
-  (`org.rubygtkproject.Binary`), with three unmarked English strings
-  including `"The Ruby port has not been written yet."`. It is the gem's
-  `require` entry point (`binary-rb.gemspec` → `lib/binary.rb`). No upstream
-  component corresponds to it.
-- `lib/i18n.rb` — the libc gettext binding via Fiddle. Upstream gets gettext
-  from Python's stdlib, so this is plumbing with no upstream file, not an
-  extra component.
+Three app-namespaced classes, all attached in `src/window.blp`: `.bitLbl`
+(`font-size: 0.9em`), `.flat-dropdown button:not(:checked):not(:hover)`
+(transparent background, no box-shadow), `.typing-label` (`font-size: 0.9em`,
+`opacity: 0.5`, `font-weight: 700`). The high-contrast sheet overrides
+`.typing-label { opacity: 0.75 }` and nothing else. Both are loaded by
+`AdwApplication` from the GResource base path, not by any explicit
+`CssProvider` call. Platform classes also in play and defined by GTK, not by
+either sheet: `flat`, `error`, `monospace`.
+
+## data/io.github.fizzyizzy05.binary.gschema.xml — stored state
+
+Three `i` keys: `input-base` (default 0), `output-base` (default 2),
+`group-digits` (default 0). `group-digits` is read by nothing on either side.
+
+## What the scan could not see, and had to be read
+
+- **The port installs no `action` rows at all.** `lib/main.rb` builds its six actions from the `ACTIONS` hash with `"app.#{name}"` interpolated, and `lib/window.rb` passes `'app.new-window'`/`'app.shortcuts'`/`'app.about'` to `Gio::Menu#append`; none of those shapes is matched. Every action on the port side in this document was read off the source.
+- **`Adw.ShortcutsItem` ×4 upstream against ×1 in the port** is the shared-factory case: `lib/main.rb#shortcut_item` is one constructor called from four sites.
+- **Every `lib/conversion_row.rb` count doubles** — the class is a repeater with a fixed count of 2.
+- **`Gtk::Builder` in `lib/conversion_row.rb`** stands for one `Gtk::Entry` the scan credits to a builder document, not to a widget method.
+- **The port's menu is `Gio::Menu`, which no `.blp` keyword scan reports** on either side; upstream's `menu primary_menu` block is three `item` entries counted by hand.
+- **`Adw.Application` appears as kind `type`, not `widget`**, on both sides, so the `Gtk::Application` substitution does not show up in the widget stream at all.

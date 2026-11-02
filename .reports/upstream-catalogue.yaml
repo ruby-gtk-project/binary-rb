@@ -2,7 +2,7 @@
 version: 1
 tree:
   role: upstream
-  path: "/tmp/claude-1001/-home-nathan-src-github-ruby-gtk-project/9e6adaef-98a4-4c7a-bedc-91433423f878/scratchpad/up"
+  path: "/tmp/claude-1001/-home-nathan-src-github-ruby-gtk-project/9e6adaef-98a4-4c7a-bedc-91433423f878/scratchpad/u2"
   scanned: '2026-11-02'
 domain: binary
 domain_source: po/meson.build
