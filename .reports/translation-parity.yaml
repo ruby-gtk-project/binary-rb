@@ -1,0 +1,440 @@
+---
+version: 1
+upstream:
+  role: upstream
+  path: "/tmp/claude-1001/-home-nathan-src-github-ruby-gtk-project/9e6adaef-98a4-4c7a-bedc-91433423f878/scratchpad/up"
+  scanned: '2026-11-02'
+  domain: binary
+  messages: 30
+  occurrences: 41
+  reused: 6
+  plural: 2
+  with_context: 5
+  unresolved: 0
+port:
+  role: port
+  path: "."
+  ref: ruby
+  sha: 4b4300e
+  scanned: '2026-11-02'
+  domain: binary
+  messages: 25
+  occurrences: 37
+  reused: 7
+  plural: 2
+  with_context: 0
+  unresolved: 4
+summary:
+  ported: 24
+  gaps: 6
+  extra: 1
+  kind_mismatch: 0
+  uses_mismatch: 5
+  occurrences:
+    upstream: 41
+    port: 37
+  languages:
+    upstream: 32
+    port: 32
+  languages_missing: []
+  domain_matches: true
+  parity: false
+messages:
+- id: "%(in_count)d bit"
+  state: ported
+  kind:
+    upstream: plural
+    port: plural
+  uses:
+    upstream: 1
+    port: 2
+  uses_mismatch: true
+  upstream_sites:
+  - src/window.py:211
+  port_sites:
+  - test/test_i18n.rb:35
+  - test/test_i18n.rb:36
+- id: "%(out_count)d bit"
+  state: ported
+  kind:
+    upstream: plural
+    port: plural
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/window.py:220
+  port_sites:
+  - test/test_i18n.rb:37
+- id: A small and simple app used to convert between different hexadecimal and binary
+    numbers
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  port_sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Binary
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 3
+    port: 3
+  upstream_sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:2
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  - src/window.py:51
+  port_sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:2
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  - lib/main.rb:194
+- id: Binary window converting 101010 in binary to 42 in decimal
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  port_sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Binary window converting 1201 in decimal to 4B1 in hexadecimal
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  port_sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Binary window converting 17 in octal to F in hexadecimal
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  port_sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Convert numbers between bases
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 2
+    port: 2
+  upstream_sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:5
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  port_sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:5
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Decimal
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/window.py:53
+  port_sites:
+  - lib/conversion_row.rb:24
+- id: Enter numbers
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 2
+    port: 1
+  uses_mismatch: true
+  upstream_sites:
+  - src/window.blp:136
+  - src/window.blp:75
+  port_sites:
+  - lib/conversion_row.rb:165
+- id: Enter numbers…
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 2
+    port: 1
+  uses_mismatch: true
+  upstream_sites:
+  - src/window.blp:141
+  - src/window.blp:80
+  port_sites:
+  - lib/conversion_row.rb:168
+- id: Hexadecimal
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/window.py:54
+  port_sites:
+  - lib/conversion_row.rb:25
+- id: Input Base
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/window.blp:45
+  port_sites:
+  - lib/window.rb:312
+- id: Invalid input
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 6
+    port: 6
+  upstream_sites:
+  - src/window.py:124
+  - src/window.py:128
+  - src/window.py:130
+  - src/window.py:168
+  - src/window.py:172
+  - src/window.py:174
+  port_sites:
+  - lib/window.rb:112
+  - lib/window.rb:150
+  - lib/window.rb:172
+  - lib/window.rb:173
+  - test/test_i18n.rb:24
+  - test/test_i18n.rb:29
+- id: Main Menu
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 2
+  uses_mismatch: true
+  upstream_sites:
+  - src/window.blp:21
+  port_sites:
+  - lib/window.rb:250
+  - test/test_i18n.rb:25
+- id: New Window
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 2
+    port: 2
+  upstream_sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:16
+  - src/window.blp:180
+  port_sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:16
+  - lib/window.rb:263
+- id: Octal
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 2
+  uses_mismatch: true
+  upstream_sites:
+  - src/window.py:52
+  port_sites:
+  - lib/conversion_row.rb:23
+  - test/test_i18n.rb:23
+- id: Other
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/window.py:55
+  port_sites:
+  - lib/conversion_row.rb:26
+- id: Output Base
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/window.blp:106
+  port_sites:
+  - lib/window.rb:321
+- id: Preferences
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/preferences.blp:5
+  port_sites:
+  - lib/main.rb:214
+- id: _About Binary
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/window.blp:191
+  port_sites:
+  - lib/window.rb:270
+- id: _Keyboard Shortcuts
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/window.blp:186
+  port_sites:
+  - lib/window.rb:269
+- id: binary;decimal;hexadecimal;base;convert;
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:10
+  port_sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:10
+- id: bits
+  state: gap
+  kind:
+    upstream: single
+    port:
+  uses:
+    upstream: 1
+    port: 0
+  upstream_sites:
+  - src/window.py:48
+  text_owed: bits
+- id: not in any catalogue
+  state: extra
+  kind:
+    upstream:
+    port: single
+  uses:
+    upstream: 0
+    port: 1
+  port_sites:
+  - test/test_i18n.rb:58
+- id: translator-credits
+  state: ported
+  kind:
+    upstream: single
+    port: single
+  uses:
+    upstream: 1
+    port: 1
+  upstream_sites:
+  - src/main.py:80
+  port_sites:
+  - lib/main.rb:206
+- ctxt: shortcut window
+  id: Close Window
+  state: gap
+  kind:
+    upstream: single
+    port:
+  uses:
+    upstream: 1
+    port: 0
+  upstream_sites:
+  - src/shortcuts-dialog.blp:14
+  text_owed: Close Window
+- ctxt: shortcut window
+  id: General
+  state: gap
+  kind:
+    upstream: single
+    port:
+  uses:
+    upstream: 1
+    port: 0
+  upstream_sites:
+  - src/shortcuts-dialog.blp:6
+  text_owed: General
+- ctxt: shortcut window
+  id: New Window
+  state: gap
+  kind:
+    upstream: single
+    port:
+  uses:
+    upstream: 1
+    port: 0
+  upstream_sites:
+  - src/shortcuts-dialog.blp:9
+  text_owed: New Window
+- ctxt: shortcut window
+  id: Quit
+  state: gap
+  kind:
+    upstream: single
+    port:
+  uses:
+    upstream: 1
+    port: 0
+  upstream_sites:
+  - src/shortcuts-dialog.blp:24
+  text_owed: Quit
+- ctxt: shortcut window
+  id: Show Shortcuts
+  state: gap
+  kind:
+    upstream: single
+    port:
+  uses:
+    upstream: 1
+    port: 0
+  upstream_sites:
+  - src/shortcuts-dialog.blp:19
+  text_owed: Show Shortcuts

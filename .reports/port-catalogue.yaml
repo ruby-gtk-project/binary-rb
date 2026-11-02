@@ -1,0 +1,204 @@
+---
+version: 1
+tree:
+  role: port
+  path: "."
+  ref: ruby
+  sha: 4b4300e
+  scanned: '2026-11-02'
+domain: binary
+domain_source: po/*.pot
+totals:
+  messages: 25
+  occurrences: 37
+  reused: 7
+  plural: 2
+  with_context: 0
+  unresolved: 4
+languages:
+  count: 32
+  translated_strings: 882
+  untranslated_strings: 78
+  fuzzy_strings: 0
+  list:
+  - ar
+  - bg
+  - ca
+  - cs
+  - de
+  - el
+  - es
+  - et
+  - eu
+  - fi
+  - fr
+  - he
+  - hr
+  - ia
+  - id
+  - it
+  - ja
+  - ka
+  - kk
+  - kw
+  - ml
+  - nb_NO
+  - pl
+  - pt
+  - pt_BR
+  - ro
+  - ru
+  - ta
+  - te
+  - tr
+  - uk
+  - zh_Hans
+  linguas_matches_files: true
+unresolved:
+- marker: n_(*@bit_plural, digit_count)     bits_label.label = Converter.
+  site: lib/conversion_row.rb:109
+- marker: _(message) = I18n.translate(message) def d_(domain, message) =
+  site: lib/i18n.rb:105
+- marker: n_(singular, plural, count) = I18n.plural(singular, plural, cou
+  site: lib/i18n.rb:108
+- marker: _(SUMMARY)       about.developer_name = 'Isabelle Jackson'
+  site: lib/main.rb:197
+messages:
+- id: "%(in_count)d bit"
+  kind: plural
+  uses: 2
+  sites:
+  - test/test_i18n.rb:35
+  - test/test_i18n.rb:36
+- id: "%(out_count)d bit"
+  kind: plural
+  uses: 1
+  sites:
+  - test/test_i18n.rb:37
+- id: A small and simple app used to convert between different hexadecimal and binary
+    numbers
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Binary
+  kind: single
+  uses: 3
+  sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:2
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  - lib/main.rb:194
+- id: Binary window converting 101010 in binary to 42 in decimal
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Binary window converting 1201 in decimal to 4B1 in hexadecimal
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Binary window converting 17 in octal to F in hexadecimal
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Convert numbers between bases
+  kind: single
+  uses: 2
+  sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:5
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Decimal
+  kind: single
+  uses: 1
+  sites:
+  - lib/conversion_row.rb:24
+- id: Enter numbers
+  kind: single
+  uses: 1
+  sites:
+  - lib/conversion_row.rb:165
+- id: Enter numbers…
+  kind: single
+  uses: 1
+  sites:
+  - lib/conversion_row.rb:168
+- id: Hexadecimal
+  kind: single
+  uses: 1
+  sites:
+  - lib/conversion_row.rb:25
+- id: Input Base
+  kind: single
+  uses: 1
+  sites:
+  - lib/window.rb:312
+- id: Invalid input
+  kind: single
+  uses: 6
+  sites:
+  - lib/window.rb:112
+  - lib/window.rb:150
+  - lib/window.rb:172
+  - lib/window.rb:173
+  - test/test_i18n.rb:24
+  - test/test_i18n.rb:29
+- id: Main Menu
+  kind: single
+  uses: 2
+  sites:
+  - lib/window.rb:250
+  - test/test_i18n.rb:25
+- id: New Window
+  kind: single
+  uses: 2
+  sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:16
+  - lib/window.rb:263
+- id: Octal
+  kind: single
+  uses: 2
+  sites:
+  - lib/conversion_row.rb:23
+  - test/test_i18n.rb:23
+- id: Other
+  kind: single
+  uses: 1
+  sites:
+  - lib/conversion_row.rb:26
+- id: Output Base
+  kind: single
+  uses: 1
+  sites:
+  - lib/window.rb:321
+- id: Preferences
+  kind: single
+  uses: 1
+  sites:
+  - lib/main.rb:214
+- id: _About Binary
+  kind: single
+  uses: 1
+  sites:
+  - lib/window.rb:270
+- id: _Keyboard Shortcuts
+  kind: single
+  uses: 1
+  sites:
+  - lib/window.rb:269
+- id: binary;decimal;hexadecimal;base;convert;
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:10
+- id: not in any catalogue
+  kind: single
+  uses: 1
+  sites:
+  - test/test_i18n.rb:58
+- id: translator-credits
+  kind: single
+  uses: 1
+  sites:
+  - lib/main.rb:206

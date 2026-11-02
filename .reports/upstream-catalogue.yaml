@@ -1,0 +1,223 @@
+---
+version: 1
+tree:
+  role: upstream
+  path: "/tmp/claude-1001/-home-nathan-src-github-ruby-gtk-project/9e6adaef-98a4-4c7a-bedc-91433423f878/scratchpad/up"
+  scanned: '2026-11-02'
+domain: binary
+domain_source: po/meson.build
+totals:
+  messages: 30
+  occurrences: 41
+  reused: 6
+  plural: 2
+  with_context: 5
+  unresolved: 0
+languages:
+  count: 32
+  translated_strings: 882
+  untranslated_strings: 78
+  fuzzy_strings: 0
+  list:
+  - ar
+  - bg
+  - ca
+  - cs
+  - de
+  - el
+  - es
+  - et
+  - eu
+  - fi
+  - fr
+  - he
+  - hr
+  - ia
+  - id
+  - it
+  - ja
+  - ka
+  - kk
+  - kw
+  - ml
+  - nb_NO
+  - pl
+  - pt
+  - pt_BR
+  - ro
+  - ru
+  - ta
+  - te
+  - tr
+  - uk
+  - zh_Hans
+  linguas_matches_files: true
+unresolved: []
+messages:
+- id: "%(in_count)d bit"
+  kind: plural
+  uses: 1
+  sites:
+  - src/window.py:211
+- id: "%(out_count)d bit"
+  kind: plural
+  uses: 1
+  sites:
+  - src/window.py:220
+- id: A small and simple app used to convert between different hexadecimal and binary
+    numbers
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Binary
+  kind: single
+  uses: 3
+  sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:2
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+  - src/window.py:51
+- id: Binary window converting 101010 in binary to 42 in decimal
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Binary window converting 1201 in decimal to 4B1 in hexadecimal
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Binary window converting 17 in octal to F in hexadecimal
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Convert numbers between bases
+  kind: single
+  uses: 2
+  sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:5
+  - data/io.github.fizzyizzy05.binary.metainfo.xml.in
+- id: Decimal
+  kind: single
+  uses: 1
+  sites:
+  - src/window.py:53
+- id: Enter numbers
+  kind: single
+  uses: 2
+  sites:
+  - src/window.blp:136
+  - src/window.blp:75
+- id: Enter numbers…
+  kind: single
+  uses: 2
+  sites:
+  - src/window.blp:141
+  - src/window.blp:80
+- id: Hexadecimal
+  kind: single
+  uses: 1
+  sites:
+  - src/window.py:54
+- id: Input Base
+  kind: single
+  uses: 1
+  sites:
+  - src/window.blp:45
+- id: Invalid input
+  kind: single
+  uses: 6
+  sites:
+  - src/window.py:124
+  - src/window.py:128
+  - src/window.py:130
+  - src/window.py:168
+  - src/window.py:172
+  - src/window.py:174
+- id: Main Menu
+  kind: single
+  uses: 1
+  sites:
+  - src/window.blp:21
+- id: New Window
+  kind: single
+  uses: 2
+  sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:16
+  - src/window.blp:180
+- id: Octal
+  kind: single
+  uses: 1
+  sites:
+  - src/window.py:52
+- id: Other
+  kind: single
+  uses: 1
+  sites:
+  - src/window.py:55
+- id: Output Base
+  kind: single
+  uses: 1
+  sites:
+  - src/window.blp:106
+- id: Preferences
+  kind: single
+  uses: 1
+  sites:
+  - src/preferences.blp:5
+- id: _About Binary
+  kind: single
+  uses: 1
+  sites:
+  - src/window.blp:191
+- id: _Keyboard Shortcuts
+  kind: single
+  uses: 1
+  sites:
+  - src/window.blp:186
+- id: binary;decimal;hexadecimal;base;convert;
+  kind: single
+  uses: 1
+  sites:
+  - data/io.github.fizzyizzy05.binary.desktop.in:10
+- id: bits
+  kind: single
+  uses: 1
+  sites:
+  - src/window.py:48
+- id: translator-credits
+  kind: single
+  uses: 1
+  sites:
+  - src/main.py:80
+- ctxt: shortcut window
+  id: Close Window
+  kind: single
+  uses: 1
+  sites:
+  - src/shortcuts-dialog.blp:14
+- ctxt: shortcut window
+  id: General
+  kind: single
+  uses: 1
+  sites:
+  - src/shortcuts-dialog.blp:6
+- ctxt: shortcut window
+  id: New Window
+  kind: single
+  uses: 1
+  sites:
+  - src/shortcuts-dialog.blp:9
+- ctxt: shortcut window
+  id: Quit
+  kind: single
+  uses: 1
+  sites:
+  - src/shortcuts-dialog.blp:24
+- ctxt: shortcut window
+  id: Show Shortcuts
+  kind: single
+  uses: 1
+  sites:
+  - src/shortcuts-dialog.blp:19
