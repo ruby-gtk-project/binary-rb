@@ -51,9 +51,51 @@ class TestConverter < Minitest::Test
     assert_equal 'char', Converter.answer('-5', 10, 10)
   end
 
-  def test_prefixes_int_would_not_accept_in_these_bases
-    assert_equal 'char', Converter.answer('0x1f', 16, 10)
-    assert_equal 'char', Converter.answer('0b11', 2, 10)
+  # Python's int() strips the prefix that matches the base it is given, so
+  # upstream's int(x, in_base) validity check accepts "0b11" on Binary,
+  # "0o17" on Octal and "0x1F" on Hexadecimal and converts them. Measured:
+  #
+  #   >>> int('0b11', 2), int('0o17', 8), int('0x1F', 16)
+  #   (3, 15, 31)
+  #
+  # A base that does not own the prefix reads those letters as ordinary
+  # digits instead — int('0b11', 16) is 2833, not 3.
+  def test_the_prefix_matching_the_base_is_accepted_as_python_int_accepts_it
+    assert_equal '3', Converter.answer('0b11', 2, 10)
+    assert_equal '3', Converter.answer('0B11', 2, 10)
+    assert_equal '15', Converter.answer('0o17', 8, 10)
+    assert_equal '31', Converter.answer('0x1F', 16, 10)
+    assert_equal '2833', Converter.answer('0b11', 16, 10)
+  end
+
+  # Equal bases take get_answer's early `return input` (src/lib/get_answer.py:71)
+  # once every part has parsed, so a prefixed input is echoed back untouched
+  # with no error styling on either entry.
+  def test_a_prefixed_input_echoes_across_equal_bases
+    assert_equal '0b11', Converter.answer('0b11', 2, 2)
+    assert_equal '0x1F', Converter.answer('0x1F', 16, 16)
+  end
+
+  # Ruby's Integer() strips one prefix Python's int() does not, and Decimal is
+  # one of the app's five bases, so it has to be rejected by hand:
+  #
+  #   >>> int('0d15', 10)
+  #   ValueError: invalid literal for int() with base 10: '0d15'
+  #
+  # Bases that read "d" as a digit are unaffected — int('0d15', 14) is 2567 in
+  # both languages.
+  def test_rubys_0d_prefix_is_rejected_in_base_ten_as_python_rejects_it
+    assert_equal 'char', Converter.answer('0d15', 10, 2)
+    assert_equal 'char_dual', Converter.answer('0d15', 10, 10)
+    assert_equal '2567', Converter.answer('0d15', 14, 10)
+  end
+
+  # int() strips surrounding whitespace, and the app's own space check
+  # (src/lib/get_answer.py:48) only catches the space character, so a tab is
+  # input upstream converts: int('\t10', 2) is 2.
+  def test_whitespace_other_than_a_space_parses_the_way_int_parses_it
+    assert_equal '2', Converter.answer("\t10", 2, 10)
+    assert_equal '2', Converter.answer("10\n", 2, 10)
   end
 
   # Python's int() takes single underscores between digits, so upstream's

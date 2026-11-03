@@ -80,14 +80,20 @@ Gem::Specification.new do |spec|
     *enumerate_package_files.call("lib"),
     # Executables and executable support scripts
     *enumerate_package_files.call("exe"),
-    # Extra package files configured by .structuredmerge/kettle-jem.yml
+    # Extra package files configured by .structuredmerge/kettle-jem.yml.
+    # data/** carries the icons, the three desktop-integration files and both
+    # forms of the GSettings schema — the XML and data/schemas/gschemas.compiled,
+    # which exe/binary points GSETTINGS_SCHEMA_DIR at. The compiled file is
+    # .gitignored, so it is here only because `rake build` depends on :schemas;
+    # without it Gio::Settings.new aborts the process on the first window.
     *enumerate_package_glob.call(File.join(gemspec_root, "data/**/*")),
     *enumerate_package_glob.call(File.join(gemspec_root, "po/**/*")),
     # The compiled catalogues lib/main.rb's LOCALE_DIRECTORIES looks beside the
     # source for. po/*.po is the source form and no gettext reads it at
     # runtime, so without these the installed gem is English in all 32
     # languages. `rake build` compiles them first — the Rakefile makes build
-    # depend on :translations — so this glob is never empty on a release.
+    # depend on :translations and :schemas — so this glob is never empty on a
+    # release.
     *enumerate_package_glob.call(File.join(gemspec_root, "locale/**/*"))
   ]
   spec.rdoc_options += [

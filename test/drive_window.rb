@@ -179,8 +179,11 @@ BinaryApp.new.then do |app|
       d.check('the notes are the metainfo markup, list and all') do
         SEEN[:about].release_notes.include?("<li>Binary now uses the system's monospace font by default</li>")
       end
-      d.check('the summary came across too') do
-        SEEN[:about].comments.start_with?('A small and simple app')
+      # new_from_appdata does not set `comments`, so the port does not either:
+      # upstream's About dialog shows no description paragraph under the app
+      # name, and neither does this one.
+      d.check('and no description paragraph upstream would not show') do
+        SEEN[:about].comments.nil? || SEEN[:about].comments.empty?
       end
       d.shot('09-about')
       app.active_window.visible_dialog&.close
@@ -268,10 +271,13 @@ BinaryApp.new.then do |app|
       d.shot('12-second-window')
     end
 
-    # `binary --new-window` reaches the running instance through the
-    # command-line signal rather than through activate.
+    # `binary --new-window` on a second invocation never reaches a
+    # command-line signal — the port carries upstream's DEFAULT_FLAGS, so
+    # there is none. It travels as the app.new-window action, which
+    # #forward_new_window activates on the instance already running; in
+    # process that is this.
     d.step('the --new-window flag opens another') do
-      app.handle_command_line(['binary', '--new-window'])
+      app.activate_action('new-window')
     end
 
     d.step('there are three windows') do
@@ -324,6 +330,36 @@ BinaryApp.new.then do |app|
       # upstream's `sys.exit(main.main())` does — a rejected option that left
       # the process reporting success is a failure no caller could see.
       d.check('and the process fails') { SEEN[:nonsense_status] == 1 }
+    end
+
+    # Upstream passes Gio.ApplicationFlags.DEFAULT_FLAGS (src/main.py:34), and
+    # a GApplication with neither HANDLES_OPEN nor HANDLES_COMMAND_LINE refuses
+    # a non-option argument outright. That refusal is the reason the port
+    # carries the same flags instead of HANDLES_COMMAND_LINE: with the latter
+    # `binary nonsense-argument` opened a window and stayed up.
+    d.step('a non-option argument is refused the way upstream refuses it') do
+      d.check('the flags are upstream\'s') do
+        app.app.flags == Gio::ApplicationFlags::DEFAULT_FLAGS
+      end
+      # Its own session bus, the way the high-contrast child gets one below:
+      # this driver is itself a registered instance of the app id, and a second
+      # invocation that finds itself remote hands the argument to the running
+      # instance instead of being refused locally. What is being measured here
+      # is the refusal a user gets when nothing else is running.
+      SEEN[:argument] =
+        `dbus-run-session -- #{RbConfig.ruby} \
+         #{File.expand_path('../exe/binary', __dir__)} nonsense-argument 2>&1`
+      SEEN[:argument_status] = $CHILD_STATUS.exitstatus
+      # Measured, not remembered: glib 2.86 in this shell prints
+      # "GLib-GIO-CRITICAL **: This application can not open files." and
+      # g_application_run returns 1. Upstream's Python reaches the same GLib
+      # with the same flags, so it prints the same line.
+      d.check('GLib refuses to open it as a file') do
+        SEEN[:argument].include?('can not open files')
+      end
+      d.check('and the process fails rather than opening a window') do
+        SEEN[:argument_status] == 1
+      end
     end
 
     # The local-options path upstream takes: not remote here, so it declines

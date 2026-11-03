@@ -8,9 +8,9 @@ upstream ref is never checked out and never merged.
 | | |
 |---|---|
 | Upstream ref | `origin/main` @ `e96066b` |
-| Port branch | `ruby` @ `5780a74` |
-| Last audit round | 3 |
-| Open gaps | **7** |
+| Port branch | `ruby` |
+| Last audit round | 5 |
+| Open gaps | **5** |
 | Audit clean | **no** |
 
 ## Upstream
@@ -36,6 +36,8 @@ Components implemented and believed complete.
 | `lib/shortcuts_dialog.rb` | `src/shortcuts-dialog.blp` |
 | `lib/main.rb` `STYLE` heredoc | `src/style.css` (verified byte-identical) |
 | `lib/main.rb` `HIGH_CONTRAST_STYLE` heredoc | `src/style-hc.css` (verified byte-identical) |
+| `lib/main.rb` `#install_styles` / `#install_icons` | `src/binary.gresource.xml` — no bundle by design, so the bundle's keying is done by hand: the base sheet stays on the display and the high-contrast one is added and removed as `AdwStyleManager:high-contrast` flips, and `vertical-arrows-symbolic` is reached through a `Gtk::IconTheme` search path instead of a resource path |
+| `Rakefile`, `binary-rb.gemspec` | `meson.build`, `data/meson.build`, `src/meson.build`, `po/meson.build`, `subprojects/blueprint-compiler.wrap` — the build, not a component: `rake translations` and `rake schemas` are the two compile steps, and `rake build` depends on both so a packed gem carries the catalogues and the compiled schema |
 | `lib/settings.rb` | `data/io.github.fizzyizzy05.binary.gschema.xml` |
 | `lib/i18n.rb` | `po/` catalogues, via C `gettext` through Fiddle |
 | `exe/binary` | `src/binary.in` (launcher) |
@@ -46,7 +48,12 @@ Components implemented and believed complete.
 The window and the conversion library had full parity after round 3. The
 preferences, shortcuts and application units were brought into line in round 4:
 each dialog has its file, each is built per activation, and the launcher exits
-with GLib's status.
+with GLib's status. This round closed the five behavioural divergences round 5
+found: the validity gate is the `int(x, base)` call it was supposed to be, the
+output-base handler skips what upstream's exception skips, the application
+carries upstream's flags and no invented accelerator, the About dialog shows no
+field `new_from_appdata` would not set, and `rake build` compiles the schema a
+packed gem needs to start at all.
 
 ## Not started
 
@@ -56,33 +63,55 @@ of them now has a file of its own. What is outstanding is the gaps below.
 
 ## Open gaps
 
-7 open, from the round-3 reports in `.reports/`. The last accountability pass
-reported **not clean**. Eleven of the eighteen were closed in round 4; the
-reports themselves have not been re-run since, so their numbering is kept and
-the closed entries are marked rather than removed.
+5 open. Numbering follows the round-5 reports in `.reports/`; the entries
+closed since are marked rather than removed, and the reports themselves have
+not been re-run, so their own verdicts still read **not clean**.
 
 ### `.reports/component-parity.md` — 3 open of 9
 
-1. ~~`#preferences_dialog` is memoized~~ — closed round 4: built per
-   activation, as upstream's `on_preferences_action` does.
-2. ~~`#shortcuts_dialog` is memoized~~ — closed round 4, the same way.
-3. The `<primary>question` accelerator for `app.shortcuts` is invented by the
-   port (see Blockers — the action itself is a deliberate divergence).
-4. The application uses `:handles_command_line` instead of
-   `Gio.ApplicationFlags.DEFAULT_FLAGS`, so a stray non-option argument is
-   silently accepted where upstream rejects it.
-5. ~~`exe/binary` discards GLib's exit status~~ — closed round 4: it exits with
-   it, and the driver asserts 1 for a rejected option and 0 for `--help`.
-6. Nothing installs `.desktop`, `.service` or metainfo; `@bindir@` is never
-   substituted, so D-Bus activation is broken.
-7. ~~The gem ships no `COPYING`/`LICENSE.md`~~ — closed round 4: upstream's
-   `COPYING` is committed and packaged.
-8. ~~`locale/` is absent from `spec.files`~~ — closed round 4: the gemspec globs
-   `locale/**/*` and `rake build` depends on `:translations`, so a packed gem
-   always carries the 32 compiled catalogues.
-9. ~~The About, preferences and shortcuts units have no `lib/*.rb` of their
-   own~~ — closed round 4: `lib/about_dialog.rb`, `lib/preferences_dialog.rb`
-   and `lib/shortcuts_dialog.rb`.
+1. ~~Base-prefixed input is rejected~~ — closed: `Converter.valid?` is now
+   `Integer(part, base, exception: false)`, the call Python's `int(x, base)`
+   corresponds to, so `0b11` on Binary, `0o17` on Octal and `0x1F` on
+   Hexadecimal convert instead of flagging, and across equal bases they echo
+   back unflagged. Ruby's own extra `0d` prefix is rejected in base 10, where
+   `int()` rejects it. `test/test_converter.rb` carries the measured Python
+   output for each case; the two assertions that pinned the defect are gone.
+2. ~~`#change_output_base` does work upstream's exception skips~~ — closed:
+   `#input_handler` hands `Converter::ABORT` back and `#change_output_base`
+   skips `#refresh_chrome` and `@editable = true` on it, which is what
+   upstream's bare `except: return` does when `input_handler` raises on a `+`.
+3. ~~The installed gem has no GSettings schema, and aborts~~ — closed:
+   `rake build` depends on `:schemas` as well as `:translations`, so
+   `data/schemas/gschemas.compiled` is compiled before the gem is packed and
+   the gemspec's `data/**/*` glob carries it. `exe/binary` already points
+   `GSETTINGS_SCHEMA_DIR` at that directory.
+4. ~~`:handles_command_line` accepts arguments upstream rejects~~ — closed:
+   the application is built with `:default_flags`, upstream's flags, and the
+   `command-line` handler is gone. `binary nonsense-argument` now fails with
+   GLib's "This application can not open files." on stderr and exit 1 —
+   measured, not the message the round-5 report quoted from memory — and
+   `test/drive_window.rb` asserts both. `--new-window` still travels the route
+   upstream's `do_handle_local_options` takes.
+5. Nothing installs `.desktop`, `.service` or metainfo; `@bindir@` is never
+   substituted, so D-Bus activation is broken. (Round-5 gap 5.)
+6. ~~`app.shortcuts` and `<primary>question` are invented~~ — half closed: the
+   accelerator is gone, so the port binds what upstream binds (nothing) and
+   its shortcuts dialog shows the item blank the way upstream's would. The
+   action itself stays, deliberately, so the menu item is not dead; see
+   Blockers.
+7. `Adw.PreferencesWindow` is an `Adwaita::PreferencesDialog` here — a
+   top-level window upstream, a dialog inside the parent window in the port.
+   The window class is deprecated, which is why the substitution was made, and
+   it is a user-visible divergence: it dims and traps the parent, has no
+   window-list entry and closes on Escape. `content-width`/`content-height`
+   carry upstream's two default sizes and `height-request: 200` becomes a size
+   request. Open as a divergence to accept or undo, not as missing work.
+8. Both `notify::selected` connections are narrower than upstream's bare
+   `notify`, and `ConversionRow#container` adds two boxes upstream's tree does
+   not have. Nothing observable differs today.
+9. ~~The About dialog shows a description upstream's does not~~ — closed:
+   `about.comments` is gone, because `adw_about_dialog_new_from_appdata` does
+   not set it.
 
 ### `.reports/translation-parity.md` — 1 open of 4
 
@@ -99,50 +128,68 @@ the closed entries are marked rather than removed.
     lines the msgids are on. 33 translated msgids per catalogue before and
     after, no new fuzzies.
 
-### `.reports/test-parity.md` — 2 open of 4
+### `.reports/test-parity.md` — 1 open of 4
 
 Upstream has **no test suite**, so test parity is 0/0 and met trivially. These
 four are defects in the port's own suite, which is the only safety net the port
-has. The two that remain are both in the dev shell, not in the suite.
+has. The one that remains is in the dev shell, not in the suite.
 
 14. The flake's wrapped `rake`/`bundle`/`rubocop` cannot start: `bundlerEnv` is
     built from the root `Gemfile` (kettle-jem's development bundle, which has a
     `gemspec` directive) instead of `nix/Gemfile`. Cause is in `flake.nix`;
     `FINDINGS.md` section 10 records only the symptom.
-15. The devShell has no display server. `xvfb-run` and `Xvfb` are both absent,
-    and every file in `test/` reaches `require 'adwaita'`, so even the three
-    pure-logic minitest files cannot run. The round-3 display came from
-    `nix shell nixpkgs#xvfb`, outside the project.
+15. ~~The devShell has no display server~~ — closed: `flake.nix` carries
+    `xvfb-run` and `dbus` in `buildInputs`, and every suite in this round's
+    ledger ran through the shell's own `xvfb-run` with nothing brought in from
+    outside the project.
 16. ~~No check asserts the process exit status~~ — closed round 4, with gap 5.
 17. ~~No check pins the preferences or shortcuts dialog's *identity* across
     activations~~ — closed round 4: both dialogs are now opened, closed,
     reopened and compared against the first instance.
 
-### `.reports/accountability-ensurance.md` — 1 open of 1
+### `.reports/accountability-ensurance.md` — 0 open of 1
 
-18. One binding-limitation record is carrying a gap it should not: the
-    `:handles_command_line` flag choice (gap 4) is written up as a binding
-    limitation rather than as a divergence. 7 further entries were rewritten
-    this round, 2 were false positives, 9 were allowed.
+18. ~~One binding-limitation record is carrying a gap it should not: the
+    `:handles_command_line` flag choice is written up as a binding limitation
+    rather than as a divergence~~ — closed with component-parity gap 4. The
+    flag is gone, the `command-line` handler with it, and the comment on
+    `#app` now says what `:default_flags` buys (GLib's refusal of a stray
+    argument) instead of describing a choice as a constraint.
 
-### What did run, round 4
+### What did run, this round
 
-Inside `nix develop`, with a display from `nix shell nixpkgs#xvfb-run` (gap 15
-— the devShell still has none):
+All inside `nix develop`, with the devShell's own `xvfb-run` (gap 15 is closed
+in the shell itself — the flake carries `xvfb-run` and `dbus` now, and the
+banner names every command):
 
-- `test/test_*.rb` — 24 runs, 62 assertions, 0 failures, 0 errors, 0 skips
-- `test/drive_window.rb` — 60 of 60 checks
-- `test/drive_translated.rb` — 8 of 8 checks
-- the `translations`, `schemas` and `pot` recipes, run by hand because the
-  flake's wrapped `rake` cannot start (gap 14)
-- `rubocop` 1.90.0 over `lib/`, `exe/`, `test/drive_window.rb`, the gemspec and
-  the Rakefile — clean on all of them except six pre-existing offences in the
-  templated parts of the gemspec and Rakefile. The wrapped `rubocop` cannot
-  start either (gap 14); it was loaded out of the gems derivation directly.
+- `test/run_tests.rb` — 27 runs, 72 assertions, 0 failures, 0 errors, 0 skips
+- `test/drive_window.rb` — **205 of 205 checks, `DRIVE OK`**
+- `test/drive_translated.rb` — 8 of 8, `DRIVE OK`
+- `test/high_contrast_check.rb` — 6 of 6, `DRIVE OK`
+- `rubocop` 1.90.0 over `lib/`, `exe/`, `test/drive_window.rb`,
+  `test/test_converter.rb`, `test/gtk_driver.rb`, the gemspec and the
+  Rakefile — `lib/`, `exe/` and the two touched test files are clean; the 12
+  remaining offences are all pre-existing, in `test/gtk_driver.rb` and in the
+  templated parts of the gemspec and Rakefile. The wrapped `rubocop` still
+  cannot start (gap 14); the shell's `rubocop` function is what runs.
 
-Green suites are not parity; gaps 16 and 17 were two places where they were
-green and wrong, which is why closing 1, 2 and 5 came with the checks that
-would have caught them.
+Two measurements worth keeping, because both contradicted a report written
+from memory:
+
+- a stray argument is refused with GLib's *"This application can not open
+  files."*, not *"Application does not take command line arguments"*, and only
+  when no other instance holds the app id — a second invocation that finds
+  itself remote hands the argument on, which is why the driver gives that probe
+  its own `dbus-run-session` bus.
+- the 120s watchdog in `test/gtk_driver.rb` was not slack for a hung app: a
+  healthy window run reached it on a cold machine and reported a timeout
+  against a step that was fine. It is 420s now, overridable with
+  `BINARY_DRIVE_TIMEOUT`.
+
+Green suites are not parity — gaps 16 and 17 were two places where they were
+green and wrong, and round 5's gap 1 was a third, where
+`test/test_converter.rb` asserted the invented error state. Every closure this
+round came with the check that would have caught it.
 
 ## Blockers
 
@@ -171,5 +218,7 @@ Things that cannot be ported, and why.
 - **Upstream's `app.shortcuts` action is never created** in `src/main.py`,
   although the menu and the shortcuts dialog both reference it, so strict parity
   would mean shipping a dead menu item. The port deliberately diverges: it
-  creates the action and gives it `<primary>question`. The invented accelerator
-  is tracked as gap 3.
+  creates the action. It binds no accelerator to it, because upstream binds
+  none and because `Adw.ShortcutsItem` renders whatever the application has
+  bound to the action it names — an invented accelerator would show up inside
+  the shortcuts dialog as well.

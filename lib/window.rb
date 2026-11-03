@@ -83,10 +83,20 @@ class BinaryWindow
 
   # Upstream recomputes on an output-base change but not on an input-base one,
   # so that retyping is not needed after picking the base you meant to type in.
+  #
+  # The whole body is wrapped in a bare `try: ... except: return` upstream
+  # (src/window.py:93-100), and `input_handler` is the one call in it that can
+  # raise — the "+" crash #show_forwards names. When it does, the three
+  # statements after it never run: the bit-counter and spin-button visibility
+  # stay as they were for the base that was selected before, and `editable`
+  # keeps the `False` input_handler set on its first line, so the output entry
+  # ignores the next edit. Returning ABORT out of the handler is how that
+  # skipping is modelled here.
   def change_output_base
-    input_handler
-    refresh_chrome
-    @editable = true
+    if input_handler != Converter::ABORT
+      refresh_chrome
+      @editable = true
+    end
   end
 
   def on_close
@@ -108,8 +118,11 @@ class BinaryWindow
   def show_forwards(in_str, answer)
     case answer
     when Converter::ABORT
-      # Upstream's handler raised here and did nothing more. Neither does this.
-      nil
+      # Upstream's handler raised here and did nothing more. Neither does
+      # this — and the sentinel is handed back rather than swallowed so
+      # #change_output_base can skip the rest of its body the way the bare
+      # `except: return` above it does.
+      Converter::ABORT
     when 'char'
       input_row.error = true
       input_row.tooltip = _('Invalid input')

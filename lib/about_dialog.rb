@@ -12,9 +12,18 @@ require_relative 'i18n'
 # credits and the copyright.
 #
 # There is no GResource bundle here, so new_from_appdata has no resource path to
-# read: the same metainfo file is read off disk instead, its summary and its
+# read: the same metainfo file is read off disk instead, its
 # <release version="5.4"> notes pulled out of it, and the fields appdata would
 # have filled are set explicitly.
+#
+# Only those fields. adw_about_dialog_new_from_appdata sets application-name,
+# application-icon, developer-name, version, release-notes,
+# release-notes-version, license-type, website, issue-url and support-url, and
+# it does not set `comments` — so neither does this, although the metainfo
+# carries a <description> that would read well there. A description paragraph
+# under the app name is a line upstream's About dialog does not show. The
+# support-url appdata would have filled is absent here for the same reason it
+# is absent there: the metainfo declares no <url type="help">.
 class AboutDialog
   # The same file AdwAboutDialog.new_from_appdata reads out of upstream's
   # GResource bundle. The port ships it byte-identical, so the About dialog's
@@ -52,7 +61,6 @@ class AboutDialog
       about.application_name = _('Binary')
       about.application_icon = @app_id
       about.version = @version
-      about.comments = _('A small and simple app used to convert between different hexadecimal and binary numbers')
       about.release_notes_version = @version
       about.release_notes = release_notes
       about.developer_name = 'Isabelle Jackson'

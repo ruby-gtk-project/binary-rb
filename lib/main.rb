@@ -25,7 +25,14 @@ class BinaryApp
     'preferences'  => [],
     'close-window' => ['<primary>w'],
     'new-window'   => ['<primary>n'],
-    'shortcuts'    => ['<primary>question'],
+    # No accelerator: upstream binds none, because src/main.py never creates
+    # this action at all — the menu item and the four shortcuts items that name
+    # app.shortcuts are dead there. The port installs the action so the menu
+    # item works, and stops there: an accelerator is derivable from nothing
+    # upstream does, and because Adw.ShortcutsItem renders whatever the
+    # application has bound to the action it names, binding one would also put
+    # a shortcut in the shortcuts dialog that upstream's shows as blank.
+    'shortcuts'    => [],
   }.freeze
 
   HIGH_CONTRAST_PRIORITY = Gtk::StyleProvider::PRIORITY_APPLICATION + 1
@@ -67,13 +74,6 @@ class BinaryApp
       a.signal_connect('handle-local-options') do |_, options|
         handle_local_options(options)
       end
-
-      # HANDLES_COMMAND_LINE is what carries `--new-window` from a second
-      # invocation over to the instance that is already running.
-      a.signal_connect('command-line') do |_, command_line|
-        handle_command_line(command_line.arguments)
-        0
-      end
     end
   end
 
@@ -99,14 +99,6 @@ class BinaryApp
       0
     else
       -1
-    end
-  end
-
-  def handle_command_line(arguments)
-    if arguments.include?('--new-window') || arguments.include?('-w')
-      new_window
-    else
-      app.activate
     end
   end
 
@@ -205,7 +197,17 @@ class BinaryApp
   end
 
   def app
-    @app ||= Gtk::Application.new(APP_ID, :handles_command_line).tap do |a|
+    # DEFAULT_FLAGS is upstream's (src/main.py:34), and it is the flags that
+    # make `binary nonsense-argument` fail: a GApplication with neither
+    # HANDLES_OPEN nor HANDLES_COMMAND_LINE refuses a non-option argument.
+    # Measured in this shell: GLib prints "GLib-GIO-CRITICAL **: This
+    # application can not open files." and g_application_run returns 1, which
+    # exe/binary exits with. Nothing here needs more than that — `--new-window`
+    # from a second
+    # invocation travels through #handle_local_options, #register and
+    # #activate_action, which is the route upstream's do_handle_local_options
+    # takes (src/main.py:57-64) and needs no command-line signal.
+    @app ||= Gtk::Application.new(APP_ID, :default_flags).tap do |a|
       Gtk::Window.set_default_icon_name(APP_ID)
 
       # Registering the option with GLib is what puts "-w, --new-window" in

@@ -237,8 +237,13 @@ end
 
 task test: %i[translations schemas]
 
-# bundler/gem_tasks defines `build`; this only adds a prerequisite to it. The
-# gemspec ships locale/<lang>/LC_MESSAGES/binary.mo, which is a build product of
-# po/*.po, so the catalogues are compiled before the gem is packed rather than
-# left to whether someone happened to run `rake translations` first.
-task build: :translations
+# bundler/gem_tasks defines `build`; this only adds prerequisites to it. Both
+# are build products the gemspec ships and .gitignore keeps out of the tree:
+# locale/<lang>/LC_MESSAGES/binary.mo, compiled from po/*.po, and
+# data/schemas/gschemas.compiled, compiled from the gschema XML. Compiling them
+# before the gem is packed is not a convenience — Gio::Settings.new aborts the
+# process with g_error when the schema id is not installed, and there is no
+# exception to rescue, so a gem packed without the compiled schema would abort
+# on the first window rather than open one. exe/binary puts the packed
+# data/schemas on GSETTINGS_SCHEMA_DIR, which is how an installed copy finds it.
+task build: %i[translations schemas]

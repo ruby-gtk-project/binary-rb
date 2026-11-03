@@ -31,7 +31,14 @@ module GtkDriver
 
   # A hung app would otherwise block forever, which is much worse than a
   # failure — you get no output at all to diagnose.
-  DEFAULT_TIMEOUT = 120
+  #
+  # Generous because the window run is not only widget pokes: it shells out to
+  # `ruby exe/binary` three times and forks a high-contrast child, and each of
+  # those loads GTK and Libadwaita from scratch. At 120s a healthy run reached
+  # the watchdog on a cold, sandboxed machine and reported a timeout for a step
+  # that had nothing wrong with it, which is the one failure mode a watchdog
+  # must not have. BINARY_DRIVE_TIMEOUT overrides it for a slower box still.
+  DEFAULT_TIMEOUT = Integer(ENV.fetch('BINARY_DRIVE_TIMEOUT', '420'))
 
   # Drives `app_object` (anything answering `build`, per the house pattern
   # `MyApp.new.build.run`) through the steps registered in the block.
