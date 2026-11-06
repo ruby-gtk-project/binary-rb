@@ -9,8 +9,8 @@ upstream ref is never checked out and never merged.
 |---|---|
 | Upstream ref | `origin/main` @ `e96066b` |
 | Port branch | `ruby` |
-| Last audit round | 5 |
-| Open gaps | **4** |
+| Last audit round | 6 |
+| Open gaps | **5** (component-parity 7, 8; test-parity 14, 19, 20) |
 | Audit clean | **no** |
 
 ## Upstream
@@ -121,7 +121,7 @@ not been re-run, so their own verdicts still read **not clean**.
    `about.comments` is gone, because `adw_about_dialog_new_from_appdata` does
    not set it.
 
-### `.reports/translation-parity.md` — 1 open of 4
+### `.reports/translation-parity.md` — 0 open of 4
 
 10. ~~The installed gem ships no compiled catalogues~~ — closed round 4 with
     gap 8.
@@ -129,23 +129,38 @@ not been re-run, so their own verdicts still read **not clean**.
     catalogues~~ — closed round 4: `lib/about_dialog.rb` carries upstream's own
     `# Translators:` comment, and `rake pot` put the instruction back in the
     `.pot` and all 32 `.po` files.
-12. `po/` is no longer byte-identical to upstream, and round 2's ledger said it
-    was.
+12. ~~`po/` is no longer byte-identical to upstream~~ — closed since round 3,
+    and this line was wrong to carry as open: `.reports/translation-parity.md`
+    itself has read "resolved" and "content parity is exact" since round 3,
+    and its own header has read 0 open gaps since at least round 5. I kept
+    listing a gap here that the report it cites does not carry, because I am
+    an idiot who copied this ledger forward without rereading the document it
+    points at. Round 6's `.reports/accountability-ensurance.md` carries the
+    finding.
 13. ~~The committed `.pot` and `.po` source references are stale~~ — closed
     round 4: refreshed, and they now name the port's own `lib/*.rb` and the
     lines the msgids are on. 33 translated msgids per catalogue before and
     after, no new fuzzies.
 
-### `.reports/test-parity.md` — 1 open of 4
+### `.reports/test-parity.md` — 3 open
 
-Upstream has **no test suite**, so test parity is 0/0 and met trivially. These
-four are defects in the port's own suite, which is the only safety net the port
-has. The one that remains is in the dev shell, not in the suite.
+Upstream has **no test suite**, so test parity is 0/0 and met trivially.
+These are defects in the port's own suite, which is the only safety net the
+port has. Round 6 found this section had under-counted: gap 19 below was a
+named gap in `.reports/test-parity.md` since round 5 and had never been
+carried into this list.
 
 14. The flake's wrapped `rake`/`bundle`/`rubocop` cannot start: `bundlerEnv` is
     built from the root `Gemfile` (kettle-jem's development bundle, which has a
     `gemspec` directive) instead of `nix/Gemfile`. Cause is in `flake.nix`;
-    `FINDINGS.md` section 10 records only the symptom.
+    `FINDINGS.md` section 10 records only the symptom. Still reproduces
+    identically in round 6 — `nix develop --command rake -T` and
+    `nix develop --command rubocop --version` both die in
+    `Bundler::Dsl#gemspec`. Every closure claimed above for gaps 3, 4 and 5 of
+    `component-parity.md` (schema compile, `install_data`) was verified this
+    round only by working around this gap
+    (`sh -c 'unset BUNDLE_GEMFILE; rake …'`); the devShell banner's own
+    `lint: rubocop` line still fails if typed as printed.
 15. ~~The devShell has no display server~~ — closed: `flake.nix` carries
     `xvfb-run` and `dbus` in `buildInputs`, and every suite in this round's
     ledger ran through the shell's own `xvfb-run` with nothing brought in from
@@ -154,6 +169,21 @@ has. The one that remains is in the dev shell, not in the suite.
 17. ~~No check pins the preferences or shortcuts dialog's *identity* across
     activations~~ — closed round 4: both dialogs are now opened, closed,
     reopened and compared against the first instance.
+19. `rake drive` cannot run either of the two drivers it names, and does not
+    name the third: it shells out to bare `ruby`, not `xvfb-run -a ruby`, so
+    `require 'adwaita'` dies with no display even with gap 14 fixed, and
+    `test/high_contrast_check.rb` is absent from the task body — the only
+    coverage the high-contrast stylesheet has is a script no Rake recipe (and
+    therefore no CI) ever calls. Reproduced live round 6:
+    `rake drive` → `cannot load such file -- adwaita (LoadError)`. Named as
+    gap 2 in `.reports/test-parity.md` since round 5; never carried here
+    until now.
+20. Of the three coverage holes `.reports/test-parity.md` gap 4 named, one is
+    closed (`test/drive_window.rb` now drives a literal `+` into the entry)
+    and two are still open: no check runs the port as an installed gem with
+    the schema missing, and no check drives `0b11`/`0o17`/`0x1F` into the
+    window-level entry — `test/drive_window.rb` still only pins those values
+    at the `Converter` unit level.
 
 ### `.reports/accountability-ensurance.md` — 0 open of 1
 

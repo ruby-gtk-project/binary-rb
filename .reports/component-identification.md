@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `ff54bec` |
-| Round | 5 |
+| Port | `ruby` @ `0dfda24` |
+| Round | 6 |
 | Scan | `.claude/skills/component-identification/scripts/component-scan.sh` |
 | Upstream rows | 47 (`.reports/upstream-components.tsv`) |
 | Port rows | 49 (`.reports/port-components.tsv`, regenerated this round) |
@@ -120,7 +120,7 @@ run asserts each one against the live `Gio::Application` (checks 78–79).
 |---|---|---|
 | Primary menu, section 1 | New Window | ✓ |
 | Primary menu, section 2 | `_Keyboard Shortcuts`, `_About Binary` | ✓ |
-| Desktop action | `new-window` in `.desktop.in` | file shipped ✓, never installed |
+| Desktop action | `new-window` in `.desktop.in` | file shipped ✓, and since round 5's `rake install_data` now installed into `$XDG_DATA_HOME`; re-measured round 6 with `XDG_DATA_HOME=/tmp/xdgdata rake install_data` under the `unset BUNDLE_GEMFILE` workaround (gap 14 of `test-parity`) — three files land: `applications/io.github.fizzyizzy05.binary.desktop`, `dbus-1/services/io.github.fizzyizzy05.binary.service`, `metainfo/io.github.fizzyizzy05.binary.metainfo.xml` |
 | Preferences page | one empty `Adw.PreferencesPage` | ✓ |
 | Shortcuts section | `General`, 4 items | ✓ |
 | Empty entries | both entries blank, bit buttons insensitive | ✓ |
@@ -133,3 +133,28 @@ run asserts each one against the live `Gio::Application` (checks 78–79).
 
 The last row is the one new user-visible state this inventory turned up; it is
 written up in `.reports/component-parity.md`.
+
+---
+
+## Round 6 re-verification
+
+Re-measured live, not re-derived from the round-5 text:
+
+- Upstream tree re-read via `git show origin/main:<path>` and
+  `git ls-tree -r --name-only origin/main`; `origin/main` is still
+  `e96066b` — no upstream drift to re-scan against.
+- `test/drive_window.rb` under `nix develop --command xvfb-run -a ruby`:
+  **205 of 205 checks, `DRIVE OK`** (up from round 5's 202 — the three new
+  checks are the desktop-entry/D-Bus-service-file steps `[80]`/`[81]` and the
+  close-window/quit steps `[82]`-`[84]`, all added since the round-5 report
+  was written).
+- The one stale row this round found (above): the desktop action was marked
+  "never installed" in the round-5 inventory, which was true when that row
+  was written but is no longer true — `rake install_data` (closed round 5,
+  verified again below in `component-parity.md`) installs it. Corrected in
+  place rather than left for the next reader to re-derive.
+- No new widget, CSS class, signal or action turned up on either side: the
+  upstream `git ls-tree` for `src/`, `data/` and `po/` is unchanged at
+  `e96066b`, and `lib/` carries no new file since round 5's
+  `lib/about_dialog.rb` / `lib/preferences_dialog.rb` / `lib/shortcuts_dialog.rb`
+  split. The widget census above still holds without re-running the scan.

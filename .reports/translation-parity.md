@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `ff54bec` |
-| Round | 5 |
+| Port | `ruby` @ `0dfda24` |
+| Round | 6 |
 | Languages | 32 upstream, 32 ported |
 | msgids in `po/binary.pot` | identical to upstream, msgid-for-msgid |
 | Catalogues differing from upstream in content | **0 of 32** |
@@ -110,3 +110,41 @@ anything went wrong. It is recorded in the file itself and carried as a
 finding in `.reports/accountability-ensurance.md`, not counted as a
 translation-parity gap, because on the platform the port is built and run on
 the strings do arrive.
+
+---
+
+## Round 6 re-verification
+
+Re-measured independently, not re-derived from round 5's "clean" verdict:
+
+- Extracted `po/binary.pot` from both `origin/main` and `ruby`, parsed every
+  `(msgctxt, msgid)` pair out of each by hand (not trusting `msgcat`, which
+  this shell does not have — `which msgcat msgcomm` returns nothing): **30
+  keys upstream, 30 in the port, set difference empty both directions.**
+- `po/LINGUAS` on both sides: 32 entries, identical.
+- Sampled `de.po`, `fr.po`, `es.po`, `ja.po` against
+  `git show origin/main:po/<lang>.po`: identical `msgid` counts (31 each),
+  and a line-level diff of `de.po` shows only reordering and the
+  `POT-Creation-Date` timestamp — every `msgstr`, including
+  `translator-credits`'s `"Konstantin Tutsch <mail@konstantintutsch.com>"`,
+  is unchanged.
+- `rake build` (run through the `unset BUNDLE_GEMFILE` workaround —
+  `test-parity.md` gap 3) compiles all 32 `.po` files to
+  `locale/<lang>/LC_MESSAGES/binary.mo` and packs them into the gem; verified
+  by unpacking `pkg/binary-rb-0.1.0.gem` and listing `locale/*/LC_MESSAGES/*.mo`.
+- `test/drive_translated.rb` re-run live: 8 of 8, `DRIVE OK`, in German.
+
+**Flagged for `PORTING.md`, not for this report:** `PORTING.md`'s own "Open
+gaps" section lists gap 12 — "`po/` is no longer byte-identical to upstream" —
+as open under this report, citing it by number. The round-5
+`translation-parity.md` already closes that exact gap in its own text
+("Round 3's gap 12 … is resolved: the only thing that is not byte-identical is
+the `#:` source references … Content parity is exact") and this report's own
+header has always read **0 open gaps, verdict clean**. `PORTING.md` is
+counting a gap its own cited source does not carry. That inconsistency is
+reported in `.reports/accountability-ensurance.md`, since a status table that
+disagrees with the document it cites is exactly the kind of claim that axis
+exists to catch — it is not a translation defect.
+
+This axis stays **clean**: 0 open gaps, re-verified by independent
+re-measurement rather than by trusting the round-5 number.

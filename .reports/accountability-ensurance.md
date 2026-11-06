@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `ff54bec` |
-| Round | 5 |
+| Port | `ruby` @ `0dfda24` |
+| Round | 6 |
 | Scan | `.claude/skills/accountability-ensurance/scripts/find-excuses.sh .` |
 | Script hits | 14, over 3 files |
 | Hits the script could not find, found by hand | 6 |
@@ -249,3 +249,131 @@ exists to catch, and these were executed:
 | 32 compiled `.mo` exist | `find locale -name '*.mo' | wc -l` → 32 |
 | round 3 gap 15 (no display in the devShell) is closed | every command above |
 | round 3 gap 14 (wrapped toolchain) is **not** closed | `nix develop --command rake -T` → Bundler `DSLError` |
+
+---
+
+## Round 6 re-verification
+
+Re-ran the scan live rather than trusting round 5's count:
+
+```
+$ bash .claude/skills/accountability-ensurance/scripts/find-excuses.sh .
+```
+
+Hits, read by hand:
+
+| Hit | Verdict |
+|---|---|
+| `PORTING.md:39` "no bundle by design" | benign — states a measured fact about the GResource bundle (there is none, because the port has no Meson build), not an excuse for missing behaviour. The sentence that follows describes what was built to compensate, in full. Not a rewrite target. |
+| `lib/window.rb:85` "not needed" | benign — describes *upstream's* UX rationale for its own notify-on-output-base-only design, not a port omission. False positive on the pattern. |
+| `.reports/*.md` hits | all inside documents *about* excuses (this document, `component-identification.md`'s and `component-parity.md`'s normal use of "by design"/"n/a" to describe upstream correspondences per that skill's own vocabulary) — excluded per the script's own rule. |
+
+**No new excuse-shaped sentence found this round.** The four false greens
+round 5 found were re-checked, not just re-cited:
+
+1. `lib/converter.rb`'s `Converter.valid?` comment — re-read in full: it now
+   states the measured behaviour (`int(part, base, exception: false)`
+   matching the prefix int() accepts) rather than the disproven claim round 5
+   found. **Fixed**, confirmed by reading the current text, not by trusting
+   the "closed" label.
+2-4. The other three (checked against current `PORTING.md`/`FINDINGS.md`
+   text, not reproduced in full here for space) — unchanged from round 5's
+   description, still correctly carried as closed.
+
+## NEW this round — a false claim in the other direction: `PORTING.md` counts a gap its own cited source closed
+
+`PORTING.md`'s "Open gaps" section, under `.reports/translation-parity.md —
+1 open of 4`, lists:
+
+> 12. `po/` is no longer byte-identical to upstream, and round 2's ledger said
+>     it was.
+
+But `.reports/translation-parity.md` (the document this line cites by number)
+has, since round 3, read:
+
+> **Round 3's gap 12 — "`po/` is no longer byte-identical to upstream" — is
+> resolved**: the only thing that is not byte-identical is the `#:` source
+> references … Content parity is exact.
+
+and its own header table has read **Open gaps: 0, Verdict: clean** since at
+least round 5. `PORTING.md`'s top-level gap count ("Open gaps | **4**") is
+built by summing a number this round's independent re-measurement (above, in
+`translation-parity.md`) also finds to be zero. This is not a false green in
+the sense the four round-5 entries were — nobody is claiming finished work
+that is missing — but it is the same mechanism in miniature: a status table
+that a reader trusts (`PORTING.md`'s resume point, read first by the next
+agent) disagrees with the document it cites as its source, and the
+disagreement was never caught because nobody compared the two numbers.
+Corrected in `PORTING.md` this round. The real open-gap count across all five
+reports is **3** (component-parity 7 and 8; test-parity 2, 3 and 4 — see that
+report's round 6 section for why 2-4 are still one live defect each, not
+three separate counts collapsed into round 5's "4") — not 4, and not 0.
+
+## NEW this round — three closures are real but unreachable through the documented path
+
+`PORTING.md` records gaps 3 (compiled GSettings schema), 4
+(`:handles_command_line`) and 5 (desktop/service/metainfo install) as closed,
+and all three *are* built correctly — re-verified live in
+`component-parity.md`'s round 6 section. But reaching any of them through
+`rake` — the only interface `PORTING.md`, the Rakefile's own `desc` strings
+and the devShell banner all name — fails first, with a Bundler `DSLError`,
+because gap 14 (the wrapped `rake`/`bundle`/`rubocop`, carried since round 3)
+is still open. Every verification of gaps 3-5 this round, and presumably
+every verification that produced the round-5 "closed" entries, had to go
+through `nix develop --command sh -c 'unset BUNDLE_GEMFILE; rake …'` — a
+workaround documented only in `FINDINGS.md` section 10, not in `PORTING.md`'s
+closure lines themselves. The closure lines read as though `rake build` and
+`rake install_data` are usable commands; for anyone following the banner
+literally, they are not. This is recorded here rather than rewritten as an
+excuse, because the gap (14) is already filed in its own right — the finding
+is that the *closure prose* for 3/4/5 does not mention the precondition its
+own verification depended on.
+
+## Claims re-verified by measurement this round
+
+| Claim | How | Result |
+|---|---|---|
+| drive gate: 205 checks, `DRIVE OK`, 9 components in the runtime harness's own grouping | `nix develop --command xvfb-run -a ruby test/drive_window.rb` | confirmed live |
+| `test/run_tests.rb` green | same shell | 27 runs, 72 assertions, 0 failures |
+| `test/drive_translated.rb`, `test/high_contrast_check.rb` green | same shell | 8/8, 6/6 |
+| `rake schemas` compiles the schema a packed gem needs | `unset BUNDLE_GEMFILE; rake build`, then `gem unpack` | `data/schemas/gschemas.compiled` present inside the unpacked gem |
+| `rake install_data` installs three files to `$XDG_DATA_HOME` | `XDG_DATA_HOME=/tmp/xdgdata rake install_data` | three files land, service file's bindir substituted |
+| 30 msgids, 32 languages, content-identical | independent hand-parse of both `.pot`s and four sampled `.po`s | confirmed |
+| `rake -T` / `bundle` / `rubocop` still fail in the devShell | direct invocation, no workaround | confirmed failing exactly as filed |
+| rubocop: 12 pre-existing offences only, `lib/`/`exe/` clean | `unset BUNDLE_GEMFILE; rubocop lib/ exe/ test/drive_window.rb test/test_converter.rb test/gtk_driver.rb binary-rb.gemspec Rakefile` | 12 offences, all in `test/gtk_driver.rb`, the gemspec and the Rakefile |
+
+Verdict for this axis, round 6: **not clean** — one inconsistency between
+`PORTING.md` and its own cited source (corrected), and one place where a
+closure's prose omits the workaround its own verification required. No
+excuse-shaped sentence survived unflagged, and no new one was written.
+
+## NEW this round — gap 14/3 ("rake cannot start in the devShell") is narrower than four rounds of reports say
+
+Every prior round's wording ("the flake's wrapped `rake`/`bundle`/`rubocop`
+cannot start", "not one Rake recipe … can be run in the shell the project
+ships") was re-tested this round against three invocation shapes rather than
+one:
+
+| Invocation | Result |
+|---|---|
+| `nix develop --command rake -T` | fails — `Bundler::Dsl#gemspec`, "There are no gemspecs at …" |
+| `nix develop --command bash -c 'rake -T'` | **succeeds** — lists every task, through the `rake() { ruby -e '...' }` shell function `flake.nix`'s `shellHook` defines and exports |
+| `nix develop --command bash -lc 'type rake'` | confirms `rake is a function`, defined exactly as `flake.nix:121` writes it |
+
+`nix develop --command CMD ARGS…` execs `CMD` directly — it does not route
+through the shell function `export -f` makes available, because `exec`-style
+dispatch never consults shell functions. A person who runs plain `nix develop`
+and types `rake -T` at the resulting interactive prompt is in the second
+case, not the first, and `rake` works for them. **Four rounds of reports,
+this one included until this correction, measured and reported the first case
+only** and generalised it to "the toolchain cannot start" — true of one
+invocation shape, false of the shape a human actually uses.
+
+This does not close gap 14/3 — `nix develop --command rake …`, the form every
+other command in this harness's own instructions takes
+(`nix develop --command xvfb-run -a ruby <script>`), still fails exactly as
+filed, and the banner's `echo "lint: rubocop"` is still false if a reader
+copy-pastes it into a one-shot `--command`. It narrows the claim: this is an
+`exec`-vs-shell-function mismatch in one invocation style, not a dead
+toolchain, and the next round should test both shapes before writing either
+"closed" or "cannot start".

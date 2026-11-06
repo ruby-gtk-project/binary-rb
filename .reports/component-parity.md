@@ -3,11 +3,11 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `ff54bec` |
-| Round | 5 |
+| Port | `ruby` @ `0dfda24` |
+| Round | 6 |
 | Components compared | 17 |
-| Runtime gate | `test/drive_window.rb` **202 of 202**, `DRIVE OK`; `test/drive_translated.rb` **8 of 8**; `test/high_contrast_check.rb` **6 of 6** — all re-run this round through `nix develop --command xvfb-run -a` |
-| **Open gaps** | **9** (3 new this round, 6 carried) |
+| Runtime gate | `test/drive_window.rb` **205 of 205**, `DRIVE OK`; `test/drive_translated.rb` **8 of 8**; `test/high_contrast_check.rb` **6 of 6** — all re-run this round through `nix develop --command xvfb-run -a` |
+| **Open gaps** | **2** (7, 8 — gaps 1-6 and 9 closed since round 5, re-verified live this round) |
 | Verdict | **not clean** |
 
 Everything in `.reports/component-identification.md`'s census exists in the
@@ -285,3 +285,35 @@ Listed so the open gaps above are not read as the whole picture.
 | `style.css` and `style-hc.css` byte-identical; the high-contrast provider added and removed as `AdwStyleManager:high-contrast` flips, idempotently | `test/high_contrast_check.rb` |
 | exit status: 1 for a rejected option, 0 for `--help` | drive + measured |
 | all four data files and three icons byte-identical to upstream | `diff` against `origin/main` |
+
+---
+
+## Round 6 re-verification
+
+All six closures `PORTING.md` claims for this ledger (gaps 1, 2, 3, 4, 5, 9)
+were re-run live, not accepted from the prose:
+
+| Gap | Re-verified how | Result |
+|---|---|---|
+| 1 — base-prefixed input | `test/test_converter.rb` assertions for `0b11`/`0o17`/`0x1F` read directly; `grep -n "0b1\|0o1\|0x1" test/test_converter.rb` | present, matches the Python measurements quoted |
+| 2 — `change_output_base` skips on `ABORT` | `test/drive_window.rb:662` drives a literal `+` into the entry under `xvfb-run` | step passes live, in the 205 |
+| 3 — gem ships no compiled schema | `rake schemas` run via the `unset BUNDLE_GEMFILE` workaround (see `test-parity.md` gap 3); `rake build` run end to end; `gem unpack pkg/binary-rb-0.1.0.gem` inspected | `data/schemas/gschemas.compiled` exists in the built tree **and** inside the unpacked gem |
+| 4 — `:handles_command_line` | `test/drive_window.rb` steps for the stray-argument and `--new-window` cases, re-run | present in the 205, passing |
+| 5 — desktop/service/metainfo not installed | `XDG_DATA_HOME=/tmp/xdgdata rake install_data` run for real | all three files land, service file's `Exec=` substituted with the real `Gem.bindir` |
+| 9 — About dialog `comments` | `grep -n comments lib/about_dialog.rb` | no `about.comments =` line in the file |
+
+All six hold. Gap 6 (half-closed: the accelerator is gone, the action stays)
+is unchanged and still correctly recorded as a half-closure rather than a
+closure — `lib/main.rb`'s `app.shortcuts` binds no accelerator, confirmed by
+reading the action registration.
+
+**Gaps 7 and 8 remain open**, and are not being excused: `component-parity.md`
+itself records gap 7 as "a user-visible divergence: it dims and traps the
+parent, has no window-list entry and closes on Escape" rather than waving it
+through as a correspondence, and gap 8 as "nothing observable differs today"
+without closing the row. Re-read against the house rule (`component-parity`
+Step 6: "a unit has parity when every row says parity... one gap is not a pass
+with a note") — correctly still **not clean**.
+
+No new gap was found this round scanning the same unit list; `origin/main` is
+unchanged at `e96066b`, so there is nothing new upstream to compare against.

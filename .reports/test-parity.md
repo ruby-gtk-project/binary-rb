@@ -3,12 +3,12 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `ff54bec` |
-| Round | 5 |
+| Port | `ruby` @ `0dfda24` |
+| Round | 6 |
 | Upstream tests | **0** |
 | Ported | 0 of 0 |
 | Ported-test gaps | 0 (met trivially) |
-| **Gaps in the port's own suite** | **4** (2 new, 2 carried) |
+| **Gaps in the port's own suite** | **4, all carried from round 5, re-verified live** (gap 1 closed, but closing it exposed that gaps 2-4 were never touched) |
 | Suite executed this round | **yes** — see below |
 | Verdict | **not clean** |
 
@@ -160,3 +160,66 @@ is the correct call for a parity port. Gap 1 is the same shape and is **not**
 correct: it encodes a port bug as upstream behaviour. The difference between
 the two is a measurement, and the measurement was not taken until this round.
 Green suites are not parity.
+
+---
+
+## Round 6 re-verification
+
+Re-run live, through `nix develop --command xvfb-run -a ruby`:
+
+| Suite | Result |
+|---|---|
+| `test/run_tests.rb` | 27 runs, 72 assertions, 0 failures, 0 errors, 0 skips |
+| `test/drive_window.rb` | **205 of 205 checks, `DRIVE OK`** |
+| `test/drive_translated.rb` | 8 of 8, `DRIVE OK` |
+| `test/high_contrast_check.rb` | 6 of 6, `DRIVE OK` |
+
+**Gap 1 (the green check pinning the base-prefix defect) is closed**: the two
+assertions that pinned `0b11`/`0x1F` as `char` are gone, and
+`test/test_converter.rb` now carries the measured-Python values instead
+(verified by reading the file, not by trusting the prose).
+
+**Gaps 2, 3 and 4 are still open, and were re-reproduced rather than
+re-quoted:**
+
+- **Gap 2** (`rake drive` cannot run): reproduced this round —
+  `nix develop --command sh -c 'unset BUNDLE_GEMFILE; rake drive'` dies with
+  `cannot load such file -- adwaita (LoadError)`, because the task's `sh`
+  calls still shell out to bare `ruby`, not `xvfb-run -a ruby`, and
+  `test/high_contrast_check.rb` is still absent from the task body. Read
+  `Rakefile:263-267` directly this round; unchanged since round 5.
+- **Gap 3** (the wrapped `rake`/`bundle`/`rubocop` cannot start): reproduced
+  this round exactly as filed — `nix develop --command rake -T` and
+  `nix develop --command rubocop --version` both die in
+  `Bundler::Dsl#gemspec` with "There are no gemspecs at
+  /nix/store/…-gemfile-and-lockfile". **This means every closure `PORTING.md`
+  attributes to `rake build`, `rake schemas` and `rake install_data` this
+  round was only reachable through the `unset BUNDLE_GEMFILE` workaround**,
+  not through the command the devShell banner tells a user to run. The banner
+  still reads `lint: rubocop` and that exact command still fails. `flake.nix`
+  is unchanged; the fix (point `bundlerEnv` at a dev Gemfile that has a
+  gemspec beside it, or ship `nix/Gemfile`) has not landed.
+- **Gap 4** (coverage holes): of the three items the round-5 report named,
+  only one is closed. `test/drive_window.rb:662` now drives a literal `+`
+  into the entry, closing the `Converter::ABORT`-at-window-level hole. The
+  other two are still open, confirmed by grep against the current
+  `test/drive_window.rb` and `test/*.rb`:
+  - **No check runs the port as an installed gem** with the schema missing.
+    `test/environment.rb:9` sets `GSETTINGS_SCHEMA_DIR` unconditionally before
+    every suite runs, so gap 3 of `component-parity.md` — a packed gem with
+    no compiled schema aborting on `Gio::Settings.new` — stays unverified by
+    any check in the tree. `rake build` now depends on `:schemas` (verified
+    live this round: `rake build` produces `data/schemas/gschemas.compiled`
+    inside the unpacked `.gem`), which closes the packaging half of that gap,
+    but nothing exercises the failure path a corrupted or missing install
+    would hit.
+  - **No check covers base-prefixed input (`0b11`/`0o17`/`0x1F`) at the window
+    level.** `grep -n "0b1\\|0o1\\|0x1" test/drive_window.rb` returns nothing;
+    the only coverage is the unit-level `test/test_converter.rb` assertions
+    gap 1 fixed. The component-parity gap this was supposed to pin stays
+    unverified above the `Converter` layer.
+
+**205 of 205 is not the same claim as "fully covered."** Two of the three
+behaviours this report named as untested last round are still untested; the
+drive count went up for unrelated reasons (new desktop-entry/close/quit
+checks), not because either hole was filled.
