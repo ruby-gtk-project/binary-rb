@@ -218,6 +218,42 @@ task :pot do
   end
 end
 
+DATA_DIR = 'data'
+
+desc "Install the desktop entry, D-Bus service file and AppStream metainfo " \
+     "into $XDG_DATA_HOME (data/meson.build's install_dir targets, user-level " \
+     "since a gem install has no root meson 'prefix')"
+task :install_data do
+  data_home = ENV['XDG_DATA_HOME'].then { |dir| dir && !dir.empty? ? dir : File.join(Dir.home, '.local', 'share') }
+  # The .service file's upstream `service_conf.set('bindir', ...)` points at
+  # where `binary` itself lands; Gem.bindir is that gem executable directory,
+  # the Ruby-gem equivalent of meson's `get_option('prefix') / get_option('bindir')`.
+  bindir = Gem.bindir
+
+  [
+    [
+      File.join(DATA_DIR, 'io.github.fizzyizzy05.binary.desktop.in'),
+      File.join(data_home, 'applications'), 'io.github.fizzyizzy05.binary.desktop', nil
+    ],
+    [
+      File.join(DATA_DIR, 'io.github.fizzyizzy05.binary.service.in'),
+      File.join(data_home, 'dbus-1', 'services'), 'io.github.fizzyizzy05.binary.service', {'@bindir@' => bindir}
+    ],
+    [
+      File.join(DATA_DIR, 'io.github.fizzyizzy05.binary.metainfo.xml.in'),
+      File.join(data_home, 'metainfo'), 'io.github.fizzyizzy05.binary.metainfo.xml', nil
+    ],
+  ].each do |source, install_dir, basename, substitutions|
+    File.read(source)
+      .then { |contents| substitutions ? contents.gsub(Regexp.union(substitutions.keys), substitutions) : contents }
+      .then do |contents|
+        FileUtils.mkdir_p(install_dir)
+        File.write(File.join(install_dir, basename), contents)
+      end
+    puts "installed #{File.join(install_dir, basename)}"
+  end
+end
+
 Rake::TestTask.new(:test) do |t|
   t.libs << 'lib' << 'test'
   t.test_files = FileList['test/test_*.rb']
@@ -247,3 +283,11 @@ task test: %i[translations schemas]
 # on the first window rather than open one. exe/binary puts the packed
 # data/schemas on GSETTINGS_SCHEMA_DIR, which is how an installed copy finds it.
 task build: %i[translations schemas]
+
+# `rake install` (from bundler/gem_tasks) builds and installs the gem itself;
+# it has no idea the gem also carries a desktop entry, a D-Bus service file
+# and AppStream metainfo that a desktop environment expects to find outside
+# the gem's own tree.
+if Rake::Task.task_defined?(:install)
+  task install: :install_data
+end

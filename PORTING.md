@@ -10,7 +10,7 @@ upstream ref is never checked out and never merged.
 | Upstream ref | `origin/main` @ `e96066b` |
 | Port branch | `ruby` |
 | Last audit round | 5 |
-| Open gaps | **5** |
+| Open gaps | **4** |
 | Audit clean | **no** |
 
 ## Upstream
@@ -39,6 +39,7 @@ Components implemented and believed complete.
 | `lib/main.rb` `#install_styles` / `#install_icons` | `src/binary.gresource.xml` — no bundle by design, so the bundle's keying is done by hand: the base sheet stays on the display and the high-contrast one is added and removed as `AdwStyleManager:high-contrast` flips, and `vertical-arrows-symbolic` is reached through a `Gtk::IconTheme` search path instead of a resource path |
 | `Rakefile`, `binary-rb.gemspec` | `meson.build`, `data/meson.build`, `src/meson.build`, `po/meson.build`, `subprojects/blueprint-compiler.wrap` — the build, not a component: `rake translations` and `rake schemas` are the two compile steps, and `rake build` depends on both so a packed gem carries the catalogues and the compiled schema |
 | `lib/settings.rb` | `data/io.github.fizzyizzy05.binary.gschema.xml` |
+| `Rakefile` `:install_data` | `data/meson.build`'s desktop/service/metainfo `install_data`/`configure_file` blocks — installs to `$XDG_DATA_HOME`, the user-level counterpart of a root `meson` prefix |
 | `lib/i18n.rb` | `po/` catalogues, via C `gettext` through Fiddle |
 | `exe/binary` | `src/binary.in` (launcher) |
 | `data/**` | upstream `data/**`, shipped byte-identical |
@@ -63,11 +64,11 @@ of them now has a file of its own. What is outstanding is the gaps below.
 
 ## Open gaps
 
-5 open. Numbering follows the round-5 reports in `.reports/`; the entries
+4 open. Numbering follows the round-5 reports in `.reports/`; the entries
 closed since are marked rather than removed, and the reports themselves have
 not been re-run, so their own verdicts still read **not clean**.
 
-### `.reports/component-parity.md` — 3 open of 9
+### `.reports/component-parity.md` — 2 open of 9
 
 1. ~~Base-prefixed input is rejected~~ — closed: `Converter.valid?` is now
    `Integer(part, base, exception: false)`, the call Python's `int(x, base)`
@@ -92,8 +93,15 @@ not been re-run, so their own verdicts still read **not clean**.
    measured, not the message the round-5 report quoted from memory — and
    `test/drive_window.rb` asserts both. `--new-window` still travels the route
    upstream's `do_handle_local_options` takes.
-5. Nothing installs `.desktop`, `.service` or metainfo; `@bindir@` is never
-   substituted, so D-Bus activation is broken. (Round-5 gap 5.)
+5. ~~Nothing installs `.desktop`, `.service` or metainfo; `@bindir@` is never
+   substituted, so D-Bus activation is broken~~ — closed: `rake install_data`
+   writes the three files into `$XDG_DATA_HOME` (`~/.local/share` by default)
+   — `applications/`, `dbus-1/services/` and `metainfo/`, the user-level
+   counterparts of upstream's `get_option('datadir')` install dirs, since a
+   gem install has no root `meson` prefix to install system-wide into. The
+   `.service` file's `@bindir@` is substituted with `Gem.bindir`, the
+   directory `binary` actually lands in — measured against a real
+   `bundlerEnv` gem path, not assumed. `rake install` now depends on it.
 6. ~~`app.shortcuts` and `<primary>question` are invented~~ — half closed: the
    accelerator is gone, so the port binds what upstream binds (nothing) and
    its shortcuts dialog shows the item blank the way upstream's would. The
