@@ -2,14 +2,25 @@
 
 | | |
 |---|---|
-| Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `040f859` |
-| Round | 7 |
-| Upstream tests | **0** (re-confirmed this round: `test-census.sh` against `git archive origin/main` returns zero rows, no `test/`/`tests/` dir, no `test()` target in any `meson.build`) |
+| Upstream | `origin/main` @ `e96066b` (re-fetched, unmoved) |
+| Port | `ruby` @ `82bf316` (round 7's report commit; `lib/`, `exe/`, `test/` unchanged since `040f859`) |
+| Round | 8 |
+| Upstream tests | **0** (re-confirmed this round: no `test/`/`tests/` dir in `git archive origin/main`, no `test()` target in any `meson.build`) |
 | Ported | 0 of 0, met trivially |
-| **Gaps in the port's own suite** | **0** — all four of round 6's gaps closed and re-verified live, not re-cited |
-| Suite executed this round | **yes**, every command below run live under `nix develop` |
+| **Gaps in the port's own suite** | **0** — re-verified live again this round, not re-cited from round 7 |
+| Suite executed this round | **yes**, every command below re-run live under `nix develop` this round |
 | Verdict | **clean** |
+
+Re-run live this round, not copied from round 7: `nix develop --command
+xvfb-run -a ruby test/run_tests.rb` gives **27 runs, 72 assertions, 0
+failures, 0 errors, 0 skips** (unchanged); `nix develop --command xvfb-run -a
+rake drive` gives `drive_window.rb` **214/214**, `drive_translated.rb`
+**8/8**, `high_contrast_check.rb` **6/6**, all `DRIVE OK`
+(214+8+6=228 — matching this round's own commissioned gate's check count and
+failure count exactly; its "13 components" figure does not match anything
+this port's documentation produces — see
+`.reports/accountability-ensurance.md` finding 3, filed against the gate
+figure rather than against this suite).
 
 Upstream has no tests, so this axis is entirely about whether the port's own
 suite — its only safety net — actually runs, actually passes, and actually

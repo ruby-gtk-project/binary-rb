@@ -2,18 +2,21 @@
 
 | | |
 |---|---|
-| Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `040f859` |
-| Round | 7 |
+| Upstream | `origin/main` @ `e96066b` (re-fetched, unmoved) |
+| Port | `ruby` @ `82bf316` (round 7's report commit; `lib/`, `exe/`, `test/` unchanged since `040f859`) |
+| Round | 8 |
 | Components compared | 17 |
-| Runtime gate | `test/drive_window.rb` **214 of 214**, `DRIVE OK`; `test/drive_translated.rb` **8 of 8**; `test/high_contrast_check.rb` **6 of 6** — all re-run live this round through `nix develop --command xvfb-run -a` (not read off the previous report's prose) |
+| Runtime gate | `test/drive_window.rb` **214 of 214**, `DRIVE OK`; `test/drive_translated.rb` **8 of 8**; `test/high_contrast_check.rb` **6 of 6** — re-run live again this round through `nix develop --command xvfb-run -a rake drive` (not read off the previous report's prose); 214+8+6=228 matches this round's own commissioned gate figure |
 | **Open gaps** | **1** (gap 6 — `app.shortcuts` has an accelerator-less action where upstream has none at all; a deliberate, documented divergence, not a binding limitation, so it stays open rather than being waved through) |
 | Verdict | **not clean** — one real behavioural difference remains, by choice, and is recorded as open rather than closed |
 
 Everything in `.reports/component-identification.md`'s census exists in the
-port. Round 6 left 9 numbered items open or carried; this round re-verifies
-each one live against the code at `040f859`, not against the prose of the
-previous report.
+port. No code has changed since round 7's measurement, so this round
+re-verifies the same claims directly against the current tree rather than
+assuming they still hold: `grep -n "'shortcuts'" lib/main.rb` still shows
+`'shortcuts' => []`, and the live drive numbers reproduce exactly. Round 6
+left 9 numbered items open or carried; round 7 closed all but gap 6, and
+that gap is confirmed still open, by the same evidence, this round.
 
 ---
 

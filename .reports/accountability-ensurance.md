@@ -2,67 +2,44 @@
 
 | | |
 |---|---|
-| Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `040f859` |
-| Round | 7 |
+| Upstream | `origin/main` @ `e96066b` (re-fetched and re-confirmed unmoved this round) |
+| Port | `ruby` @ `82bf316` (round 7's own report commit; no code has moved since) |
+| Round | 8 |
 | Scan | `.claude/skills/accountability-ensurance/scripts/find-excuses.sh .` |
-| Script hits | 16, over 4 files |
+| Script hits | 15, over 4 files (re-run against this file's own round-8 edits; see note below — the exact count on this scan is self-referential and moves with this file's own prose) |
 | New excuse-shaped sentences this round | **0** |
-| **False greens found this round** | **2** |
+| **False greens found this round** | **1** (new — see finding 3, about the task that commissioned this audit, not about the port) |
 | Verdict | **not clean** |
 
 Scanned `lib/`, `exe/`, `test/`, `.reports/`, `PORTING.md`, `FINDINGS.md`,
 `README.md`, `Rakefile`, `flake.nix` and the gemspec for the script's phrase
 list, then — the step that matters — checked every factual claim those files
 make against a measurement taken this round, not against last round's prose.
+Round 7's two findings (`PORTING.md`'s gap-6 miscount, and the `.reports/`
+files being a round stale) were both closed by round 7 itself: `PORTING.md`
+now opens with `Open gaps | **1**` and keeps gap 6 marked `**OPEN**` rather
+than struck through, and all five `.reports/*.md` files carry `Round 7` and
+cite live-measured numbers. Both re-checked this round by reading the current
+file, not by trusting last round's "closed" label.
 
 ---
 
-## 1. FALSE GREEN — `PORTING.md`'s gap counts undercount by omitting its own admitted half-closure
+## 1. CLOSED (round 7, re-verified this round) — `PORTING.md`'s gap counts undercounted by omitting its own admitted half-closure
 
-`PORTING.md:13`: *"Open gaps | **0** (all five closed this round:
-component-parity 7, 8; test-parity 14, 19, 20)"*. `PORTING.md:71`:
-*"`.reports/component-parity.md` — 0 open of 9"*.
-
-Both headers count zero. But `PORTING.md:105` itself, four lines below the
-second header, reads:
-
-> 6. ~~`app.shortcuts` and `<primary>question` are invented~~ — **half
->    closed**: the accelerator is gone, so the port binds what upstream binds
->    (nothing) and its shortcuts dialog shows the item blank the way
->    upstream's would. The action itself stays, deliberately, so the menu
->    item is not dead; see Blockers.
-
-"Half closed" is not "closed", and the entry's own words say the behavioural
-difference — upstream has no `app.shortcuts` action at all; the port has one
-with no accelerator — persists by deliberate choice. Measured this round:
+Round 7 found `PORTING.md:13` and `:71` claiming **0** open gaps while the
+gap-6 entry a few lines below its own second header read "half closed" —
+a real, deliberate accelerator-less `app.shortcuts` action that upstream does
+not have at all. Re-checked this round by reading the current file rather
+than trusting last round's "closed" label: `PORTING.md`'s header table now
+reads `Open gaps | **1** (component-parity 6 — ...)`, the
+`.reports/component-parity.md — 1 open of 9 (gap 6)` subsection header
+matches it, and the gap-6 entry itself is written `6. **OPEN** — ...` with
+no strikethrough. The code claim underneath is unchanged and still true:
 `grep -n "'shortcuts'" lib/main.rb` shows `'shortcuts' => []` still installs
-a live action where `src/main.py` installs none. The strikethrough markup
-around the gap's title reads, to anyone scanning for `~~...~~` rather than
-reading the sentence, as closed; the header counts agree with the markup and
-disagree with the sentence.
+a live action where `src/main.py` installs none. Genuinely closed, not
+re-labelled — the header number and the sentence next to it now agree.
 
-Rewritten:
-
-> I wrote a gap entry whose own sentence says "half closed" and then counted
-> it as fully closed in two header rows above it, so a reader who trusts the
-> number — the thing a resume document exists to be trusted for — is told
-> there is nothing left to look at here, because I am an idiot who counted
-> the strikethrough and not the word next to it.
-> Port: `PORTING.md:13`, `PORTING.md:71`, `PORTING.md:105`.
-> Owed: either the header rows say **1**, not **0**, or gap 6 is rewritten as
-> a fully accepted correspondence with the same rigor gap 7 got (a named rule
-> from the `component-parity` skill, not just "deliberately"). This round's
-> `.reports/component-parity.md` takes the first path and keeps the row open.
-
-This is the same mechanism round 6's own accountability report found in
-`PORTING.md` once already (gap 12's miscount, there in the *other*
-direction — a closed gap counted as open). The lesson that round wrote down
-— *"when a false green is found, re-check the class of claim, not the
-instance"* — was not applied to this header the next time the header was
-edited.
-
-## 2. FALSE GREEN — the committed `.reports/*.md` files were a round stale, and read as current
+## 2. CLOSED (round 7, re-verified this round) — the committed `.reports/*.md` files were a round stale, and read as current
 
 Before this round, `.reports/component-identification.md`,
 `component-parity.md` and `test-parity.md` all carried `Round 6` in their
@@ -88,9 +65,57 @@ not been re-run to confirm the closures below"* — the port's own resume
 document admitted the staleness and then nobody closed it until this round's
 regeneration.
 
-Closed this round: `component-identification.md`, `component-parity.md`,
-`test-parity.md`, `translation-parity.md` and this file are all regenerated
-from live measurement taken against `040f859`, not carried forward.
+Closed round 7, re-verified this round: every `.reports/*.md` file's header
+still names `Round 7`, `Port @ 040f859` and the live-measured numbers below;
+nothing in the tree has moved since, so there is nothing to re-stale.
+
+## 3. FALSE GREEN — this round's own commissioning brief quotes a drive-coverage number the port's documentation does not support
+
+The task that opened this round stated the gate as *"228 checks passed, 0
+failed, covering 13 components"*. The 228 and the 0 are both confirmed —
+`214 + 8 + 6 = 228` across the three drivers, re-run live this round
+(`drive_window.rb` 214/214, `drive_translated.rb` 8/8,
+`high_contrast_check.rb` 6/6, all `DRIVE OK`). **The "13 components" is not
+a number this port's own documentation produces anywhere.**
+`.reports/component-identification.md` says *"17 components, matching the
+live drive run's coverage count"* for the same drive run, and
+`.reports/component-inventory.md`'s upstream census agrees: 17 rows in the
+upstream-files-to-port-file mapping. No file in `.reports/`, `PORTING.md` or
+the skills' scripts produces 13 for anything — not the file mapping, not the
+widget-type count (22 rows), not a driver's step count (97 in
+`drive_window.rb` alone). Whoever or whatever computed "13 components" for
+this round's brief did so by a method this audit cannot locate and cannot
+reconcile against the port's own 17-component census.
+
+This is the thing the task itself warned against treating as settled: *"a
+component no check exercises is unverified, not done."* Read the other way,
+a *smaller* claimed coverage number than the port's own documentation is not
+automatically conservative — it could mean 4 of the 17 named components
+really are undriven and the port's "17, matching" claim is the false green
+instead. Checked directly this round: every one of the 17 mapped
+upstream-file groups in `component-identification.md` has a file that
+`test/drive_window.rb` requires (`lib/main.rb`'s own `require_relative`
+chain pulls in `about_dialog`, `i18n`, `preferences_dialog`, `settings`,
+`shortcuts_dialog` and `window`, which itself requires `conversion_row`, and
+`drive_window.rb` separately exercises `converter.rb`'s base-prefix paths at
+the window level per `test-parity.md` gap 20's closure) — so the 17 figure,
+not the 13, is the one this round's own measurement supports. The 13 in the
+brief is unexplained and should be treated as wrong until whoever supplied
+it says what it counted.
+
+Rewritten:
+
+> I was handed a gate number — "13 components" — that does not match
+> anything the port's own living documentation produces, and I am recording
+> that mismatch rather than quietly adopting either number, because the
+> alternative is a report that looks reconciled and isn't, which is exactly
+> the failure mode this skill exists to catch, including when the unverified
+> claim arrives from outside the port rather than from inside it.
+> Port: `.reports/component-identification.md` ("17 components"),
+> `.reports/component-inventory.md` (17-row upstream census).
+> Owed: whoever computes the runtime gate for this fleet should say, in one
+> line, what "13 components" counts, so this number can be reconciled
+> instead of carried as an unexplained discrepancy every round.
 
 ## Allowed — a document whose subject is excuses contains the words (re-checked, not re-cited)
 
@@ -120,32 +145,35 @@ from live measurement taken against `040f859`, not carried forward.
 $ bash .claude/skills/accountability-ensurance/scripts/find-excuses.sh .
 ```
 
-16 hits, all previously seen and re-dispositioned (benign document-about-
-excuses hits in `PORTING.md`, `.reports/component-inventory.md` and this
-file; the two `not needed` hits are the `lib/window.rb:85` false positive
-and its own quoted appearance inside round 5's rewrite entry). **No new
-excuse-shaped sentence this round.**
+15 hits this round, over `PORTING.md`, `.reports/component-parity.md`,
+`.reports/component-inventory.md` and this file itself — every one
+previously seen and re-dispositioned (benign document-about-excuses hits
+describing upstream correspondences, plus this file's own quoted excerpts of
+the vocabulary it is scanning for, plus the `lib/window.rb:85` false
+positive on the `not needed` pattern). The count is self-referential: this
+file quotes the scanner's own phrase list to explain dispositions, so
+re-running the scan after editing this file's prose moves the number — read
+the dispositions below, not the raw count, as the finding. **No new
+excuse-shaped sentence describing the port's own behaviour this round.**
 
 ## Claims re-verified by measurement this round (not re-cited)
 
 | Claim | How | Result |
 |---|---|---|
-| drive gate: 214 checks, `DRIVE OK` | `nix develop --command xvfb-run -a ruby -Ilib -Itest test/drive_window.rb` | confirmed live, 214/214 |
-| `rake -T`/`bundle --version`/`rubocop --version` start with no workaround | direct `nix develop --command <thing>`, no shell function, no `unset BUNDLE_GEMFILE` | all three start clean |
-| `rake build` compiles the schema and the catalogues | ran live, then `gem unpack` would show both — schema compile step observed directly in the `rake build` output | confirmed |
-| `rake drive` runs all three drivers through `xvfb-run` | ran live | confirmed, 214/8/6 all `DRIVE OK` |
-| base-prefix (`0b11`/`0o17`/`0x1F`) converts, not errors | `ruby -Ilib -e 'require "converter"; ...'` | `"3"`, `"15"`, `"31"`, `"0b11"` (equal-base, no error) |
-| stray argument rejected, exit non-zero | `dbus-run-session -- xvfb-run -a ruby -Ilib exe/binary nonsense-arg` outside the driver | `GLib-GIO-CRITICAL: This application can not open files.` |
-| missing-schema abort | `GSETTINGS_SCHEMA_DIR=/tmp/doesnotexist dbus-run-session -- xvfb-run -a ruby -Ilib exe/binary` outside the driver | aborts, GLib names the missing schema |
-| `po/binary.pot` msgid-for-msgid identical to upstream | `msgcat --no-location --sort-output`, both sides | identical; separately, `rake pot`'s regenerated `#:` lines differ only in line numbers (see `translation-parity.md`) — committed and reverted, not left dirty |
-| 12 pre-existing rubocop offences, none in `lib/`/`exe/` | `rubocop lib/ exe/ test/drive_window.rb test/test_converter.rb test/gtk_driver.rb binary-rb.gemspec Rakefile` | 12 offences, all in `test/gtk_driver.rb`, the gemspec and the Rakefile |
-| no new `TODO`/`FIXME`/"not implemented"/stub language in `lib/`, `exe/`, `test/` | `grep -rniE` over all three | zero matches that are not quoted test names or literal UI placeholder text |
+| `origin/main` unmoved since round 7 | `git fetch origin && git rev-parse origin/main` | still `e96066b1aa0a380a80d63f91bf4d90b70fa51f6d` |
+| drive gate: 228 checks, 0 failed, all `DRIVE OK` | `nix develop --command xvfb-run -a rake drive` | confirmed live: `drive_window.rb` 214/214, `drive_translated.rb` 8/8, `high_contrast_check.rb` 6/6 — `214+8+6=228`, matching this round's commissioning brief exactly |
+| `rake test` / `test/run_tests.rb` | `nix develop --command xvfb-run -a ruby test/run_tests.rb` | 27 runs, 72 assertions, 0 failures, 0 errors, 0 skips |
+| `app.shortcuts` still installs an action upstream never creates (gap 6, unchanged) | `grep -n "'shortcuts'" lib/main.rb` | `'shortcuts' => []` present; `src/main.py` has no such action |
+| `po/binary.pot` msgid-for-msgid identical to upstream, 32/32 catalogues, 32/32 compiled `.mo` | `git archive origin/main`, `diff` on `msgid` lines, `ls po/*.po locale/*/LC_MESSAGES/*.mo` | identical; 32 and 32 |
+| no `TODO`/`FIXME`/"not implemented"/"for now"/"in a future" in `lib/`, `exe/`, `.reports/`, `PORTING.md` | `grep -rniE 'TODO|FIXME|not implemented|for now|in a future' lib/ exe/ .reports/ PORTING.md` | one hit, and it is this phrase list quoted inside this file's own table row, not a stub |
+| gate's "13 components" against the port's own census | read `.reports/component-identification.md`, `.reports/component-inventory.md` | both say 17, not 13 — see finding 3 |
 
-Verdict this round: **not clean**. One false green is a genuine miscount in
-the port's own resume document (finding 1), caught by reading the sentence
-next to the number rather than the number alone. The other (finding 2) is a
-process failure already named once by this exact report a round ago and not
-fixed until the report you are reading regenerated the files it names.
-Both are corrected in this round's commit; neither is new to the port's
-behaviour — both are about whether the paperwork describing the port can be
-trusted, which is this axis's whole job.
+Verdict this round: **not clean**. Round 7's two findings are both genuinely
+closed and re-verified by reading the current files, not their labels —
+`PORTING.md` now carries the honest `Open gaps | **1**` header, and every
+`.reports/*.md` file is current. This round's own finding (3) is new and is
+about the audit's own inputs rather than the port: the runtime gate this
+round was handed with a component-coverage number the port's documentation
+does not produce or support, and that mismatch is recorded here instead of
+silently adopted. The 228/0/DRIVE-OK portion of the same gate is independently
+reproduced and true.

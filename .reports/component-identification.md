@@ -2,10 +2,24 @@
 
 | | |
 |---|---|
-| Upstream | `origin/main` @ `e96066b` (unchanged since round 6; re-checked live this round) |
-| Port | `ruby` @ `040f859` |
-| Round | 7 |
-| Upstream tree read via | `git archive origin/main` into `/tmp/upstream_main` — the ref is never checked out |
+| Upstream | `origin/main` @ `e96066b` (unchanged since round 6; re-fetched and re-checked live this round too) |
+| Port | `ruby` @ `82bf316` (round 7's report commit; `lib/`, `exe/` and `test/` unchanged since `040f859`) |
+| Round | 8 |
+| Upstream tree read via | `git archive origin/main` into `/tmp/upstream_main_audit` — the ref is never checked out |
+
+Nothing has moved on either side since round 7: `origin/main` is still
+`e96066b`, and the port's `lib/`, `exe/` and `test/` trees are byte-identical
+to what round 7 measured (only `.reports/*.md` and `PORTING.md` changed,
+in round 7's own commit, after this ledger was written). This round
+re-ran the live drive gate rather than re-citing it: `nix develop --command
+xvfb-run -a rake drive` gives `drive_window.rb` **214/214**,
+`drive_translated.rb` **8/8**, `high_contrast_check.rb` **6/6**, all
+`DRIVE OK` — identical to round 7's numbers, as expected with no code
+change. 214 + 8 + 6 = 228, matching this round's own commissioned gate
+figure for checks/failures exactly. The same gate figure's "13 components"
+does not match this file's 17 — see `.reports/accountability-ensurance.md`
+finding 3; the 17-component ledger below is unchanged and still the number
+this audit stands behind.
 
 This round re-derives the census live rather than re-citing round 6's numbers,
 because round 6's own committed `.reports/component-identification.md` was

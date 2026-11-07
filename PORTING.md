@@ -7,11 +7,11 @@ upstream ref is never checked out and never merged.
 
 | | |
 |---|---|
-| Upstream ref | `origin/main` @ `e96066b` |
+| Upstream ref | `origin/main` @ `e96066b` (re-fetched round 8, unmoved) |
 | Port branch | `ruby` |
-| Last audit round | 7 |
+| Last audit round | 8 |
 | Open gaps | **1** (component-parity 6 — `app.shortcuts` carries an accelerator-less action where upstream has none at all; a deliberate, documented divergence, not closed) |
-| Audit clean | **no** — round 7's `.reports/` are regenerated from live measurement against `040f859` and confirm the one open gap above; see `.reports/accountability-ensurance.md` round 7 for two false greens this round's regeneration fixed (a header miscount that read gap 6 as closed, and the `.reports/` files themselves having gone a round stale) |
+| Audit clean | **no** — round 8 re-ran all five parity skills live against the unchanged tree (`origin/main` still `e96066b`; `lib/`, `exe/`, `test/`, `po/` unchanged since `040f859`) and reproduced every round-7 number exactly: drive gate 214+8+6=228 checks, 0 failed, `DRIVE OK` ×3; `test/run_tests.rb` 27/72/0; translation parity 32/32 catalogues, msgid-identical; the one open component-parity gap above confirmed still open by reading `lib/main.rb` directly. Round 8 also found that this round's own commissioning gate cites "13 components" where this port's documentation produces 17 everywhere it counts components — recorded in `.reports/accountability-ensurance.md` round 8 finding 3 as a mismatch in the audit's own inputs, not a port defect, and not silently resolved either way |
 
 ## Upstream
 

@@ -2,16 +2,23 @@
 
 | | |
 |---|---|
-| Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `040f859` |
-| Round | 7 |
+| Upstream | `origin/main` @ `e96066b` (re-fetched, unmoved) |
+| Port | `ruby` @ `82bf316` (round 7's report commit; `po/`, `locale/`, `lib/` unchanged since `040f859`) |
+| Round | 8 |
 | Languages | 32 upstream, 32 ported |
-| msgids in `po/binary.pot` | identical to upstream, msgid-for-msgid, msgctxt-for-msgctxt |
+| msgids in `po/binary.pot` | identical to upstream, msgid-for-msgid, re-diffed live this round |
 | Catalogues differing from upstream in content | **0 of 32** |
-| Compiled catalogues | 32 `.mo` under `locale/<lang>/LC_MESSAGES/binary.mo` |
+| Compiled catalogues | 32 `.mo` under `locale/<lang>/LC_MESSAGES/binary.mo`, re-counted this round |
 | Runtime verification | `test/drive_translated.rb` **8 of 8**, in German, re-run live this round |
 | **Open gaps** | **0** |
 | Verdict | **clean** |
+
+Re-verified independently this round, not re-cited from round 7:
+`git archive origin/main` into a fresh scratch directory, `ls po/*.po` both
+sides (32 and 32), `ls locale/*/LC_MESSAGES/*.mo` (32), and `diff` on the
+sorted `^msgid ` lines of both `binary.pot` files (empty diff, 31 msgid
+lines each side). `nix develop --command xvfb-run -a ruby -Ilib -Itest
+test/drive_translated.rb` reproduces **8 of 8**, `DRIVE OK`.
 
 ## Re-measured independently this round
 
