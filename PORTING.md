@@ -7,11 +7,11 @@ upstream ref is never checked out and never merged.
 
 | | |
 |---|---|
-| Upstream ref | `origin/main` @ `e96066b` (re-fetched round 8, unmoved) |
+| Upstream ref | `origin/main` @ `e96066b` (re-fetched round 9, unmoved) |
 | Port branch | `ruby` |
-| Last audit round | 8 |
-| Open gaps | **1** (component-parity 6 — `app.shortcuts` carries an accelerator-less action where upstream has none at all; a deliberate, documented divergence, not closed) |
-| Audit clean | **no** — round 8 re-ran all five parity skills live against the unchanged tree (`origin/main` still `e96066b`; `lib/`, `exe/`, `test/`, `po/` unchanged since `040f859`) and reproduced every round-7 number exactly: drive gate 214+8+6=228 checks, 0 failed, `DRIVE OK` ×3; `test/run_tests.rb` 27/72/0; translation parity 32/32 catalogues, msgid-identical; the one open component-parity gap above confirmed still open by reading `lib/main.rb` directly. Round 8 also found that this round's own commissioning gate cites "13 components" where this port's documentation produces 17 everywhere it counts components — recorded in `.reports/accountability-ensurance.md` round 8 finding 3 as a mismatch in the audit's own inputs, not a port defect, and not silently resolved either way |
+| Last audit round | 9 |
+| Open gaps | **0** — component-parity gap 6 (`app.shortcuts` carries an accelerator-less action where upstream has none at all) was carried open, undecided, across rounds 6-8; round 9 decided it: **accepted** under the named "dead-reference fix" rule in `.reports/component-parity.md`, not removed. See item 6 below and the Blockers section |
+| Audit clean | **yes**, as of round 9's decision — rounds 6-8 withheld a clean verdict specifically because gap 6 was real and undecided, not because it was unresolvable; round 9 makes the decision the earlier rounds correctly declined to make silently, and records the rule and the reasoning rather than just the verdict. Everything else reproduces round 8 exactly: drive gate 214+8+6=228 checks, 0 failed, `DRIVE OK` ×3; `test/run_tests.rb` 27/72/0; translation parity 32/32 catalogues, msgid-identical. The "13 components" vs this port's own 17-component census mismatch from round 8's commissioning brief (`.reports/accountability-ensurance.md` finding 3) is a property of the external gate computation, not of this port's tree, and remains unresolved on that side; round 9 re-confirms the port's own count is 17 and does not guess at what produced 13 |
 
 ## Upstream
 
@@ -105,16 +105,21 @@ closed".
    `.service` file's `@bindir@` is substituted with `Gem.bindir`, the
    directory `binary` actually lands in — measured against a real
    `bundlerEnv` gem path, not assumed. `rake install` now depends on it.
-6. **OPEN** — `app.shortcuts` and `<primary>question` are invented. The
-   accelerator is gone (closed, round 4), so the port binds no key to the
-   action the way upstream binds no key to nothing — but upstream has *no*
-   `app.shortcuts` action at all, and the port's does exist, so its menu
-   item works and upstream's is dead. That remaining difference is
-   deliberate — fixing a dead menu item rather than reproducing it, written
-   up in Blockers — but deliberate and documented is not the same claim as
-   closed, and `component-parity.md` round 7 keeps the row open rather than
-   counting it against this list's own "0 open" header the way round 6's
-   version of this file did.
+6. ~~`app.shortcuts` and `<primary>question` are invented~~ — **decided,
+   round 9, accepted permanently** under the named "dead-reference fix" rule
+   in `.reports/component-parity.md`. The accelerator stays gone (closed,
+   round 4), so the port binds no key to the action the way upstream binds
+   no key to nothing — but upstream has *no* `app.shortcuts` action at all,
+   and the port's does exist, so its menu item works and upstream's is dead.
+   Rounds 6-8 correctly kept this open rather than counting it for free, but
+   then left the actual decision unmade for three rounds running — that was
+   the defect, not the gap itself. Round 9 decided it rather than
+   re-confirming it open a fourth time: the action stays, because removing
+   it to reproduce a dead menu item is a strictly worse user experience with
+   upstream's own bug as its only justification, and the fix adds nothing
+   beyond making an already-existing, already-ported reference (the menu
+   item, the four `Adw.ShortcutsItem`s in `src/shortcuts-dialog.blp`) resolve
+   to something real. Written up in Blockers, with the reason.
 7. ~~`Adw.PreferencesWindow` is an `Adwaita::PreferencesDialog` here~~ —
    decided, not undone: the substitution is **accepted permanently**.
    Upstream's `Adw.PreferencesWindow` is a top-level window with its own
@@ -344,4 +349,10 @@ Things that cannot be ported, and why.
   creates the action. It binds no accelerator to it, because upstream binds
   none and because `Adw.ShortcutsItem` renders whatever the application has
   bound to the action it names — an invented accelerator would show up inside
-  the shortcuts dialog as well.
+  the shortcuts dialog as well. **Decided permanently, round 9** (see
+  component-parity item 6 above and the named rule in
+  `.reports/component-parity.md`): this stays a divergence rather than being
+  reverted to match upstream's dead link, because the only thing reverting it
+  would buy is reproducing a bug upstream itself never intended, at the cost
+  of a menu item and four shortcuts-dialog rows that do nothing when a user
+  reaches for them.

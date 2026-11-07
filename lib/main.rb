@@ -32,6 +32,13 @@ class BinaryApp
     # upstream does, and because Adw.ShortcutsItem renders whatever the
     # application has bound to the action it names, binding one would also put
     # a shortcut in the shortcuts dialog that upstream's shows as blank.
+    #
+    # This is a decided, permanent divergence (PORTING.md item 6,
+    # .reports/component-parity.md's "dead-reference fix" rule), not an
+    # open question: the alternative — deleting this action so the menu item
+    # and the four shortcuts-dialog rows that name it go back to doing
+    # nothing — was considered and rejected, because it buys no fidelity a
+    # user can tell apart from a second bug.
     'shortcuts'    => [],
   }.freeze
 

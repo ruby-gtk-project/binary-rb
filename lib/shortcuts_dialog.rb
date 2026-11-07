@@ -14,7 +14,9 @@ require_relative 'i18n'
 # Upstream never loads this blueprint from Python — it is compiled into the
 # GResource bundle and nothing reads it, and src/main.py never creates the
 # app.shortcuts action its own menu item and items point at. The port installs
-# that action and opens this dialog from it.
+# that action and opens this dialog from it — a decided, permanent
+# divergence (PORTING.md item 6, .reports/component-parity.md's
+# "dead-reference fix" rule), not an oversight.
 class ShortcutsDialog
   def build
     dialog.tap do |shortcuts|

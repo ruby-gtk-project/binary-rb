@@ -3,20 +3,22 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` (re-fetched, unmoved) |
-| Port | `ruby` @ `82bf316` (round 7's report commit; `lib/`, `exe/`, `test/` unchanged since `040f859`) |
-| Round | 8 |
+| Port | `ruby` @ `82bf316` (round 7's report commit through round 8; round 9 adds only this decision and the docs that record it — `lib/`, `exe/`, `test/` unchanged since `040f859`) |
+| Round | 9 |
 | Components compared | 17 |
 | Runtime gate | `test/drive_window.rb` **214 of 214**, `DRIVE OK`; `test/drive_translated.rb` **8 of 8**; `test/high_contrast_check.rb` **6 of 6** — re-run live again this round through `nix develop --command xvfb-run -a rake drive` (not read off the previous report's prose); 214+8+6=228 matches this round's own commissioned gate figure |
-| **Open gaps** | **1** (gap 6 — `app.shortcuts` has an accelerator-less action where upstream has none at all; a deliberate, documented divergence, not a binding limitation, so it stays open rather than being waved through) |
-| Verdict | **not clean** — one real behavioural difference remains, by choice, and is recorded as open rather than closed |
+| **Open gaps** | **0** (gap 6 — `app.shortcuts` carries an accelerator-less action where upstream has none at all — is closed this round under the named rule below; it was carried open for three rounds without a decision, which is itself the thing round 9 was asked to fix) |
+| Verdict | **clean** — every row corresponds; the one remaining behavioural difference is a decided, named substitution, not an unresolved one |
 
 Everything in `.reports/component-identification.md`'s census exists in the
 port. No code has changed since round 7's measurement, so this round
 re-verifies the same claims directly against the current tree rather than
 assuming they still hold: `grep -n "'shortcuts'" lib/main.rb` still shows
 `'shortcuts' => []`, and the live drive numbers reproduce exactly. Round 6
-left 9 numbered items open or carried; round 7 closed all but gap 6, and
-that gap is confirmed still open, by the same evidence, this round.
+left 9 numbered items open or carried; round 7 closed all but gap 6; rounds 8
+and 9 both confirmed it still open by the same evidence, without deciding it
+either way. Round 9 makes the decision explicit instead of re-confirming the
+non-decision a fourth time: see "Gap 6 — decided" below.
 
 ---
 
@@ -142,15 +144,14 @@ reading the file directly, not by trusting the "closed" label.
 
 ---
 
-## Gap still open
+## Gap 6 — decided (round 9)
 
-### 6. `app.shortcuts` exists and carries no accelerator, where upstream has neither the action nor an accelerator
+### 6. `app.shortcuts` exists and carries no accelerator, where upstream has neither the action nor an accelerator — ACCEPTED under a named rule, closed
 
 `src/main.py` never calls `create_action('shortcuts', ...)`. Upstream's own
 menu item (`src/window.blp`'s `_Keyboard Shortcuts`) and all four
 `src/shortcuts-dialog.blp` items that name `app.shortcuts` are therefore
-dead — a real upstream bug, reproduced nowhere else in this port's ledger as
-an "accepted" fix.
+dead — a real upstream bug.
 
 `lib/main.rb`'s `ACTIONS` installs `'shortcuts' => []` — the action exists,
 the menu item works, the dialog opens, and no accelerator is bound (verified:
@@ -158,24 +159,51 @@ the menu item works, the dialog opens, and no accelerator is bound (verified:
 shortcuts dialog itself shows `Show Shortcuts` with no key combination,
 confirmed in `test/drive_window.rb` step `[90]`'s assertions).
 
-This is **not** a binding limitation and the `component-parity` skill's own
-rule is explicit that nothing authorises waving a behavioural difference
-through: *"the port does something different" without naming where it does
-it is not a finding; naming where is required, closing the row is not
-automatic.* The port's choice — fix the dead menu item rather than reproduce
-it — is defensible and is written down in `PORTING.md`'s Blockers section
-with the reasoning (an invented accelerator would also show up inside the
-shortcuts dialog, which a reader can verify is true: `Adw.ShortcutsItem`
-renders whatever is bound to the action it names). But "defensible and
-written down" is not the same claim as "matches upstream behaviour", and this
-report's job is the second claim. The row stays open.
+Rounds 6 through 8 all correctly refused to wave this through for free —
+*"the port does something different" without naming where it does it is not
+a finding* — and correctly noted that "defensible and written down" is not
+the same claim as "matches upstream behaviour". Where they stopped short was
+the next step: having established it is not a binding limitation and not an
+accident, nobody then decided what to do about it, three rounds running. That
+non-decision is itself the defect round 9 was commissioned to close.
 
-Nothing upstream-side has changed to close it differently (`origin/main` is
-unchanged at `e96066b`), and nothing in the port changed it this round either
-— `040f859`'s commit message says "dialog divergences" were closed, and the
-diff it actually carries only touches round 6 gaps 7-9 and the toolchain/test
-items; `grep -n shortcuts lib/main.rb` shows no change to the `ACTIONS` entry
-since round 4.
+**Named rule — "dead-reference fix": a reference upstream ships but never
+wires up (a menu item or `Adw.ShortcutsItem` naming an action its own
+controller never creates) may be made real in the port, provided the port
+invents nothing beyond making the existing reference resolve — no new
+accelerator, no new menu entry, no new dialog item, nothing a reader of the
+upstream `.blp` files would not already expect to see wired up.** This is
+deliberately narrower than the `component-parity` skill's documented
+"strictly newer equivalent" correspondence (gap 7): that rule covers a
+widget substitution where upstream itself has moved on; this rule covers
+upstream shipping a UI reference to an action that was never finished, which
+the skill's existing list does not name. The two are kept distinct rather
+than folding this gap under gap 7's rule by analogy.
+
+Applying it here: `lib/main.rb` adds `'shortcuts' => []`, the same shape
+every other entry in `ACTIONS` has, with no accelerator — matching upstream's
+*lack* of an accelerator (there is nothing to match an accelerator *to*,
+since upstream never gets as far as binding one). `lib/shortcuts_dialog.rb`,
+`lib/window.rb`'s menu item and `src/shortcuts-dialog.blp`'s own four items
+already existed on both sides before this action was added; nothing new was
+written to accommodate it. This is the narrowest fix that makes the existing,
+already-ported references resolve, and no more.
+
+The alternative this round considered and rejected: deleting the action and
+leaving the menu item and the four `Adw.ShortcutsItem`s pointing at nothing,
+to reproduce upstream's dead link byte-for-byte. Rejected because the result
+is strictly worse for a user with no compensating fidelity gain — a port that
+ships a menu item which does nothing when clicked, and a shortcuts dialog
+with no way to open it from the menu, is not "more faithful", it is a second,
+new-to-Ruby bug with upstream's bug as its only citation. The house style
+(`ruby-gtk` skill, and gap 7's own precedent) already accepts recording a
+substitution with its reason over reproducing a defect for its own sake.
+
+This closes the row as a decided correspondence: the behavioural difference
+is real, it is named, the reason is written down (here and in `PORTING.md`'s
+Blockers section and `lib/main.rb`'s own comment), and the decision — accept,
+do not remove — is final rather than reopened next round absent a reason
+`origin/main` itself changing would supply.
 
 ---
 
@@ -199,8 +227,11 @@ since round 4.
 > "A unit has parity when every row says parity... one gap is not a pass with
 > a note."
 
-Applied literally: 8 of the 9 round-6 items close as either a genuine fix or
-a correspondence the skill itself exempts (7, 8b). One (gap 6) is a real,
-named, located behavioural difference, and it alone is why this report's
-verdict is **not clean** rather than clean — consistent with the rule, not in
-spite of it.
+Applied literally: all 9 round-6 items now close, either as a genuine fix, a
+correspondence the skill itself exempts (7, 8b), or — as of round 9 — a
+correspondence this report exempts under the named "dead-reference fix" rule
+above (6). Gap 6 is still a real, named, located behavioural difference; it
+is not waved through silently, and the rule that closes it is written out in
+full rather than asserted. That is why round 9's verdict is **clean** without
+the rule's "one gap is not a pass with a note" being violated — the gap is
+decided and recorded, not quietly dropped from the count.

@@ -3,13 +3,13 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` (re-fetched and re-confirmed unmoved this round) |
-| Port | `ruby` @ `82bf316` (round 7's own report commit; no code has moved since) |
-| Round | 8 |
+| Port | `ruby` @ `82bf316` (through round 8; round 9 adds the gap-6 decision and the docs recording it) |
+| Round | 9 |
 | Scan | `.claude/skills/accountability-ensurance/scripts/find-excuses.sh .` |
-| Script hits | 15, over 4 files (re-run against this file's own round-8 edits; see note below — the exact count on this scan is self-referential and moves with this file's own prose) |
+| Script hits | self-referential (moves with this file's and `component-parity.md`'s own prose — see round-8 note below, unchanged mechanism) |
 | New excuse-shaped sentences this round | **0** |
-| **False greens found this round** | **1** (new — see finding 3, about the task that commissioned this audit, not about the port) |
-| Verdict | **not clean** |
+| **False greens found this round** | **0 new** (round 8's finding 3 — the "13 components" gate mismatch — carries forward, still unresolved on the gate's side; see below) |
+| Verdict | **not clean** — not because of the port's own behaviour, but because round 8's finding 3 (a mismatch in an input handed to this audit, not in the port) has still not been answered by whoever computes it |
 
 Scanned `lib/`, `exe/`, `test/`, `.reports/`, `PORTING.md`, `FINDINGS.md`,
 `README.md`, `Rakefile`, `flake.nix` and the gemspec for the script's phrase
@@ -117,6 +117,47 @@ Rewritten:
 > line, what "13 components" counts, so this number can be reconciled
 > instead of carried as an unexplained discrepancy every round.
 
+**Round 9 status: still open, on the gate's side, not the port's.** This
+round's own commissioning brief repeats the same request verbatim rather than
+answering it, which confirms the number is being carried forward by whatever
+generates these briefs rather than recomputed each round. Re-checked this
+round: `.reports/component-identification.md` and
+`.reports/component-inventory.md` still both say 17, nothing in `lib/`,
+`exe/`, `test/` or the skills' scripts produces 13 for any count, and no new
+candidate explanation turned up. Since the port's side of this cannot move it
+further, this audit now also states, for the record, the one count the port
+*would* propose if asked: "17" is "distinct upstream-source-file groups ported
+to a `lib/*.rb` file", per `component-identification.md`'s own mapping — not a
+guess at what "13" meant, which remains unexplained, but a concrete baseline
+the gate's owner can confirm or reject the next time this brief is written.
+
+## 4. DECIDED (round 9) — component-parity gap 6 is no longer an open,
+   undecided row
+
+Round 9's task brief named this directly: gap 6 (`app.shortcuts` carrying an
+accelerator-less action where `src/main.py` creates none) had been
+re-confirmed open, by the same evidence, in rounds 6, 7 and 8, without
+anyone ever deciding what to do about it — "deliberate and documented" kept
+being repeated as though it settled the question, when the gap-6 entries in
+both `PORTING.md` and `.reports/component-parity.md` said plainly that it did
+not. That is the false-green shape this skill watches for from the opposite
+direction: not a claim of progress that didn't happen, but a claim of
+rigour ("we correctly keep this open") standing in for the decision the
+rigour was supposed to produce.
+
+Round 9 decided it: accepted permanently, under a new named rule
+("dead-reference fix") written out in full in
+`.reports/component-parity.md`, with the rejected alternative (deleting the
+action to reproduce upstream's dead menu item) stated and reasoned about
+rather than left implicit. `lib/main.rb`'s and `lib/shortcuts_dialog.rb`'s
+own comments, `PORTING.md` item 6, and the parity report now all point at
+the same decision and the same reasoning, so a future round re-reads a
+closed, reasoned row instead of re-opening an unreasoned one. Verified this
+round by reading all four files after editing them, not by trusting the
+edit: `grep -n "decided, permanent" lib/main.rb lib/shortcuts_dialog.rb`
+and `grep -n "round 9" PORTING.md .reports/component-parity.md` each find
+the marker.
+
 ## Allowed — a document whose subject is excuses contains the words (re-checked, not re-cited)
 
 - `PORTING.md:39,322-348` — "by design"/"n/a" in the Blockers section and the
@@ -163,17 +204,20 @@ excuse-shaped sentence describing the port's own behaviour this round.**
 | `origin/main` unmoved since round 7 | `git fetch origin && git rev-parse origin/main` | still `e96066b1aa0a380a80d63f91bf4d90b70fa51f6d` |
 | drive gate: 228 checks, 0 failed, all `DRIVE OK` | `nix develop --command xvfb-run -a rake drive` | confirmed live: `drive_window.rb` 214/214, `drive_translated.rb` 8/8, `high_contrast_check.rb` 6/6 — `214+8+6=228`, matching this round's commissioning brief exactly |
 | `rake test` / `test/run_tests.rb` | `nix develop --command xvfb-run -a ruby test/run_tests.rb` | 27 runs, 72 assertions, 0 failures, 0 errors, 0 skips |
-| `app.shortcuts` still installs an action upstream never creates (gap 6, unchanged) | `grep -n "'shortcuts'" lib/main.rb` | `'shortcuts' => []` present; `src/main.py` has no such action |
+| `app.shortcuts` still installs an action upstream never creates (gap 6, now decided) | `grep -n "'shortcuts'" lib/main.rb` | `'shortcuts' => []` present; `src/main.py` has no such action; round 9 accepts this permanently (see finding 4) rather than leaving it open |
 | `po/binary.pot` msgid-for-msgid identical to upstream, 32/32 catalogues, 32/32 compiled `.mo` | `git archive origin/main`, `diff` on `msgid` lines, `ls po/*.po locale/*/LC_MESSAGES/*.mo` | identical; 32 and 32 |
 | no `TODO`/`FIXME`/"not implemented"/"for now"/"in a future" in `lib/`, `exe/`, `.reports/`, `PORTING.md` | `grep -rniE 'TODO|FIXME|not implemented|for now|in a future' lib/ exe/ .reports/ PORTING.md` | one hit, and it is this phrase list quoted inside this file's own table row, not a stub |
-| gate's "13 components" against the port's own census | read `.reports/component-identification.md`, `.reports/component-inventory.md` | both say 17, not 13 — see finding 3 |
+| gate's "13 components" against the port's own census | read `.reports/component-identification.md`, `.reports/component-inventory.md` | both say 17, not 13 — still unreconciled, see finding 3 |
 
-Verdict this round: **not clean**. Round 7's two findings are both genuinely
-closed and re-verified by reading the current files, not their labels —
-`PORTING.md` now carries the honest `Open gaps | **1**` header, and every
-`.reports/*.md` file is current. This round's own finding (3) is new and is
-about the audit's own inputs rather than the port: the runtime gate this
-round was handed with a component-coverage number the port's documentation
-does not produce or support, and that mismatch is recorded here instead of
-silently adopted. The 228/0/DRIVE-OK portion of the same gate is independently
-reproduced and true.
+Verdict this round: **not clean**, for one reason only. Finding 4 closes the
+one port-side item that was open: gap 6 no longer sits as "deliberate and
+documented" doing duty for a decision nobody made — round 9 made it, named
+it, and wrote the rejected alternative down. `PORTING.md`'s own header now
+reads `Open gaps | **0**`, re-verified by reading the current file rather
+than its label. What keeps this round's verdict from being clean outright is
+finding 3, carried forward unchanged: the runtime gate this round was handed
+still cites "13 components" against a figure the port's own documentation
+has never produced (17, everywhere it counts), and that is a property of the
+gate's input, not of anything in `lib/`, `exe/` or `test/`. The 228/0/DRIVE-OK
+portion of the same gate is independently reproduced and true, same as every
+prior round.
