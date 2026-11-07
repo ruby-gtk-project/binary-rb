@@ -7,11 +7,11 @@ upstream ref is never checked out and never merged.
 
 | | |
 |---|---|
-| Upstream ref | `origin/main` @ `e96066b` (re-fetched round 9, unmoved) |
+| Upstream ref | `origin/main` @ `e96066b` (re-fetched round 10, unmoved) |
 | Port branch | `ruby` |
-| Last audit round | 9 |
-| Open gaps | **0** — component-parity gap 6 (`app.shortcuts` carries an accelerator-less action where upstream has none at all) was carried open, undecided, across rounds 6-8; round 9 decided it: **accepted** under the named "dead-reference fix" rule in `.reports/component-parity.md`, not removed. See item 6 below and the Blockers section |
-| Audit clean | **yes**, as of round 9's decision — rounds 6-8 withheld a clean verdict specifically because gap 6 was real and undecided, not because it was unresolvable; round 9 makes the decision the earlier rounds correctly declined to make silently, and records the rule and the reasoning rather than just the verdict. Everything else reproduces round 8 exactly: drive gate 214+8+6=228 checks, 0 failed, `DRIVE OK` ×3; `test/run_tests.rb` 27/72/0; translation parity 32/32 catalogues, msgid-identical. The "13 components" vs this port's own 17-component census mismatch from round 8's commissioning brief (`.reports/accountability-ensurance.md` finding 3) is a property of the external gate computation, not of this port's tree, and remains unresolved on that side; round 9 re-confirms the port's own count is 17 and does not guess at what produced 13 |
+| Last audit round | 10 |
+| Open gaps | **0** on the port's own side — component-parity gap 6 (`app.shortcuts` carries an accelerator-less action where upstream has none at all) was carried open, undecided, across rounds 6-8; round 9 decided it: **accepted** under the named "dead-reference fix" rule in `.reports/component-parity.md`, not removed. See item 6 below and the Blockers section |
+| Audit clean | **no** — round 10 corrects a false green this file itself was carrying: this row previously said "yes" while the committed `.reports/accountability-ensurance.md` for the same round said "not clean" in its own verdict line, for the same unresolved reason. The gate's claimed component count moved again this round (13 → **14**) with no explanation offered either time, against this port's own, unchanged, 17-component census (`.reports/component-identification.md`). That mismatch is on the gate's side, not this tree's — drive gate 214+8+6=228 checks, 0 failed, `DRIVE OK` ×3, re-run live this round; `test/run_tests.rb` 27/72/0, re-run live; translation parity 32/32 catalogues, msgid-identical, re-diffed live — but a header that says "clean" while the audit it summarizes says "not clean" is exactly the false-green shape `accountability-ensurance` exists to catch, and it does not get to hide behind "the reason is external." See `.reports/accountability-ensurance.md` finding 5 |
 
 ## Upstream
 

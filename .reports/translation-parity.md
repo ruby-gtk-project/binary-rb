@@ -3,15 +3,15 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` (re-fetched, unmoved) |
-| Port | `ruby` @ `82bf316` (round 7's report commit; `po/`, `locale/`, `lib/` unchanged since `040f859`) |
-| Round | 8 |
+| Port | `ruby` @ `8fff731` (round 9's commit; `po/`, `locale/`, `lib/` unchanged since `040f859`) |
+| Round | 10 |
 | Languages | 32 upstream, 32 ported |
 | msgids in `po/binary.pot` | identical to upstream, msgid-for-msgid, re-diffed live this round |
 | Catalogues differing from upstream in content | **0 of 32** |
 | Compiled catalogues | 32 `.mo` under `locale/<lang>/LC_MESSAGES/binary.mo`, re-counted this round |
 | Runtime verification | `test/drive_translated.rb` **8 of 8**, in German, re-run live this round |
 | **Open gaps** | **0** |
-| Verdict | **clean** |
+| Verdict | **clean on this axis** — see `.reports/accountability-ensurance.md` for why the overall audit is not |
 
 Re-verified independently this round, not re-cited from round 7:
 `git archive origin/main` into a fresh scratch directory, `ls po/*.po` both

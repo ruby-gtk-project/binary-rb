@@ -3,13 +3,13 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` (re-fetched, unmoved) |
-| Port | `ruby` @ `82bf316` (round 7's report commit; `lib/`, `exe/`, `test/` unchanged since `040f859`) |
-| Round | 8 |
+| Port | `ruby` @ `8fff731` (round 9's commit; `lib/`, `exe/`, `test/` unchanged since `040f859`) |
+| Round | 10 |
 | Upstream tests | **0** (re-confirmed this round: no `test/`/`tests/` dir in `git archive origin/main`, no `test()` target in any `meson.build`) |
 | Ported | 0 of 0, met trivially |
-| **Gaps in the port's own suite** | **0** — re-verified live again this round, not re-cited from round 7 |
+| **Gaps in the port's own suite** | **0** — re-verified live again this round, not re-cited from round 8 |
 | Suite executed this round | **yes**, every command below re-run live under `nix develop` this round |
-| Verdict | **clean** |
+| Verdict | **clean on this axis** — see `.reports/accountability-ensurance.md` for why the overall audit is not |
 
 Re-run live this round, not copied from round 7: `nix develop --command
 xvfb-run -a ruby test/run_tests.rb` gives **27 runs, 72 assertions, 0

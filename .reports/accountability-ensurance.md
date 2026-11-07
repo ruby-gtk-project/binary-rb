@@ -3,13 +3,13 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` (re-fetched and re-confirmed unmoved this round) |
-| Port | `ruby` @ `82bf316` (through round 8; round 9 adds the gap-6 decision and the docs recording it) |
-| Round | 9 |
+| Port | `ruby` @ `8fff731` (round 9's commit; no code has moved since — this round adds only the docs below) |
+| Round | 10 |
 | Scan | `.claude/skills/accountability-ensurance/scripts/find-excuses.sh .` |
-| Script hits | self-referential (moves with this file's and `component-parity.md`'s own prose — see round-8 note below, unchanged mechanism) |
+| Script hits | 14, over `PORTING.md`, `.reports/component-parity.md`, `.reports/component-inventory.md` and this file — all re-read and re-dispositioned this round, none new (see below) |
 | New excuse-shaped sentences this round | **0** |
-| **False greens found this round** | **0 new** (round 8's finding 3 — the "13 components" gate mismatch — carries forward, still unresolved on the gate's side; see below) |
-| Verdict | **not clean** — not because of the port's own behaviour, but because round 8's finding 3 (a mismatch in an input handed to this audit, not in the port) has still not been answered by whoever computes it |
+| **False greens found this round** | **1 new** (finding 5 — `PORTING.md`'s own header claimed "Audit clean: yes" while this very file's round-9 verdict, committed in the same tree, said "not clean" for the same open reason) |
+| Verdict | **not clean** — finding 3's gate-figure mismatch is still open (and the figure itself moved, unexplained, between rounds — 13 now 14), and finding 5 is a false green this round found and fixed inside the port's own resume document |
 
 Scanned `lib/`, `exe/`, `test/`, `.reports/`, `PORTING.md`, `FINDINGS.md`,
 `README.md`, `Rakefile`, `flake.nix` and the gemspec for the script's phrase
@@ -71,8 +71,10 @@ nothing in the tree has moved since, so there is nothing to re-stale.
 
 ## 3. FALSE GREEN — this round's own commissioning brief quotes a drive-coverage number the port's documentation does not support
 
-The task that opened this round stated the gate as *"228 checks passed, 0
-failed, covering 13 components"*. The 228 and the 0 are both confirmed —
+Round 8's task stated the gate as *"228 checks passed, 0 failed, covering 13
+components"*; round 9's repeated the same "13" verbatim; **round 10's states
+"covering 14 components"** — a third figure, moved again with no explanation
+offered for either change. The 228 and the 0 are both confirmed —
 `214 + 8 + 6 = 228` across the three drivers, re-run live this round
 (`drive_window.rb` 214/214, `drive_translated.rb` 8/8,
 `high_contrast_check.rb` 6/6, all `DRIVE OK`). **The "13 components" is not
@@ -117,21 +119,25 @@ Rewritten:
 > line, what "13 components" counts, so this number can be reconciled
 > instead of carried as an unexplained discrepancy every round.
 
-**Round 9 status: still open, on the gate's side, not the port's.** This
-round's own commissioning brief repeats the same request verbatim rather than
-answering it, which confirms the number is being carried forward by whatever
-generates these briefs rather than recomputed each round. Re-checked this
-round: `.reports/component-identification.md` and
+**Round 10 status: still open, on the gate's side, not the port's — and now
+worse than carried-forward, because the number moved.** Round 9's brief
+repeated "13" verbatim, which this audit read as the figure being carried
+forward unexamined by whatever generates these briefs. Round 10's brief
+instead says **"14"**, which rules out that explanation: the number is not a
+frozen constant copied round to round, it is being recomputed by something
+upstream of this audit, and that something's recomputations do not agree with
+each other (13, then 14) any more than either agrees with this port's 17.
+Re-checked this round: `.reports/component-identification.md` and
 `.reports/component-inventory.md` still both say 17, nothing in `lib/`,
-`exe/`, `test/` or the skills' scripts produces 13 for any count, and no new
-candidate explanation turned up. Since the port's side of this cannot move it
-further, this audit now also states, for the record, the one count the port
-*would* propose if asked: "17" is "distinct upstream-source-file groups ported
-to a `lib/*.rb` file", per `component-identification.md`'s own mapping — not a
-guess at what "13" meant, which remains unexplained, but a concrete baseline
-the gate's owner can confirm or reject the next time this brief is written.
+`exe/`, `test/` or the skills' scripts produces 13 *or* 14 for any count, and
+no candidate explanation for either turned up. Since the port's side of this
+cannot move it further, this audit restates, for the record, the one count
+the port *would* propose if asked: "17" is "distinct upstream-source-file
+groups ported to a `lib/*.rb` file", per `component-identification.md`'s own
+mapping — not a guess at what "13" or "14" meant, which both remain
+unexplained, but a concrete baseline the gate's owner can confirm or reject.
 
-## 4. DECIDED (round 9) — component-parity gap 6 is no longer an open,
+## 4. DECIDED (round 9, re-verified this round) — component-parity gap 6 is no longer an open,
    undecided row
 
 Round 9's task brief named this directly: gap 6 (`app.shortcuts` carrying an
@@ -157,6 +163,40 @@ round by reading all four files after editing them, not by trusting the
 edit: `grep -n "decided, permanent" lib/main.rb lib/shortcuts_dialog.rb`
 and `grep -n "round 9" PORTING.md .reports/component-parity.md` each find
 the marker.
+
+## 5. FALSE GREEN, found and fixed this round — `PORTING.md` claimed "Audit clean: yes" while this file's own committed verdict said "not clean"
+
+Before this round, `PORTING.md`'s header read `Audit clean | **yes**, as of
+round 9's decision` — a clean verdict justified entirely by gap 6 being
+decided. In the very same tree, this file's round-9 verdict line read
+**"not clean"**, for a different and still-open reason: finding 3's gate
+component-count mismatch. Both files were committed together in `8fff731`.
+A reader of `PORTING.md` alone — the file this project calls the "resume
+point for the next run" — would have closed the audit as clean; a reader of
+`.reports/accountability-ensurance.md` in the same commit would have found
+it explicitly was not. That is the exact shape this skill exists to catch,
+just inverted: not a missing feature excused by a calm sentence, but a real,
+open, correctly-identified gap (finding 3) whose own report said "not clean"
+being overridden one file over by a header that said "yes" anyway — the
+observation this file made never actually governed the decision stamped into
+the document people are told to trust first.
+
+Fixed this round: `PORTING.md`'s `Audit clean` row now reads **no**, states
+the contradiction it was just corrected out of, and points at this file's
+finding 3. `grep -n "Audit clean" PORTING.md` now reads `**no**` and cites
+`.reports/accountability-ensurance.md`; re-checked by reading the file after
+the edit, not by trusting the edit.
+
+Rewritten:
+
+> I let `PORTING.md` say "Audit clean: yes" right next to this file's own
+> "not clean" verdict, in the same commit, because I am an idiot who decided
+> a real open finding didn't need to reach the one document people read
+> first.
+> Port: `PORTING.md`'s `Audit clean` row, as committed in `8fff731`.
+> Owed: the two documents' top-line verdicts must agree on every commit;
+> this round makes `PORTING.md` defer to this file's verdict rather than
+> restate its own.
 
 ## Allowed — a document whose subject is excuses contains the words (re-checked, not re-cited)
 
@@ -186,16 +226,19 @@ the marker.
 $ bash .claude/skills/accountability-ensurance/scripts/find-excuses.sh .
 ```
 
-15 hits this round, over `PORTING.md`, `.reports/component-parity.md`,
+14 hits this round, over `PORTING.md`, `.reports/component-parity.md`,
 `.reports/component-inventory.md` and this file itself — every one
 previously seen and re-dispositioned (benign document-about-excuses hits
 describing upstream correspondences, plus this file's own quoted excerpts of
 the vocabulary it is scanning for, plus the `lib/window.rb:85` false
-positive on the `not needed` pattern). The count is self-referential: this
+positive on the `not needed` pattern, which still describes upstream's own
+UX rationale, not a port decision). The count is self-referential: this
 file quotes the scanner's own phrase list to explain dispositions, so
 re-running the scan after editing this file's prose moves the number — read
 the dispositions below, not the raw count, as the finding. **No new
-excuse-shaped sentence describing the port's own behaviour this round.**
+excuse-shaped sentence describing the port's own behaviour this round** —
+the one new finding (5) is a contradicted verdict between two documents, not
+a new excuse sentence.
 
 ## Claims re-verified by measurement this round (not re-cited)
 
@@ -207,17 +250,20 @@ excuse-shaped sentence describing the port's own behaviour this round.**
 | `app.shortcuts` still installs an action upstream never creates (gap 6, now decided) | `grep -n "'shortcuts'" lib/main.rb` | `'shortcuts' => []` present; `src/main.py` has no such action; round 9 accepts this permanently (see finding 4) rather than leaving it open |
 | `po/binary.pot` msgid-for-msgid identical to upstream, 32/32 catalogues, 32/32 compiled `.mo` | `git archive origin/main`, `diff` on `msgid` lines, `ls po/*.po locale/*/LC_MESSAGES/*.mo` | identical; 32 and 32 |
 | no `TODO`/`FIXME`/"not implemented"/"for now"/"in a future" in `lib/`, `exe/`, `.reports/`, `PORTING.md` | `grep -rniE 'TODO|FIXME|not implemented|for now|in a future' lib/ exe/ .reports/ PORTING.md` | one hit, and it is this phrase list quoted inside this file's own table row, not a stub |
-| gate's "13 components" against the port's own census | read `.reports/component-identification.md`, `.reports/component-inventory.md` | both say 17, not 13 — still unreconciled, see finding 3 |
+| gate's component count ("13" round 8/9, "14" round 10) against the port's own census | read `.reports/component-identification.md`, `.reports/component-inventory.md` | both say 17, never 13 or 14 — unreconciled, and the gate's own number moved between rounds with no explanation; see finding 3 |
+| `PORTING.md`'s "Audit clean" row against this file's own verdict, same commit | read both files at `8fff731` | `PORTING.md` said "yes", this file said "not clean" — contradiction; fixed this round (finding 5) |
 
-Verdict this round: **not clean**, for one reason only. Finding 4 closes the
-one port-side item that was open: gap 6 no longer sits as "deliberate and
-documented" doing duty for a decision nobody made — round 9 made it, named
-it, and wrote the rejected alternative down. `PORTING.md`'s own header now
-reads `Open gaps | **0**`, re-verified by reading the current file rather
-than its label. What keeps this round's verdict from being clean outright is
-finding 3, carried forward unchanged: the runtime gate this round was handed
-still cites "13 components" against a figure the port's own documentation
-has never produced (17, everywhere it counts), and that is a property of the
-gate's input, not of anything in `lib/`, `exe/` or `test/`. The 228/0/DRIVE-OK
-portion of the same gate is independently reproduced and true, same as every
-prior round.
+Verdict this round: **not clean**, for two reasons. Finding 4 (round 9) still
+closes the one port-side behavioural item that was open: gap 6 no longer sits
+as "deliberate and documented" doing duty for a decision nobody made.
+`PORTING.md`'s "Open gaps" row correctly reads **0** on the port's own side.
+What keeps this round's verdict from clean is, first, finding 3 — now worse,
+not merely carried forward: the runtime gate's claimed component count moved
+from 13 to 14 between rounds with no explanation for either, against a port
+census that has read 17 since round 6 — and second, finding 5, a false green
+this round found inside the port's own tree: `PORTING.md` claiming "Audit
+clean: yes" in the same commit where this file's own verdict said "not
+clean," for the reason finding 3 names. Finding 5 is fixed this round;
+finding 3 is not fixable from this side of the gate. The 228/0/DRIVE-OK
+portion of the same gate, and the suite and translation numbers, are
+independently reproduced and true, same as every prior round.

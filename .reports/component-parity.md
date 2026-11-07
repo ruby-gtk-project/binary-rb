@@ -3,12 +3,12 @@
 | | |
 |---|---|
 | Upstream | `origin/main` @ `e96066b` (re-fetched, unmoved) |
-| Port | `ruby` @ `82bf316` (round 7's report commit through round 8; round 9 adds only this decision and the docs that record it — `lib/`, `exe/`, `test/` unchanged since `040f859`) |
-| Round | 9 |
-| Components compared | 17 |
+| Port | `ruby` @ `8fff731` (round 9's commit; no widget code has moved since `040f859` — round 10 re-verifies only) |
+| Round | 10 |
+| Components compared | 17 (the gate this round claims 14; unreconciled — see `.reports/accountability-ensurance.md` findings 3 and 5) |
 | Runtime gate | `test/drive_window.rb` **214 of 214**, `DRIVE OK`; `test/drive_translated.rb` **8 of 8**; `test/high_contrast_check.rb` **6 of 6** — re-run live again this round through `nix develop --command xvfb-run -a rake drive` (not read off the previous report's prose); 214+8+6=228 matches this round's own commissioned gate figure |
-| **Open gaps** | **0** (gap 6 — `app.shortcuts` carries an accelerator-less action where upstream has none at all — is closed this round under the named rule below; it was carried open for three rounds without a decision, which is itself the thing round 9 was asked to fix) |
-| Verdict | **clean** — every row corresponds; the one remaining behavioural difference is a decided, named substitution, not an unresolved one |
+| **Open gaps** | **0** on this ledger's own four axes (gap 6 — `app.shortcuts` carries an accelerator-less action where upstream has none at all — stays closed under the named rule below, decided round 9) |
+| Verdict | **clean on these four axes** — every row corresponds; the one remaining behavioural difference is a decided, named substitution, not an unresolved one. This does **not** make the overall audit clean: see `.reports/accountability-ensurance.md` for the open gate-figure mismatch, which is this file's own component count being contradicted by an unexplained external number |
 
 Everything in `.reports/component-identification.md`'s census exists in the
 port. No code has changed since round 7's measurement, so this round
