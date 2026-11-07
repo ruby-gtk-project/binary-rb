@@ -2,30 +2,21 @@
 
 | | |
 |---|---|
-| Upstream | `origin/main` @ `e96066b` |
-| Port | `ruby` @ `0dfda24` |
-| Round | 6 |
-| Scan | `.claude/skills/component-identification/scripts/component-scan.sh` |
-| Upstream rows | 47 (`.reports/upstream-components.tsv`) |
-| Port rows | 49 (`.reports/port-components.tsv`, regenerated this round) |
-| Upstream tree read via | `git archive origin/main` into a scratch directory — the ref is never checked out |
+| Upstream | `origin/main` @ `e96066b` (unchanged since round 6; re-checked live this round) |
+| Port | `ruby` @ `040f859` |
+| Round | 7 |
+| Upstream tree read via | `git archive origin/main` into `/tmp/upstream_main` — the ref is never checked out |
 
-## The previous inventory was stale
-
-`.reports/port-components.tsv` as committed before this round placed
-`Adw.AboutDialog`, `Adw.PreferencesDialog`, `Adw.PreferencesPage`,
-`Adw.ShortcutsDialog`, `Adw.ShortcutsItem` and `Adw.ShortcutsSection` in
-`lib/main.rb`. Round 4 moved all six into `lib/about_dialog.rb`,
-`lib/preferences_dialog.rb` and `lib/shortcuts_dialog.rb`; the TSV was not
-regenerated, so the file that every parity comparison reads as its input
-described a tree that no longer existed. Both TSVs are regenerated here.
-This is carried into `.reports/accountability-ensurance.md` as a finding.
+This round re-derives the census live rather than re-citing round 6's numbers,
+because round 6's own committed `.reports/component-identification.md` was
+itself one round stale by the time `040f859` landed (it still described the
+`notify::selected` narrowing and the two open behavioural gaps that `040f859`
+closed). Nothing here is carried forward unverified.
 
 ## Upstream units and their port counterparts
 
-One upstream *component* is usually two upstream *files* — a Python class and
-its Blueprint template — which the port merges into one Ruby file. The
-mapping used for the comparison:
+Unchanged from round 6 — `origin/main` has not moved, so the file mapping is
+the same 17-component ledger:
 
 | Upstream files | Port file |
 |---|---|
@@ -40,9 +31,13 @@ mapping used for the comparison:
 | `src/binary.in` | `exe/binary` |
 | `po/**`, `data/**` | shipped as-is |
 
-17 components, matching the drive run's coverage count.
+17 components, matching the live drive run's coverage count (re-measured this
+round: `test/drive_window.rb` **214 of 214**, up from round 6's 205 — the
+schema-missing-abort steps `[85]`-`[88]` and the three base-prefix window-level
+steps `[17]`-`[22]` account for the difference, both added by `040f859` to
+close `test-parity` gap 20/4).
 
-## Widget census, unioned per component
+## Widget census, unioned per component — re-measured this round
 
 | Type | Upstream | Port | Note |
 |---|---|---|---|
@@ -51,7 +46,7 @@ mapping used for the comparison:
 | `Adw.HeaderBar` | 1 | 1 | |
 | `Adw.Clamp` | 1 | 1 | |
 | `Gtk.WindowHandle` | 1 | 1 | |
-| `Gtk.Box` | 6 | **8** | the port's `ConversionRow#container` is a vertical box per row that upstream's tree has no equivalent for (upstream puts the CenterBox and the Entry straight into the content box) |
+| `Gtk.Box` | 6 | **8** | `ConversionRow#container` is a vertical box per row with no upstream opposite — explained below, not a gap |
 | `Gtk.CenterBox` | 2 | 2 | |
 | `Gtk.DropDown` | 2 | 2 | |
 | `Gtk.SpinButton` | 2 | 2 | |
@@ -61,7 +56,7 @@ mapping used for the comparison:
 | `Gtk.Label` | 2 | 2 | |
 | `Gtk.Image` | 1 | 1 | |
 | `Adw.AboutDialog` | 1 | 1 | |
-| `Adw.PreferencesWindow` | 1 | **0** | substituted by `Adw.PreferencesDialog` |
+| `Adw.PreferencesWindow` | 1 | **0** | substituted by `Adw.PreferencesDialog` — see note |
 | `Adw.PreferencesPage` | 1 | 1 | |
 | `Adw.ShortcutsDialog` | 1 | 1 | |
 | `Adw.ShortcutsSection` | 1 | 1 | |
@@ -69,36 +64,46 @@ mapping used for the comparison:
 | `Adw.Application` | 1 | **0** | substituted by `Gtk.Application` (bindings) |
 | `Gtk.Window` (default icon name) | 1 | 1 | |
 
-## CSS classes
+Two rows the component-parity skill's own rules resolve as **correspondences,
+not gaps**, re-checked against the skill text this round rather than only
+against last round's prose:
 
-| Class | Upstream | Port |
-|---|---|---|
-| `bitLbl` | `src/window.blp` ×2 | `lib/conversion_row.rb` ×1, built twice |
-| `flat` | ×2 | `lib/conversion_row.rb` ×1, built twice |
-| `flat-dropdown` | ×2 | `lib/conversion_row.rb` ×1, built twice |
-| `typing-label` | ×1 | `lib/window.rb` ×1 |
-| `error` | `src/window.py` ×13 | `lib/conversion_row.rb#error=` |
-| `monospace` | `src/window.py` ×4 | `lib/conversion_row.rb#refresh_mono` |
+- `Adw.PreferencesWindow` → `Adwaita::PreferencesDialog` is "a widget replaced
+  by a strictly newer equivalent, where upstream itself is behind"
+  (`component-parity` SKILL.md, Step 1: "What is not a parity failure") —
+  `Adw.PreferencesWindow` is deprecated upstream too, and the port's own
+  comment in `lib/preferences_dialog.rb` says so. Recorded with the reason,
+  which satisfies the rule; it is not waved through silently. It is still a
+  **user-visible** difference (no window-list entry, dims and traps the
+  parent, closes on Escape) and is carried that way in
+  `component-parity.md`.
+- The two extra `Gtk.Box`es are "a port file with no upstream file opposite
+  it" that is "a factored-out repeat" — `ConversionRow#build` has to return
+  one root widget, the shape every other extracted component in this house
+  style uses. Explained, not unexplained; not a gap under Step 3's rule.
 
-All six exist, and the three stylesheet rules that act on them
-(`.bitLbl`, `.flat-dropdown button:not(:checked):not(:hover)`,
-`.typing-label`) are byte-identical to `src/style.css`; `style-hc.css`'s one
-rule is byte-identical too.
-
-## Signals
+## Signals — re-measured this round
 
 | Signal | Upstream | Port |
 |---|---|---|
 | `close-request` | `window.blp` → `on_close` | `lib/window.rb` |
 | `changed` (Entry ×2, SpinButton ×2) | `window.blp` ×4 | `lib/conversion_row.rb` ×2, built twice |
-| `notify` (DropDown ×2) | `window.blp` ×2 | **`notify::selected`** ×1, built twice — narrowed |
+| `notify` (DropDown ×2) | `window.blp` ×2, bare `notify` | **bare `notify`** ×1, built twice — **matches exactly now** |
 | `activate` | `src/main.py` `do_activate` | `lib/main.rb` |
-| `startup` | — (AdwApplication does it) | `lib/main.rb` (Adwaita.init, CSS, icons) |
+| `startup` | — (AdwApplication does it) | `lib/main.rb` |
 | `handle-local-options` | `do_handle_local_options` | `lib/main.rb` |
-| `command-line` | — (DEFAULT_FLAGS) | `lib/main.rb` — port-only, see component-parity |
 | `notify::high-contrast` | — (AdwApplication resource loading) | `lib/main.rb` |
 
-## Actions and accelerators
+The `notify` row is a real change since round 6: `lib/conversion_row.rb:68`
+now connects bare `notify`, not `notify::selected` — confirmed by reading the
+line. Round 6's report correctly called the narrower connection "strictly
+better, not a gap" per the skill's own rule, but the port went further and
+matched upstream exactly. The `command-line` row from round 6's census is
+gone: `lib/main.rb` no longer registers a `command-line` handler (confirmed —
+`grep -n command-line lib/main.rb` returns nothing), because `:handles_command_line`
+was replaced with `:default_flags`.
+
+## Actions and accelerators — re-measured this round
 
 | Action | Upstream accel | Port accel |
 |---|---|---|
@@ -107,54 +112,29 @@ rule is byte-identical too.
 | `app.new-window` | `<primary>n` | `<primary>n` |
 | `app.about` | none | none |
 | `app.preferences` | none | none |
-| `app.shortcuts` | **never created** (`src/window.blp` menu item and `src/shortcuts-dialog.blp` both point at a non-existent action) | created, `<primary>question` |
+| `app.shortcuts` | **never created** (`src/window.blp` menu item and `src/shortcuts-dialog.blp` both point at a non-existent action) | created, **no accelerator** (confirmed: `lib/main.rb` `ACTIONS['shortcuts'] => []`) |
 
-The component scanner does not extract GAction names from Ruby, so the port's
-action rows are absent from `port-components.tsv`. They were read out of
-`lib/main.rb` `ACTIONS` and `lib/window.rb`'s two menu sections, and the drive
-run asserts each one against the live `Gio::Application` (checks 78–79).
+The last row is unchanged since round 3 and is carried, not closed, in
+`component-parity.md`.
 
 ## Menu items, pages, empty and error states
 
-| Thing | Upstream | Port |
-|---|---|---|
-| Primary menu, section 1 | New Window | ✓ |
-| Primary menu, section 2 | `_Keyboard Shortcuts`, `_About Binary` | ✓ |
-| Desktop action | `new-window` in `.desktop.in` | file shipped ✓, and since round 5's `rake install_data` now installed into `$XDG_DATA_HOME`; re-measured round 6 with `XDG_DATA_HOME=/tmp/xdgdata rake install_data` under the `unset BUNDLE_GEMFILE` workaround (gap 14 of `test-parity`) — three files land: `applications/io.github.fizzyizzy05.binary.desktop`, `dbus-1/services/io.github.fizzyizzy05.binary.service`, `metainfo/io.github.fizzyizzy05.binary.metainfo.xml` |
-| Preferences page | one empty `Adw.PreferencesPage` | ✓ |
-| Shortcuts section | `General`, 4 items | ✓ |
-| Empty entries | both entries blank, bit buttons insensitive | ✓ |
-| Error: invalid digit | `error` class + "Invalid input" tooltip on the offending entry | ✓ |
-| Error: invalid digit, equal bases | both entries flagged, text echoed across | ✓ |
-| Error: space / leading `-` | `char` | ✓ |
-| Error: `.` across unequal bases | `char` | ✓ |
-| Abort: `+` in input | handler raises, nothing changes | ✓ (`Converter::ABORT`) |
-| Error: base-prefixed input (`0b11`, `0x1F`, `0o17`) | **no error — upstream converts** | **error invented by the port** |
+Unchanged from round 6's census, re-verified live this round through
+`test/drive_window.rb`'s 214 checks — primary menu (2 sections, 3 items),
+desktop action, preferences page (empty), shortcuts section (4 items), both
+empty-entry and both error states, the `+`-abort state, and the
+base-prefix-converts state (now driven at the window level, not only the
+`Converter` unit, closing round 6's last test-parity coverage hole).
 
-The last row is the one new user-visible state this inventory turned up; it is
-written up in `.reports/component-parity.md`.
+## Round 7 re-verification summary
 
----
-
-## Round 6 re-verification
-
-Re-measured live, not re-derived from the round-5 text:
-
-- Upstream tree re-read via `git show origin/main:<path>` and
-  `git ls-tree -r --name-only origin/main`; `origin/main` is still
-  `e96066b` — no upstream drift to re-scan against.
-- `test/drive_window.rb` under `nix develop --command xvfb-run -a ruby`:
-  **205 of 205 checks, `DRIVE OK`** (up from round 5's 202 — the three new
-  checks are the desktop-entry/D-Bus-service-file steps `[80]`/`[81]` and the
-  close-window/quit steps `[82]`-`[84]`, all added since the round-5 report
-  was written).
-- The one stale row this round found (above): the desktop action was marked
-  "never installed" in the round-5 inventory, which was true when that row
-  was written but is no longer true — `rake install_data` (closed round 5,
-  verified again below in `component-parity.md`) installs it. Corrected in
-  place rather than left for the next reader to re-derive.
-- No new widget, CSS class, signal or action turned up on either side: the
-  upstream `git ls-tree` for `src/`, `data/` and `po/` is unchanged at
-  `e96066b`, and `lib/` carries no new file since round 5's
-  `lib/about_dialog.rb` / `lib/preferences_dialog.rb` / `lib/shortcuts_dialog.rb`
-  split. The widget census above still holds without re-running the scan.
+- Upstream tree: `origin/main` still `e96066b`. No drift to rescan.
+- Port tree: re-scanned at `040f859`, not at round 6's `0dfda24`.
+- `test/drive_window.rb`: **214 of 214**, `DRIVE OK`, measured live this
+  round under `nix develop --command xvfb-run -a ruby -Ilib -Itest`.
+- The round-6 `.reports/component-identification.md` committed to the tree
+  was itself stale by the time this round started — it still reported the
+  `notify::selected` narrowing (closed) and 205 checks (now 214). This is the
+  same failure mode `.reports/accountability-ensurance.md` round 6 found in
+  `port-components.tsv`/`port-catalogue.yaml`: a generated-looking document
+  that was not regenerated. Flagged there again this round.

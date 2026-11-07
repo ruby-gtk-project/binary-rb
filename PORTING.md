@@ -9,9 +9,9 @@ upstream ref is never checked out and never merged.
 |---|---|
 | Upstream ref | `origin/main` @ `e96066b` |
 | Port branch | `ruby` |
-| Last audit round | 6 |
-| Open gaps | **0** (all five closed this round: component-parity 7, 8; test-parity 14, 19, 20) |
-| Audit clean | **no** — the reports in `.reports/` are round 6's snapshots and have not been re-run to confirm the closures below; this row says what this file's own ledger carries, not that the underlying reports have been re-verified clean |
+| Last audit round | 7 |
+| Open gaps | **1** (component-parity 6 — `app.shortcuts` carries an accelerator-less action where upstream has none at all; a deliberate, documented divergence, not closed) |
+| Audit clean | **no** — round 7's `.reports/` are regenerated from live measurement against `040f859` and confirm the one open gap above; see `.reports/accountability-ensurance.md` round 7 for two false greens this round's regeneration fixed (a header miscount that read gap 6 as closed, and the `.reports/` files themselves having gone a round stale) |
 
 ## Upstream
 
@@ -64,11 +64,14 @@ of them now has a file of its own. What is outstanding is the gaps below.
 
 ## Open gaps
 
-4 open. Numbering follows the round-5 reports in `.reports/`; the entries
-closed since are marked rather than removed, and the reports themselves have
-not been re-run, so their own verdicts still read **not clean**.
+1 open (component-parity 6). Numbering follows the round-5 reports in
+`.reports/`; the entries closed since are marked rather than removed. Round
+7 regenerated every `.reports/*.md` from live measurement against `040f859`
+— see `.reports/accountability-ensurance.md` round 7 for why this section
+previously undercounted gap 6 as closed when its own sentence says "half
+closed".
 
-### `.reports/component-parity.md` — 0 open of 9
+### `.reports/component-parity.md` — 1 open of 9 (gap 6)
 
 1. ~~Base-prefixed input is rejected~~ — closed: `Converter.valid?` is now
    `Integer(part, base, exception: false)`, the call Python's `int(x, base)`
@@ -102,11 +105,16 @@ not been re-run, so their own verdicts still read **not clean**.
    `.service` file's `@bindir@` is substituted with `Gem.bindir`, the
    directory `binary` actually lands in — measured against a real
    `bundlerEnv` gem path, not assumed. `rake install` now depends on it.
-6. ~~`app.shortcuts` and `<primary>question` are invented~~ — half closed: the
-   accelerator is gone, so the port binds what upstream binds (nothing) and
-   its shortcuts dialog shows the item blank the way upstream's would. The
-   action itself stays, deliberately, so the menu item is not dead; see
-   Blockers.
+6. **OPEN** — `app.shortcuts` and `<primary>question` are invented. The
+   accelerator is gone (closed, round 4), so the port binds no key to the
+   action the way upstream binds no key to nothing — but upstream has *no*
+   `app.shortcuts` action at all, and the port's does exist, so its menu
+   item works and upstream's is dead. That remaining difference is
+   deliberate — fixing a dead menu item rather than reproducing it, written
+   up in Blockers — but deliberate and documented is not the same claim as
+   closed, and `component-parity.md` round 7 keeps the row open rather than
+   counting it against this list's own "0 open" header the way round 6's
+   version of this file did.
 7. ~~`Adw.PreferencesWindow` is an `Adwaita::PreferencesDialog` here~~ —
    decided, not undone: the substitution is **accepted permanently**.
    Upstream's `Adw.PreferencesWindow` is a top-level window with its own
