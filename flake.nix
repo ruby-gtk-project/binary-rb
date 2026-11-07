@@ -51,10 +51,30 @@
           ]);
         };
 
+        # Built from nix/Gemfile rather than the root one. The root Gemfile's
+        # `gemspec` directive needs binary-rb.gemspec sitting beside it on
+        # disk, but pkgs.bundlerEnv copies only the Gemfile, Gemfile.lock and
+        # gemset.nix it is given into a fresh Nix store directory — never the
+        # gemspec, whatever else sits next to the Gemfile it read — so a
+        # bundlerEnv built from the root Gemfile has wrapped binstubs (which
+        # hard-set BUNDLE_GEMFILE to that gemfile-less copy) that die in
+        # Bundler::Dsl#gemspec before they run anything. That reproduced under
+        # `nix develop --command rake ...` specifically, since --command execs
+        # the binary directly and never reaches the shellHook below.
+        # nix/Gemfile has no `gemspec` directive to trip over in the first
+        # place — it was already the intended gemdir for this bundlerEnv
+        # (.gitignore has carried `!nix/Gemfile.lock` for exactly this since
+        # before this fix), but flake.nix was still pointed at the root
+        # Gemfile instead. See nix/Gemfile's own comment for why it also
+        # carries rake/rubocop/minitest rather than leaving those to
+        # nixpkgs' standalone packages the way rspec is handled below: both
+        # `rake test` and `rake drive` shell out to a `ruby` subprocess that
+        # inherits whichever `rake` process spawned it had as its GEM_HOME,
+        # and a standalone rake's own gem set has no adwaita in it to inherit.
         gems = pkgs.bundlerEnv {
           name = "binary-rb-gems";
           ruby = pkgs.ruby_3_4;
-          gemdir = ./.;
+          gemdir = ./nix;
           gemConfig = pkgs.defaultGemConfig // {
             gdk4 = gnomeGem [ pkgs.gtk4 ];
             gsk4 = gnomeGem [ pkgs.gtk4 ];
@@ -69,6 +89,10 @@
           # and xgettext — `rake schemas` and `rake translations` need both.
           nativeBuildInputs = with pkgs; [ pkg-config wrapGAppsHook4 glib.dev gettext ];
           buildInputs = with pkgs; [
+            # `gems` carries rake, rubocop and (for `bundle`) bundler itself
+            # as real wrapped binaries, not only the app's own adwaita/gtk4 —
+            # see its definition above. Listing it is what puts their
+            # `bin/rake`, `bin/rubocop` and `bin/bundle` on PATH.
             gems
             gems.wrappedRuby
             bundix
@@ -84,9 +108,9 @@
             openssl
             gsettings-desktop-schemas
             adwaita-icon-theme
-            # The spec runner. The gems in this shell are the app's runtime
-            # closure rather than the full development bundle, so the suite
-            # gets its own RSpec here.
+            # The spec runner. rake and rubocop come from `gems` above
+            # instead of nixpkgs' own standalone packages — see its comment
+            # for why `rake test` and `rake drive` need that.
             rubyPackages_3_4.rspec
             # gtk_init fails outright with no display on this machine — there
             # is no offscreen fallback — so every `ruby` invocation that
@@ -111,15 +135,6 @@
             # A parent direnv may export a BUNDLE_GEMFILE for another project,
             # which `bundle exec` in this shell would then try to satisfy.
             unset BUNDLE_GEMFILE BUNDLE_FROZEN
-
-            # bundlerEnv's wrapped binstubs hard-set BUNDLE_GEMFILE to a store
-            # Gemfile that has no gemspec beside it, so the wrapped `rake` and
-            # `rubocop` both die in Bundler::Dsl#gemspec (FINDINGS.md 10).
-            # Unsetting it in the shell does not help — the wrapper sets it
-            # again at exec — so both are reached through plain ruby instead.
-            rake() { ruby -e 'require "rake"; Rake.application.run' -- "$@"; }
-            rubocop() { ruby -e 'require "rubocop"; exit RuboCop::CLI.new.run(ARGV)' -- "$@"; }
-            export -f rake rubocop 2>/dev/null || true
 
             echo "binary devshell — ruby $(ruby -e 'print RUBY_VERSION')"
             echo "run the app:   xvfb-run -a ruby exe/binary"

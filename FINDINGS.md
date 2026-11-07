@@ -147,7 +147,7 @@ that way:
   (`lib/main.rb` `#general_shortcuts` and `lib/window.rb` `#input_row` /
   `#output_row` write theirs out as literals because of this).
 
-## 10. The `rake` wrapper in the nix dev shell cannot start
+## 10. CLOSED — The `rake` wrapper in the nix dev shell cannot start
 
 `pkgs.bundlerEnv` builds its own `Gemfile`/`Gemfile.lock` pair into the store
 and points `BUNDLE_GEMFILE` at it, but the root `Gemfile`'s `gemspec`
@@ -155,11 +155,21 @@ directive has no gemspec beside it there, so every wrapped binary — `rake`,
 `bundle`, `rubocop` — dies in `Bundler::Dsl#gemspec` with
 `There are no gemspecs at /nix/store/…-gemfile-and-lockfile`.
 
-Until the flake carries a dev `Gemfile` of its own, rake tasks have to be run
-through rake's own `exe` with `GEM_HOME` pointed at the gems derivation and
-`BUNDLE_GEMFILE` unset; the same applies to `rubocop`. This is a packaging
-gap, not a port gap, and it is why earlier rounds reported `rake test` and
-`rake drive` as "not run".
+Closed by pointing `flake.nix`'s `gems` bundlerEnv at `gemdir = ./nix`
+instead of the root Gemfile. `nix/Gemfile` carries no `gemspec` directive at
+all — it already existed for this (`.gitignore` has carried
+`!nix/Gemfile.lock` since before this fix) but `flake.nix` had never been
+pointed at it — and now also carries `rake`, `rubocop` and `minitest`
+alongside the app's own `adwaita`/`gtk4`, in the one bundlerEnv rather than a
+second narrower one, because `rake test`'s `Rake::TestTask` and `rake
+drive`'s `sh` calls both shell out to a `ruby` subprocess that inherits
+whichever `rake` process spawned it had as its `GEM_HOME` — a `rake` kept
+apart from `adwaita` leaves that subprocess unable to `require 'adwaita'`.
+Measured: `nix develop --command rake -T`, `nix develop --command rubocop
+--version` and `nix develop --command bundle --version` all start and print
+cleanly; `nix develop --command xvfb-run -a rake test` and `nix develop
+--command rake drive` both run to completion. `rake test` and `rake drive`
+no longer need to be reported as "not run".
 
 ## 11. GTK needs a display; the driver's claim that it does not is wrong
 

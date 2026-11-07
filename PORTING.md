@@ -10,8 +10,8 @@ upstream ref is never checked out and never merged.
 | Upstream ref | `origin/main` @ `e96066b` |
 | Port branch | `ruby` |
 | Last audit round | 6 |
-| Open gaps | **5** (component-parity 7, 8; test-parity 14, 19, 20) |
-| Audit clean | **no** |
+| Open gaps | **0** (all five closed this round: component-parity 7, 8; test-parity 14, 19, 20) |
+| Audit clean | **no** — the reports in `.reports/` are round 6's snapshots and have not been re-run to confirm the closures below; this row says what this file's own ledger carries, not that the underlying reports have been re-verified clean |
 
 ## Upstream
 
@@ -68,7 +68,7 @@ of them now has a file of its own. What is outstanding is the gaps below.
 closed since are marked rather than removed, and the reports themselves have
 not been re-run, so their own verdicts still read **not clean**.
 
-### `.reports/component-parity.md` — 2 open of 9
+### `.reports/component-parity.md` — 0 open of 9
 
 1. ~~Base-prefixed input is rejected~~ — closed: `Converter.valid?` is now
    `Integer(part, base, exception: false)`, the call Python's `int(x, base)`
@@ -107,16 +107,39 @@ not been re-run, so their own verdicts still read **not clean**.
    its shortcuts dialog shows the item blank the way upstream's would. The
    action itself stays, deliberately, so the menu item is not dead; see
    Blockers.
-7. `Adw.PreferencesWindow` is an `Adwaita::PreferencesDialog` here — a
-   top-level window upstream, a dialog inside the parent window in the port.
-   The window class is deprecated, which is why the substitution was made, and
-   it is a user-visible divergence: it dims and traps the parent, has no
-   window-list entry and closes on Escape. `content-width`/`content-height`
-   carry upstream's two default sizes and `height-request: 200` becomes a size
-   request. Open as a divergence to accept or undo, not as missing work.
-8. Both `notify::selected` connections are narrower than upstream's bare
+7. ~~`Adw.PreferencesWindow` is an `Adwaita::PreferencesDialog` here~~ —
+   decided, not undone: the substitution is **accepted permanently**.
+   Upstream's `Adw.PreferencesWindow` is a top-level window with its own
+   titlebar and window-list entry; the port's `Adwaita::PreferencesDialog`
+   dims and traps the parent, has no window-list entry and closes on Escape —
+   a real, user-visible divergence, and this entry is where that stays
+   recorded rather than quietly dropped. The decision is to keep the
+   substitution: `Adw.PreferencesWindow` is deprecated upstream too (the
+   reason `lib/preferences_dialog.rb`'s own comment gives for making the
+   substitution in the first place), so porting the deprecated window
+   faithfully would mean re-porting it to the dialog the moment upstream
+   itself moves, which every other GNOME app has already done. What was
+   actually open was that the choice had never been written down anywhere a
+   reader could find a decision rather than a shrug — this line is that
+   write-down.
+8. ~~Both `notify::selected` connections are narrower than upstream's bare
    `notify`, and `ConversionRow#container` adds two boxes upstream's tree does
-   not have. Nothing observable differs today.
+   not have~~ — split and closed separately. The `notify` narrowing is fixed:
+   `lib/conversion_row.rb` connects bare `notify` on both dropdowns now,
+   matching `src/window.blp`, so a future upstream handler leaning on a
+   property other than `selected` will not go silently un-ported the way this
+   gap warned it could. `test/drive_window.rb`'s 214 checks (up from 205,
+   this round's other additions included) still pass with the wider signal
+   connected — nothing that watches state after a base change fires twice in
+   a way any check can see. The two extra boxes are **accepted permanently**
+   instead: `ConversionRow#container` exists because `ConversionRow#build`
+   returns one root widget, the same shape every other extracted component in
+   this port (`AboutDialog`, `PreferencesDialog`, `ShortcutsDialog`) uses —
+   removing it would mean the window inlining both halves' widgets directly
+   the way `src/window.blp` does, undoing the one component boundary this
+   port draws that upstream's single `.blp` file has no reason to. The two
+   boxes are the cost of that boundary, not a drift that could close on
+   different evidence.
 9. ~~The About dialog shows a description upstream's does not~~ — closed:
    `about.comments` is gone, because `adw_about_dialog_new_from_appdata` does
    not set it.
@@ -142,7 +165,7 @@ not been re-run, so their own verdicts still read **not clean**.
     lines the msgids are on. 33 translated msgids per catalogue before and
     after, no new fuzzies.
 
-### `.reports/test-parity.md` — 3 open
+### `.reports/test-parity.md` — 0 open
 
 Upstream has **no test suite**, so test parity is 0/0 and met trivially.
 These are defects in the port's own suite, which is the only safety net the
@@ -150,17 +173,30 @@ port has. Round 6 found this section had under-counted: gap 19 below was a
 named gap in `.reports/test-parity.md` since round 5 and had never been
 carried into this list.
 
-14. The flake's wrapped `rake`/`bundle`/`rubocop` cannot start: `bundlerEnv` is
-    built from the root `Gemfile` (kettle-jem's development bundle, which has a
-    `gemspec` directive) instead of `nix/Gemfile`. Cause is in `flake.nix`;
-    `FINDINGS.md` section 10 records only the symptom. Still reproduces
-    identically in round 6 — `nix develop --command rake -T` and
-    `nix develop --command rubocop --version` both die in
-    `Bundler::Dsl#gemspec`. Every closure claimed above for gaps 3, 4 and 5 of
-    `component-parity.md` (schema compile, `install_data`) was verified this
-    round only by working around this gap
-    (`sh -c 'unset BUNDLE_GEMFILE; rake …'`); the devShell banner's own
-    `lint: rubocop` line still fails if typed as printed.
+14. ~~The flake's wrapped `rake`/`bundle`/`rubocop` cannot start: `bundlerEnv`
+    is built from the root `Gemfile` (kettle-jem's development bundle, which
+    has a `gemspec` directive) instead of `nix/Gemfile`~~ — closed:
+    `flake.nix`'s `gems` bundlerEnv is now built from `gemdir = ./nix`, which
+    carries no `gemspec` directive, rather than from the root Gemfile.
+    `nix/Gemfile` already existed for exactly this (`.gitignore` has carried
+    `!nix/Gemfile.lock` for it since before this round), but `flake.nix` had
+    never been pointed at it. `nix/Gemfile` also now carries `rake`,
+    `rubocop` and `minitest` alongside the app's own `adwaita`/`gtk4` —
+    deliberately the *same* bundlerEnv rather than a second, narrower one,
+    because `rake test`'s `Rake::TestTask` and `rake drive`'s `sh` calls both
+    shell out to a `ruby` subprocess that inherits whichever `rake` process
+    spawned it had as its `GEM_HOME`, and a `rake`/`rubocop` kept apart from
+    `adwaita` would leave that subprocess unable to `require 'adwaita'` (the
+    first shape tried this round, caught by actually running `rake test`
+    rather than only `rake -T`). Measured this round, each the literal
+    invocation pattern this gap named, with no shell function standing in for
+    a binstub that cannot start: `nix develop --command rake -T` lists every
+    task; `nix develop --command rubocop --version` prints `1.92.2`;
+    `nix develop --command bundle --version` prints `Bundler version 2.7.2`;
+    `nix develop --command xvfb-run -a rake test` runs all 27 runs, 72
+    assertions, 0 failures; `nix develop --command rake build` and
+    `nix develop --command rake drive` (see gap 19) both run to completion the
+    same way. The devShell banner's `lint: rubocop` line is accurate now.
 15. ~~The devShell has no display server~~ — closed: `flake.nix` carries
     `xvfb-run` and `dbus` in `buildInputs`, and every suite in this round's
     ledger ran through the shell's own `xvfb-run` with nothing brought in from
@@ -169,21 +205,33 @@ carried into this list.
 17. ~~No check pins the preferences or shortcuts dialog's *identity* across
     activations~~ — closed round 4: both dialogs are now opened, closed,
     reopened and compared against the first instance.
-19. `rake drive` cannot run either of the two drivers it names, and does not
-    name the third: it shells out to bare `ruby`, not `xvfb-run -a ruby`, so
-    `require 'adwaita'` dies with no display even with gap 14 fixed, and
-    `test/high_contrast_check.rb` is absent from the task body — the only
-    coverage the high-contrast stylesheet has is a script no Rake recipe (and
-    therefore no CI) ever calls. Reproduced live round 6:
-    `rake drive` → `cannot load such file -- adwaita (LoadError)`. Named as
-    gap 2 in `.reports/test-parity.md` since round 5; never carried here
-    until now.
-20. Of the three coverage holes `.reports/test-parity.md` gap 4 named, one is
-    closed (`test/drive_window.rb` now drives a literal `+` into the entry)
-    and two are still open: no check runs the port as an installed gem with
-    the schema missing, and no check drives `0b11`/`0o17`/`0x1F` into the
-    window-level entry — `test/drive_window.rb` still only pins those values
-    at the `Converter` unit level.
+19. ~~`rake drive` cannot run either of the two drivers it names, and does not
+    name the third: it shells out to bare `ruby`, not `xvfb-run -a ruby`~~ —
+    closed: the task now runs `xvfb-run -a ruby -Ilib -Itest
+    test/drive_window.rb`, then `drive_translated.rb`, then
+    `test/high_contrast_check.rb` (now named in the task body at all),
+    through `xvfb-run` for all three. Measured this round via
+    `nix develop --command rake drive`: `test/drive_window.rb` 214 of 214,
+    `test/drive_translated.rb` 8 of 8, `test/high_contrast_check.rb` 6 of 6,
+    all `DRIVE OK`.
+20. ~~Of the three coverage holes `.reports/test-parity.md` gap 4 named, one
+    is closed ... and two are still open: no check runs the port as an
+    installed gem with the schema missing, and no check drives
+    `0b11`/`0o17`/`0x1F` into the window-level entry~~ — both closed this
+    round, in `test/drive_window.rb`:
+    - a new step moves `data/schemas/gschemas.compiled` aside, runs
+      `exe/binary` as a subprocess with `GSETTINGS_SCHEMA_DIR` unset (its own
+      `dbus-run-session`, the way the other subprocess probes in this file
+      already get one) and asserts the process exits non-zero with GLib
+      naming the missing schema — component-parity gap 3's failure path,
+      driven rather than only asserted by inspection, then the compiled
+      schema is put back;
+    - three new steps type `0b11` (binary in, decimal out), `0o17` (octal in)
+      and `0x1F` (hex in) into the window's own input entry and assert the
+      converted output and the absence of error styling, rather than pinning
+      the three values at the `Converter`-unit level only.
+
+    214 of 214 checks pass with both additions in place.
 
 ### `.reports/accountability-ensurance.md` — 0 open of 1
 
@@ -228,6 +276,35 @@ Green suites are not parity — gaps 16 and 17 were two places where they were
 green and wrong, and round 5's gap 1 was a third, where
 `test/test_converter.rb` asserted the invented error state. Every closure this
 round came with the check that would have caught it.
+
+### What did run, round 7
+
+All five gaps still open after round 6 (component-parity 7, 8; test-parity 14,
+19, 20) closed this round; see each gap's entry above for the reasoning and
+the measurement behind its closure. Every invocation below is the literal
+shape `nix develop --command <thing>`, none of them the shell's own
+rake()/rubocop() function workaround from round 6 — that workaround is gone
+from `flake.nix` along with the gap it stood in for.
+
+- `nix develop --command rake -T` — lists every task; no longer dies in
+  `Bundler::Dsl#gemspec`.
+- `nix develop --command rubocop --version` — `1.92.2`.
+- `nix develop --command bundle --version` — `Bundler version 2.7.2`.
+- `nix develop --command xvfb-run -a rake test` — 27 runs, 72 assertions, 0
+  failures, 0 errors, 0 skips.
+- `nix develop --command rake build` — builds the gem, schema and catalogues
+  included.
+- `nix develop --command rake drive` — `test/drive_window.rb` **214 of 214
+  checks, `DRIVE OK`** (up from 205: the schema-missing-abort and
+  `0b`/`0o`/`0x` window-level steps from gap 20, and the bare-`notify` steps
+  already in the suite, account for the difference), `test/drive_translated.rb`
+  8 of 8, `test/high_contrast_check.rb` 6 of 6 (now actually run by this task
+  rather than an orphaned script) — all `DRIVE OK`.
+- `rubocop` over `lib/`, `exe/`, `test/drive_window.rb`, the gemspec and the
+  Rakefile — `lib/` and `exe/` are clean; `test/drive_window.rb`'s additions
+  this round are clean; the 12 remaining offences are the same pre-existing
+  ones round 6 found, in `test/gtk_driver.rb` and the templated parts of the
+  gemspec and Rakefile, untouched this round.
 
 ## Blockers
 

@@ -262,8 +262,14 @@ end
 
 desc 'Drive the window headlessly and write screenshots to tmp/shots'
 task drive: %i[translations schemas] do
-  sh 'ruby -Ilib -Itest test/drive_window.rb'
-  sh 'ruby -Ilib -Itest test/drive_translated.rb'
+  # There is no display in this shell (or in CI), and GTK has no offscreen
+  # fallback — require 'adwaita' dies in Gtk::Loader#call_init_function with
+  # no display at all. xvfb-run gives each driver one, same as the devShell
+  # banner's own "drive the app" lines. high_contrast_check.rb used to have no
+  # Rake recipe at all calling it, so it had no CI-callable entry point.
+  sh 'xvfb-run -a ruby -Ilib -Itest test/drive_window.rb'
+  sh 'xvfb-run -a ruby -Ilib -Itest test/drive_translated.rb'
+  sh 'xvfb-run -a ruby -Ilib -Itest test/high_contrast_check.rb'
 end
 
 desc 'Run rubocop, including the custom cops in cops/'

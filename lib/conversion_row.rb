@@ -55,7 +55,17 @@ class ConversionRow
           controls.append(dropdown)
           controls.append(spin)
 
-          dropdown.signal_connect('notify::selected') { @on_base_change.call }
+          # src/window.blp connects the bare `notify` signal, not
+          # `notify::selected` — every property change on the DropDown
+          # re-runs the handler, which is how upstream's own initial
+          # bit-counter and spin-button visibility get computed, from the
+          # model being set in __init__ (component-parity gap 8). The port
+          # sets the model before this connect runs, so that particular
+          # firing is moot here — #restore_bases does the equivalent initial
+          # pass explicitly — but matching the bare signal rather than the
+          # narrower one means a future upstream handler that leans on
+          # another property notification will not go silently un-ported.
+          dropdown.signal_connect('notify') { @on_base_change.call }
           spin.signal_connect('changed') { @on_base_change.call }
         end
 

@@ -4,6 +4,8 @@
 # menu dialogs, and writes screenshots to tmp/shots for eyeballing.
 
 require 'English'
+require 'fileutils'
+require 'open3'
 
 require_relative 'environment'
 require_relative '../lib/main'
@@ -155,6 +157,58 @@ BinaryApp.new.then do |app|
     d.step('z is 35') do
       d.check('output reads 35') { window(app).output_row.text == '35' }
       d.shot('08-base-36')
+    end
+
+    # --- base-prefixed literals, at the window rather than the Converter unit
+    # --- (test-parity gap 20's second coverage hole: only Converter-unit
+    # tests pinned 0b11/0o17/0x1F before this).
+
+    d.step('binary in, decimal out, for a 0b-prefixed literal') do
+      window(app).input_row.entry.text = ''
+      window(app).input_row.dropdown.selected = 0
+      window(app).output_row.dropdown.selected = 2
+      window(app).input_row.entry.text = '0b11'
+    end
+
+    d.step('0b11 converts rather than flagging') do
+      d.check('output reads 3') { window(app).output_row.text == '3' }
+      d.check('no error styling on the input') do
+        !window(app).input_row.entry.css_classes.include?('error')
+      end
+      d.shot('22a-0b-prefix')
+    end
+
+    d.step('octal in, decimal out, for a 0o-prefixed literal') do
+      window(app).input_row.entry.text = ''
+      window(app).input_row.dropdown.selected = 1
+      window(app).input_row.entry.text = '0o17'
+    end
+
+    d.step('0o17 converts rather than flagging') do
+      d.check('output reads 15') { window(app).output_row.text == '15' }
+      d.check('no error styling on the input') do
+        !window(app).input_row.entry.css_classes.include?('error')
+      end
+      d.shot('22b-0o-prefix')
+    end
+
+    d.step('hexadecimal in, decimal out, for a 0x-prefixed literal') do
+      window(app).input_row.entry.text = ''
+      window(app).input_row.dropdown.selected = 3
+      window(app).input_row.entry.text = '0x1F'
+    end
+
+    d.step('0x1F converts rather than flagging') do
+      d.check('output reads 31') { window(app).output_row.text == '31' }
+      d.check('no error styling on the input') do
+        !window(app).input_row.entry.css_classes.include?('error')
+      end
+      d.shot('22c-0x-prefix')
+    end
+
+    d.step('back to the Other base the window had before this detour') do
+      window(app).input_row.entry.text = ''
+      window(app).input_row.dropdown.selected = 4
     end
 
     d.step('closing saves the chosen bases') do
@@ -820,6 +874,51 @@ BinaryApp.new.then do |app|
       d.check('it ran all six of its checks') { SEEN[:hc].include?('6 of 6 checks passed') }
       d.check('and it ended green') do
         SEEN[:hc].include?('DRIVE OK') && SEEN[:hc_status].zero?
+      end
+    end
+
+    # --- the installed-gem failure path -------------------------------------
+
+    # component-parity gap 3's failure path, driven rather than just asserted
+    # by inspection (test-parity gap 20's first coverage hole): an installed
+    # gem that `rake build` never compiled data/schemas/gschemas.compiled
+    # into has no schema for Gio::Settings to open, and g_error aborts the
+    # process outright — there is no exception a caller could rescue, so the
+    # only way to see it is to run the binary and watch it die. The compiled
+    # schema is moved aside, GSETTINGS_SCHEMA_DIR is unset for the child only,
+    # and the child gets its own session bus, the way the other two subprocess
+    # probes above do.
+    d.step('the compiled schema is moved out of the way') do
+      SEEN[:compiled_schema] = File.expand_path('../data/schemas/gschemas.compiled', __dir__)
+      SEEN[:schema_moved_to] = "#{SEEN[:compiled_schema]}.moved-for-drive"
+      SEEN[:schema_was_there] = File.exist?(SEEN[:compiled_schema])
+      if SEEN[:schema_was_there]
+        FileUtils.mv(SEEN[:compiled_schema], SEEN[:schema_moved_to])
+      end
+    end
+
+    d.step('a gem installed with no compiled schema aborts rather than opening') do
+      SEEN[:schema_missing_out], SEEN[:schema_missing_status] =
+        Open3.capture2e(
+          {'GSETTINGS_SCHEMA_DIR' => nil},
+          'dbus-run-session',
+          '--',
+          RbConfig.ruby,
+          File.expand_path('../exe/binary', __dir__),
+        )
+    end
+
+    d.step('the compiled schema is put back') do
+      if SEEN[:schema_was_there]
+        FileUtils.mv(SEEN[:schema_moved_to], SEEN[:compiled_schema])
+      end
+    end
+
+    d.step('the abort is the one Gio::Settings.new has no exception for') do
+      d.check('the schema really was there to move') { SEEN[:schema_was_there] }
+      d.check('the process did not exit cleanly') { !SEEN[:schema_missing_status].success? }
+      d.check('GLib named the missing schema, not some other failure') do
+        SEEN[:schema_missing_out].downcase.include?('schema')
       end
     end
 
