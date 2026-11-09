@@ -61,12 +61,8 @@ Gem::Specification.new do |spec|
   enumerate_package_files = lambda do |root|
     enumerate_package_glob.call(File.join(gemspec_root, root, "**", "*"))
   end
-  # COPYING is upstream's own copy of the GPL-3 text, shipped verbatim: the gem
-  # declares GPL-3.0-or-later above, and a GPL gem that carries no licence text
-  # does not give the person who installed it the terms it was granted under.
   package_metadata_files = %w[
     CHANGELOG.md
-    COPYING
     LICENSE.md
     README.md
     sig/binary/rb.rbs

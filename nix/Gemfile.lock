@@ -4,7 +4,6 @@ GEM
     adwaita (4.4.0)
       gtk4 (= 4.4.0)
       rake
-    ast (2.4.3)
     atk (4.4.0)
       glib2 (= 4.4.0)
       rake
@@ -41,45 +40,16 @@ GEM
       gdk4 (= 4.4.0)
       gsk4 (= 4.4.0)
     json (3.1.0)
-    language_server-protocol (3.17.0.6)
-    lint_roller (1.1.0)
     matrix (0.4.3)
-    minitest (5.27.0)
     native-package-installer (1.1.9)
     pango (4.4.0)
       cairo-gobject (= 4.4.0)
       gobject-introspection (= 4.4.0)
-    parallel (2.3.0)
-    parser (3.3.13.0)
-      ast (~> 2.4.1)
-      racc
     pkg-config (1.6.7)
-    prism (1.9.0)
-    racc (1.8.1)
-    rainbow (3.1.1)
     rake (13.4.2)
     red-colors (0.5.0)
       json
       matrix
-    regexp_parser (2.13.1)
-    rubocop (1.92.2)
-      json (>= 2.3)
-      language_server-protocol (~> 3.17.0.2)
-      lint_roller (~> 1.1.0)
-      parallel (>= 1.10)
-      parser (>= 3.3.0.2)
-      rainbow (>= 2.2.2, < 4.0)
-      regexp_parser (>= 2.11.3, < 3.0)
-      rubocop-ast (>= 1.49.0, < 2.0)
-      ruby-progressbar (~> 1.7)
-      unicode-display_width (>= 2.4.0, < 4.0)
-    rubocop-ast (1.50.0)
-      parser (>= 3.3.7.2)
-      prism (~> 1.7)
-    ruby-progressbar (1.13.0)
-    unicode-display_width (3.3.0)
-      unicode-emoji (~> 4.3)
-    unicode-emoji (4.3.0)
 
 PLATFORMS
   ruby
@@ -88,15 +58,10 @@ PLATFORMS
 DEPENDENCIES
   adwaita
   gtk4
-  minitest (~> 5.0)
-  rake (~> 13.0)
-  rubocop (~> 1.90)
 
 CHECKSUMS
   adwaita (4.4.0) sha256=c6bbca06f36a231c11fb850372032fa2e52b14aea1cf6b2d1f00f9d32c0603bb
-  ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
   atk (4.4.0) sha256=43da21243bf931d4f26536cfbdb99e723b26d38f8a48ee9a7749c51b22fa3741
-  bundler (4.0.11) sha256=5bcec0fb78302e48d02ee46f10ee6e6942be647ba5b44a6d1ddfda9a240ce785
   cairo (1.18.5) sha256=e57356141c91748061b10260e185735bd6e2288ab81ab300a6de3adfa270a623
   cairo-gobject (4.4.0) sha256=9f73c6b719688210bcf0920a08c517d24dd1023beff32d17d46aa3a63209f9b8
   fiddle (1.1.8) sha256=7fa8ee3627271497f3add5503acdbc3f40b32f610fc1cf49634f083ef3f32eee
@@ -109,26 +74,12 @@ CHECKSUMS
   gsk4 (4.4.0) sha256=1344df0286bb82fd25a406d50d61d944ac0f41aa187e7da08a6882261ab7f2a3
   gtk4 (4.4.0) sha256=6cf54c400ec40d74fd057d407a21219d6d9a8bdac510c4cb8d89c72f8e62715d
   json (3.1.0) sha256=3ce7ccf8fde58960177a3a756c31f292a4c1e1dedee884547096a5b0604e3bd8
-  language_server-protocol (3.17.0.6) sha256=5ef2c0c138f8267e1bc631d3328347d354f96724b0af22f2c79516120443b7f0
-  lint_roller (1.1.0) sha256=2c0c845b632a7d172cb849cc90c1bce937a28c5c8ccccb50dfd46a485003cc87
   matrix (0.4.3) sha256=a0d5ab7ddcc1973ff690ab361b67f359acbb16958d1dc072b8b956a286564c5b
-  minitest (5.27.0) sha256=2d3b17f8a36fe7801c1adcffdbc38233b938eb0b4966e97a6739055a45fa77d5
   native-package-installer (1.1.9) sha256=fbb41b6b22750791a4304f0a0aeea3dd837668892117f49c4caf2e8e0f4e792f
   pango (4.4.0) sha256=5ed9c81209dfa928db23da874c0c9b9570247dde2eb25fabbf5952c012c7b194
-  parallel (2.3.0) sha256=f75a3e904101ce6a1ccb6b8dc800cbafd42166d83330192438dcf29395167a6f
-  parser (3.3.13.0) sha256=e02f9b63c2fe05b0c68f692ba4df89b3cb113b663964f75d988fbebfd6c3deca
   pkg-config (1.6.7) sha256=0415eff78595da55a60d1ba4e9098572c73afbe6b4c06ec50ded1972f1e1070b
-  prism (1.9.0) sha256=7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85
-  racc (1.8.1) sha256=4a7f6929691dbec8b5209a0b373bc2614882b55fc5d2e447a21aaa691303d62f
-  rainbow (3.1.1) sha256=039491aa3a89f42efa1d6dec2fc4e62ede96eb6acd95e52f1ad581182b79bc6a
   rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
   red-colors (0.5.0) sha256=0a33f603d1843035fe467485ba4461022e3b5a2de9a0f0371e7cc0939b99ad19
-  regexp_parser (2.13.1) sha256=5aedb6b7c35688f51e86eef17a15374dfd287c83f4ca644b2c5f3ec50a33b44b
-  rubocop (1.92.2) sha256=14fb31eed143a0dc6f78186c550c1715e81cd38f59d05d1165050e445c1f5382
-  rubocop-ast (1.50.0) sha256=b9ca88300da0803ee222ad20cdb30494c0a784eed06fdc35d254b06d662788db
-  ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
-  unicode-display_width (3.3.0) sha256=4b7aa66a4b11db50f6f7e98411215cd0dd10eaecb665d36eec5bcacb3fa0b613
-  unicode-emoji (4.3.0) sha256=11c02fa73290378c066bb0562cd4c87d8e1b706fbbe0059ca12746a4244de8ce
 
 BUNDLED WITH
-  4.0.11
+   2.6.9
